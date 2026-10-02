@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Masked House</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="viewport">
+    <!-- The whole game lives on a fixed 1600x900 (16:9) canvas that is scaled to fit the window. -->
+    <main id="stage">
+
+      <!-- LEFT: the masked figure, health, inventory -->
+      <section id="left">
+        <div id="hud">
+          <div class="stat" id="stat-health">
+            <div class="stat-icon" id="hp-icon"></div>
+            <div class="stat-body">
+              <div class="stat-label">Health</div>
+              <div class="stat-value"><span id="hp-now">10</span><span class="sep">/</span><span id="hp-max">10</span></div>
+            </div>
+            <div class="bar"><i id="hp-bar"></i></div>
+          </div>
+        </div>
+
+        <div id="portrait">
+          <div id="portrait-art"></div>
+          <div class="flash" id="portrait-flash"></div>
+          <div id="inventory" aria-label="Inventory"></div>
+          <div id="item-pop" hidden></div>
+        </div>
+      </section>
+
+      <!-- CENTRE: the map -->
+      <section id="center">
+        <header id="center-head">
+          <h1>The Masked House</h1>
+          <div class="head-right">
+            <span class="turn">Turn <b id="turn">0</b></span>
+            <button id="new-game" type="button">New game</button>
+          </div>
+        </header>
+
+        <div id="board-wrap">
+          <div id="board">
+            <div id="cells"></div>
+            <div id="doors"></div>
+            <div id="marker"></div>
+          </div>
+        </div>
+
+        <footer id="center-foot">
+          <div id="die" aria-label="Fate die"></div>
+          <div id="die-info">
+            <div class="die-label">Fate die</div>
+            <div id="die-text">Step through a door to cast it.</div>
+          </div>
+          <div id="notice" role="status"></div>
+          <div id="seed"></div>
+        </footer>
+      </section>
+
+      <!-- RIGHT: what you find in the current room -->
+      <section id="right">
+        <div id="room-card"></div>
+        <div id="chronicle-wrap">
+          <div class="section-label">Chronicle</div>
+          <ol id="chronicle"></ol>
+        </div>
+      </section>
+
+      <div id="overlay" hidden>
+        <div class="overlay-card">
+          <h2 id="overlay-title"></h2>
+          <p id="overlay-text"></p>
+          <div class="overlay-buttons">
+            <button id="overlay-new" type="button">Begin anew</button>
+            <button id="overlay-look" type="button" class="quiet">Look at the map</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/rng.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/dungeon.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/art.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
