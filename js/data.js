@@ -27,7 +27,7 @@
     //   extraRooms 0: every piece is hidden somewhere within your 20 rooms, so exploring all 20 always shows you everything.
     //   extraRooms 4: the hiding places run to room 24, so some pieces land in rooms 21-24, which you can never reach.
     // More extra rooms = harder to win. (tests/balance.js --extra=N shows the win rate.) See Game.maybePlaceQuestItem.
-    quest: { from: 4, extraRooms: 0 },
+    quest: { from: 4, extraRooms: 4 },
     maxHp: 10,
     slots: 6,
     potionHeal: 4,

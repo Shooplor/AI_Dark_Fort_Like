@@ -18,6 +18,14 @@
   /** Escape text, then turn [[Item Name]] into a highlighted span. */
   const rich = (text) => esc(text).replace(/\[\[(.+?)\]\]/g, '<em class="hl">$1</em>');
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  /** Call a Sound method; sound problems must never break the game. */
+  const snd = (method, ...args) => {
+    try {
+      if (DF.Sound) return DF.Sound[method](...args);
+    } catch (err) {
+      console.warn('sound:', err);
+    }
+  };
 
   /** Which style the event box in the right-hand panel gets for an outcome. */
   const outcomeClass = (o) => (o.kind === 'trap' ? 'trap' : o.kind === 'heal' ? 'heal' : o.kind === 'nothing' ? 'quiet' : o.kind === 'choice' ? 'choice' : o.kind === 'quest' ? 'quest' : '');
@@ -49,6 +57,7 @@
       $('#marker').innerHTML = `<div class="token">${Art.playerToken()}</div>`;
       this.buildBoard();
       this.bindInput();
+      this.bindSound();
     }
 
     /* ---------------------------------------------------------------- setup */
@@ -89,6 +98,7 @@
         (ev) => {
           if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
           if (ev.key === 'Escape') return this.onEscape();
+          if (ev.code === 'KeyM' && !ev.repeat) return this.setMuted(snd('toggleMute'));
           if (this.paused) return; // nothing else works while the game is paused
           if (ev.code === 'KeyC' && !ev.repeat) return this.toggleChronicle();
           let side = SIDE_BY_CODE[ev.code];
@@ -137,6 +147,8 @@
       this.prevUids = new Set();
       this.resume();
       this.toggleChronicle(false);
+      snd('setTension', 0);
+      snd('startMusic');
       this.doorEls.forEach((el) => el.remove());
       this.doorEls.clear();
       this.buildBoard();
@@ -174,6 +186,7 @@
       const res = game.beginMove(side);
       if (!res.ok) {
         this.notice(res.msg, true);
+        snd('play', res.reason === 'locked' ? 'locked' : 'bump');
         this.nudge(side);
         return;
       }
@@ -195,6 +208,7 @@
       this.clearHints();
       this.notice('');
       if (res.unlocked) {
+        snd('play', 'unlock');
         this.notice(res.unlocked.msg);
         this.renderInventory();
         this.refreshDoors(res.unlocked.door.id);
@@ -204,6 +218,8 @@
       // 1. walk to the next room
       this.setWalking(true);
       this.placeMarker(res.to, true);
+      snd('play', 'step');
+      setTimeout(() => snd('play', 'step'), MOVE_MS * 0.5);
       await sleep(MOVE_MS);
       this.setWalking(false);
 
@@ -245,6 +261,7 @@
       if (this.busy || game.status !== 'playing' || !game.pendingChoice) return;
       const res = game.choose(index);
       if (!res.ok) return;
+      snd('play', 'click');
       this.closePop();
       this.view.fresh = true;
       this.view.eventText = res.outcome.text;
@@ -263,9 +280,11 @@
       const die = $('#die');
       die.className = 'rolling';
       $('#die-text').textContent = 'The die falls…';
+      snd('play', 'diceRattle');
       const flicker = setInterval(() => (die.innerHTML = Art.die(1 + Math.floor(Math.random() * 4))), 90);
       await sleep(DIE_MS);
       clearInterval(flicker);
+      snd('play', 'dieLand');
       die.innerHTML = Art.die(value);
       die.className = 'landed';
       $('#die-text').textContent = DIE_TEXT[value];
@@ -282,6 +301,7 @@
       const el = this.cellEl(cell.x, cell.y);
       el.innerHTML = Art.roomTile(cell);
       if (animate) {
+        snd('play', 'reveal');
         el.classList.add('reveal');
         setTimeout(() => el.classList.remove('reveal'), 800);
       }
@@ -379,6 +399,7 @@
       $('#hp-now').textContent = g.hp;
       $('#hp-max').textContent = g.maxHp;
       if (!delta) return;
+      snd('play', delta < 0 ? 'hurt' : 'heal');
       const nums = $('#hp-nums');
       nums.classList.remove('dmg', 'heal');
       void nums.offsetWidth;
@@ -407,7 +428,10 @@
         if (item) {
           uids.add(item.uid);
           b.title = item.name;
-          if (!this.prevUids.has(item.uid)) b.classList.add('got');
+          if (!this.prevUids.has(item.uid)) {
+            b.classList.add('got');
+            snd('play', item.quest ? 'evidence' : 'pickup');
+          }
           b.addEventListener('click', (ev) => {
             ev.stopPropagation();
             this.togglePop(i);
@@ -423,6 +447,7 @@
       if (open || this.busy || this.game.status !== 'playing') return this.closePop();
       const item = this.game.slots[slot];
       if (!item) return this.closePop();
+      snd('play', 'click');
       const pop = $('#item-pop');
       pop.dataset.slot = slot;
       pop.className = item.quest ? 'quest' : '';
@@ -447,6 +472,7 @@
     itemAction(slot, act) {
       const g = this.game;
       const res = act === 'use' ? g.useItem(slot) : g.dropItem(slot);
+      if (res.ok && act === 'drop') snd('play', 'drop');
       this.closePop();
       if (res.msg) this.view.notes.push(res.msg);
       if (res.hpDelta) this.renderHp(res.hpDelta);
@@ -544,12 +570,14 @@
       const shown = this.game.explored;
       if (now.textContent !== String(shown)) {
         now.textContent = shown;
+        if (shown > 0) snd('play', 'tick');
         const nums = $('#eye-nums');
         nums.classList.remove('tick');
         void nums.offsetWidth;
         nums.classList.add('tick'); // a little pulse each time a point is spent
       }
       $('#turn-max').textContent = this.game.maxExplorations;
+      snd('setTension', this.game.explored / this.game.maxExplorations); // the music grows uneasy as discovery nears
     }
 
     notice(msg, bad) {
@@ -577,6 +605,8 @@
         text.textContent = 'Every remaining door is sealed, barred or buried. The house has shown you all it means to, tonight.';
       }
       $('#overlay').classList.toggle('won', status === 'won');
+      snd('stopMusic', status === 'won' ? 3 : 2);
+      snd('play', { won: 'win', dead: 'lose', caught: 'caught' }[status] || 'stuck');
       $('#overlay').hidden = false;
     }
 
@@ -590,8 +620,34 @@
       this.pause();
     }
 
+    /** Keep the pause-screen sound controls in step with the sound settings. */
+    setMuted(muted) {
+      const btn = $('#sound-mute');
+      btn.textContent = muted ? 'Sound: off' : 'Sound: on';
+      btn.classList.toggle('off', !!muted);
+      this.notice(muted ? 'Sound off. Press M to turn it back on.' : 'Sound on.');
+    }
+
+    bindSound() {
+      const S = DF.Sound;
+      if (!S) return;
+      const music = $('#vol-music');
+      const sfx = $('#vol-sfx');
+      music.value = Math.round(S.state.music * 100);
+      sfx.value = Math.round(S.state.sfx * 100);
+      const btn = $('#sound-mute');
+      btn.textContent = S.state.muted ? 'Sound: off' : 'Sound: on';
+      btn.classList.toggle('off', S.state.muted);
+      music.addEventListener('input', () => snd('setMusicVolume', music.value / 100));
+      sfx.addEventListener('input', () => snd('setSfxVolume', sfx.value / 100));
+      sfx.addEventListener('change', () => snd('play', 'click')); // a sample at the new level
+      btn.addEventListener('click', () => this.setMuted(snd('toggleMute')));
+    }
+
     pause() {
       this.paused = true;
+      snd('play', 'pause');
+      snd('duck', true);
       this.closePop();
       $('#stage').classList.add('paused');
       $('#pause').hidden = false;
@@ -599,6 +655,8 @@
     }
 
     resume() {
+      if (this.paused) snd('play', 'resume');
+      snd('duck', false);
       this.paused = false;
       $('#stage').classList.remove('paused');
       $('#pause').hidden = true;
@@ -609,6 +667,7 @@
     toggleChronicle(show) {
       const wrap = $('#chronicle-wrap');
       const open = show === undefined ? wrap.hidden : show;
+      if (open !== !wrap.hidden) snd('play', 'click');
       wrap.hidden = !open;
       $('#chronicle-toggle').classList.toggle('on', open);
     }

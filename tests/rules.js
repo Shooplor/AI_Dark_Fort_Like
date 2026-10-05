@@ -140,7 +140,9 @@ test('a healing outcome at full health explains itself instead of showing a raw 
   }
 });
 
-test('every piece of evidence shows up within the 20 rooms you may explore (so the run is winnable)', () => {
+test('with extraRooms 0, every piece of evidence shows up within the 20 rooms you may explore', () => {
+  const keep = DF.CONFIG.quest.extraRooms;
+  DF.CONFIG.quest.extraRooms = 0; // the guarantee only holds when nothing is hidden beyond your limit
   let won = 0, early = 0;
   for (let seed = 1; seed <= 80; seed++) {
     const g = new DF.Game(seed); // the real rules: 20 rooms, evidence on
@@ -155,10 +157,13 @@ test('every piece of evidence shows up within the 20 rooms you may explore (so t
     else if (g.status === 'playing') early++; // this helper found no way on (e.g. a key lying in another room)
     else assert.fail(`seed ${seed} ended as "${g.status}" with ${g.questCount()} of ${g.questTotal} pieces: the evidence should have been found`);
   }
+  DF.CONFIG.quest.extraRooms = keep;
   assert.ok(won >= 50, `most runs should be won by simply exploring (won ${won}, died or got stuck ${early})`);
 });
 
 test('holding all three pieces of evidence wins, even in the 20th room', () => {
+  const keep = DF.CONFIG.quest.extraRooms;
+  DF.CONFIG.quest.extraRooms = 0; // so the last piece is certain to be in this room
   const g = new DF.Game(5);
   g.slots[0] = g.makeItem(DF.QUEST_ITEMS[0]);
   g.slots[1] = g.makeItem(DF.QUEST_ITEMS[1]);
@@ -168,6 +173,7 @@ test('holding all three pieces of evidence wins, even in the 20th room', () => {
   assert.strictEqual(r.outcome.kind, 'quest');
   assert.strictEqual(g.status, 'won');
   assert.ok(r.outcome.text.includes('3 of 3'));
+  DF.CONFIG.quest.extraRooms = keep;
 });
 
 test('evidence cannot be dropped', () => {

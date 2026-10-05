@@ -18,6 +18,7 @@ it also works offline.
 | Make a choice in a room | Click one of the buttons in the right-hand panel, or press 1 / 2 / 3 |
 | Pause / resume | Esc (also closes an open item popover or the chronicle first) |
 | Open / close the chronicle | The Chronicle button under the room text, or the C key |
+| Mute / unmute all sound | M (volume sliders and a Sound button are on the pause screen) |
 | Inspect, use or drop an item | Click it in the inventory strip on the left |
 | Pick an item up from the floor | "Take" button in the right-hand panel |
 
@@ -57,9 +58,9 @@ Add `?seed=1234` to the URL to replay a specific house. The seed is shown under 
 - **Winning:** three pieces of evidence (a flute, a scroll and a camera, for now) are hidden in rooms, marked in the
   inventory by a green outline. Holding all three ends the game with a victory popup. Evidence cannot be dropped;
   if the satchel is full when a piece turns up, something less important is left behind to make room.
-  `CONFIG.quest` in `js/data.js` decides how they are spread: with `extraRooms: 0` every piece is certain to turn up
-  within your 20 new rooms; with `extraRooms: 4` some pieces hide in rooms 21-24, out of reach, so winning is less
-  certain (see `tests/balance.js`).
+  `CONFIG.quest` in `js/data.js` decides how they are spread. Now `extraRooms: 4`: the pieces hide among your first
+  24 new rooms, so some may lie in rooms 21-24, out of reach, and winning is not certain (the test bot wins about
+  half the time; see `tests/balance.js`). With `extraRooms: 0` every piece is certain to turn up within your 20 rooms.
 
 ## Project layout
 
@@ -68,12 +69,14 @@ index.html        page shell (left / centre / right panels on a fixed 1600x900 c
 css/style.css     pixel-exact layout (from the art mockup), theme, figure idle / walking animation
 assets/ui/        the real artwork (see assets/ui/README.md)
 assets/fonts/     bundled fonts (Cinzel, Cormorant Garamond; SIL Open Font License)
+assets/audio/     real sound files, if you add any (see assets/audio/README.md)
 js/rng.js         seeded random numbers
 js/data.js        tuning numbers, room names and text, items, events,
                   choice events (CHOICE_EVENTS)                         <- add content here
 js/dungeon.js     the grid, doors, room generation, reachability        (pure logic, no DOM)
 js/game.js        turns, health, inventory, events                      (pure logic, no DOM)
 js/art.js         where every picture is produced: real art + remaining placeholders
+js/sound.js       sound effects and music, synthesised live (real files can replace any of it)
 js/ui.js          rendering and turn animation (walk -> die -> reveal -> text)
 js/main.js        boot, window scaling, ?seed=
 tools/build.js    packs the game into the single file dist/TheMaskedHouse.html
@@ -82,6 +85,16 @@ tests/simulate.js headless bot that plays thousands of games and checks the gene
 tests/rules.js    quick checks of the exploration counter, backtracking, choices and evidence
 tests/balance.js  how often a bot wins under the real rules (use it to tune the difficulty)
 ```
+
+### Sound
+
+All sound is **synthesised in the browser** (no files): effects for steps, the die, locks, pickups, damage, healing and
+the endings, plus a slow generative baroque-flavoured loop in D minor. As the eye counter nears 20 a heartbeat and an
+uneasy tone fade in. Volumes are on the pause screen (Esc), M mutes, and the settings are remembered. Browsers only
+start sound after the first key press or click.
+
+To use real recordings instead, drop the files in `assets/audio/` and list them in `FILES` at the top of
+`js/sound.js` (see `assets/audio/README.md` for the names). Anything not listed stays synthesised.
 
 ### Swapping in real art
 

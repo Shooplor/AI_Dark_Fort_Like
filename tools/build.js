@@ -14,7 +14,7 @@ const path = require('path');
 
 const root = path.join(__dirname, '..');
 const read = (rel) => fs.readFileSync(path.join(root, rel));
-const MIME = { '.png': 'image/png', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.woff2': 'font/woff2' };
+const MIME = { '.png': 'image/png', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.woff2': 'font/woff2', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.wav': 'audio/wav' };
 const BIG = 900000; // base64 characters; anything larger goes through the blob route
 const BLANK_GIF = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 const safeInScript = (code) => code.replace(/<\/script/gi, '<\\/script'); // so a script cannot end the page early
@@ -58,6 +58,10 @@ for (const rel of scripts) {
 const itemsDir = path.join(root, 'assets', 'items'); // item icons are looked up by name at run time
 if (fs.existsSync(itemsDir)) {
   for (const f of fs.readdirSync(itemsDir)) if (MIME[path.extname(f).toLowerCase()]) scriptWants.add('assets/items/' + f);
+}
+const audioDir = path.join(root, 'assets', 'audio'); // real sound files, if any (listed in js/sound.js)
+if (fs.existsSync(audioDir)) {
+  for (const f of fs.readdirSync(audioDir)) if (MIME[path.extname(f).toLowerCase()]) scriptWants.add('assets/audio/' + f);
 }
 const small = {};
 const big = {};

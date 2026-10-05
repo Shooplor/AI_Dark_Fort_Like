@@ -272,3 +272,10 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 .overlay-card p { margin: 0 0 28px; font-size: 24px; line-height: 1.45; color: var(--text); }
 .overlay-buttons { display: flex; justify-content: center; gap: 16px; }
 .overlay-buttons button { padding: 11px 22px; font-size: 14px; }
+
+/* sound controls on the pause screen */
+.sound-settings { display: flex; align-items: center; justify-content: center; gap: 22px; margin: 0 0 26px; flex-wrap: wrap; }
+.sound-settings label { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--text-dim); }
+.sound-settings input[type=range] { width: 130px; accent-color: var(--gold); cursor: pointer; }
+.sound-settings button { padding: 6px 12px; font-size: 11px; }
+.sound-settings button.off { color: var(--bad); border-color: var(--bad); }

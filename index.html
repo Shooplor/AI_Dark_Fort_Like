@@ -71,6 +71,11 @@
         <div class="overlay-card">
           <h2>Paused</h2>
           <p>The house holds its breath. Nothing stirs until you return.</p>
+          <div class="sound-settings">
+            <label>Music <input id="vol-music" type="range" min="0" max="100" step="1"></label>
+            <label>Effects <input id="vol-sfx" type="range" min="0" max="100" step="1"></label>
+            <button id="sound-mute" type="button" class="quiet" title="Press M to mute or unmute at any time">Sound: on</button>
+          </div>
           <div class="overlay-buttons">
             <button id="pause-resume" type="button">Return to game</button>
             <button id="pause-new" type="button" class="quiet">New game</button>
@@ -97,6 +102,7 @@
   <script src="js/dungeon.js"></script>
   <script src="js/game.js"></script>
   <script src="js/art.js"></script>
+  <script src="js/sound.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/main.js"></script>
 </body>
