@@ -3,7 +3,7 @@
  * All game rules live in game.js / dungeon.js; this file only draws and animates. */
 (function () {
   const DF = (globalThis.DF = globalThis.DF || {});
-  const { Art, CONFIG, SIDE_NAMES, SHAPES } = DF;
+  const { Art, CONFIG } = DF;
 
   const CELL = 80; // a room on the map is 80px square...
   const PITCH = 84; // ...with a 4px gap between rooms
@@ -17,7 +17,6 @@
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   /** Escape text, then turn [[Item Name]] into a highlighted span. */
   const rich = (text) => esc(text).replace(/\[\[(.+?)\]\]/g, '<em class="hl">$1</em>');
-  const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
   /** Call a Voice method; speech problems must never break the game. */
   const vo = (method, ...args) => {
     try {
@@ -567,9 +566,6 @@
     renderRoom(animate) {
       const g = this.game;
       const { cell, eventText, kind, notes, fresh, intro } = this.view;
-      const shape = SHAPES[cell.shape];
-      const doors = cell.n === 1 ? '1 door' : `${cell.n} doors`;
-
       const pending = cell.pending && !cell.pending.resolved ? cell.pending : null; // a decision still to make here
 
       let event = '';
@@ -591,37 +587,15 @@
             .join('')}</div>`
         : '';
 
-      const exits = [];
-      for (let s = 0; s < 4; s++) {
-        const door = g.dungeon.doorAt(cell.x, cell.y, s);
-        const side = `<span class="side">${cap(SIDE_NAMES[s])}</span>`;
-        if (!door) {
-          if (cell.entrance && s === 2) exits.push(`<li class="blocked">${side}<i class="pip"></i>The great doors, barred</li>`);
-          continue;
-        }
-        if (door.state === 'locked') {
-          const kt = DF.keyType(door.keyType);
-          const has = g.heldKeyTypes().includes(door.keyType);
-          exits.push(
-            `<li class="locked">${side}<i class="pip" style="background:${kt.color}"></i>Locked, ${kt.lock} lock${has ? ' (you hold the key)' : ''}</li>`
-          );
-        } else if (door.state === 'blocked') exits.push(`<li class="blocked">${side}<i class="pip"></i>Blocked by rubble</li>`);
-        else exits.push(`<li class="open">${side}<i class="pip"></i>Open doorway</li>`);
-      }
-
       const card = $('#room-card');
       card.classList.toggle('still', !animate);
       card.innerHTML = `
-        <div class="section-label">Current chamber</div>
         <h2>${esc(cell.name)}</h2>
-        <div class="room-kind">${esc(cell.entrance ? 'Entrance hall' : shape.label)} · ${doors}</div>
         <p class="room-desc">${esc(cell.desc)}</p>
         <div class="divider"></div>
         ${event}
         ${notes.length ? `<ul class="room-notes">${notes.map((n) => `<li>${rich(n)}</li>`).join('')}</ul>` : ''}
-        ${floor}
-        <div class="section-label" style="margin-bottom:8px">Exits</div>
-        <ul class="exits">${exits.join('')}</ul>`;
+        ${floor}`;
 
       card.querySelectorAll('[data-choice]').forEach((btn) => btn.addEventListener('click', () => this.choose(+btn.dataset.choice)));
       card.querySelectorAll('[data-take]').forEach((btn) =>

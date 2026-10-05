@@ -213,7 +213,6 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 #die.idle svg { opacity: .4; filter: grayscale(.7); }
 @keyframes tumble { 0% { transform: rotate(0) scale(1); } 25% { transform: rotate(90deg) scale(1.2); } 50% { transform: rotate(180deg) scale(.8); } 75% { transform: rotate(270deg) scale(1.2); } 100% { transform: rotate(360deg) scale(1); } }
 @keyframes land { 0% { transform: scale(1.35) rotate(-14deg); } 60% { transform: scale(.94) rotate(3deg); } 100% { transform: none; } }
-.die-label { font-family: var(--display); font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 3px; }
 #die-text { font-size: 19px; line-height: 1.15; color: var(--text); }
 
 #room-card { flex: 1; min-height: 0; overflow-y: auto; padding-right: 6px; }
@@ -228,8 +227,7 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 #room-card.still > * { animation: none; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
-#room-card h2 { margin: 4px 0 4px; font-family: var(--display); font-weight: 700; font-size: 27px; line-height: 1.1; letter-spacing: .03em; color: var(--gold-light); }
-.room-kind { font-family: var(--display); font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 12px; }
+#room-card h2 { margin: 2px 0 12px; font-family: var(--display); font-weight: 700; font-size: 27px; line-height: 1.1; letter-spacing: .03em; color: var(--gold-light); }
 .room-desc { font-size: 21px; line-height: 1.4; margin: 0 0 14px; color: var(--text); }
 .divider { height: 1px; margin: 4px 0 14px; background: linear-gradient(90deg, var(--gold-dim), transparent); position: relative; }
 .divider::after { content: '◆'; position: absolute; left: 0; top: -9px; font-size: 11px; color: var(--gold); background: #0b0609; padding-right: 8px; }
@@ -257,13 +255,6 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 .floor-row span { flex: 1; }
 .floor-row button { padding: 5px 12px; font-size: 11px; }
 
-.exits { margin: 0; padding: 0; list-style: none; }
-.exits li { display: flex; align-items: center; gap: 10px; font-size: 18px; margin-bottom: 4px; color: var(--text); }
-.exits .side { width: 60px; font-family: var(--display); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--gold-dim); }
-.exits .pip { width: 11px; height: 11px; border-radius: 50%; flex: none; border: 1px solid #000; }
-.exits .open .pip { background: var(--good); }
-.exits .blocked .pip { background: #6b5a52; }
-.exits .blocked { color: var(--text-dim); }
 
 #notice { flex: none; min-height: 50px; padding-top: 8px; font-size: 19px; font-style: italic; line-height: 1.25; color: var(--text-dim); opacity: 0; transition: opacity .3s; }
 #notice.show { opacity: 1; }

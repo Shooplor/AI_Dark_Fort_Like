@@ -220,7 +220,6 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 #die.idle svg { opacity: .4; filter: grayscale(.7); }
 @keyframes tumble { 0% { transform: rotate(0) scale(1); } 25% { transform: rotate(90deg) scale(1.2); } 50% { transform: rotate(180deg) scale(.8); } 75% { transform: rotate(270deg) scale(1.2); } 100% { transform: rotate(360deg) scale(1); } }
 @keyframes land { 0% { transform: scale(1.35) rotate(-14deg); } 60% { transform: scale(.94) rotate(3deg); } 100% { transform: none; } }
-.die-label { font-family: var(--display); font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 3px; }
 #die-text { font-size: 19px; line-height: 1.15; color: var(--text); }
 
 #room-card { flex: 1; min-height: 0; overflow-y: auto; padding-right: 6px; }
@@ -235,8 +234,7 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 #room-card.still > * { animation: none; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
-#room-card h2 { margin: 4px 0 4px; font-family: var(--display); font-weight: 700; font-size: 27px; line-height: 1.1; letter-spacing: .03em; color: var(--gold-light); }
-.room-kind { font-family: var(--display); font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 12px; }
+#room-card h2 { margin: 2px 0 12px; font-family: var(--display); font-weight: 700; font-size: 27px; line-height: 1.1; letter-spacing: .03em; color: var(--gold-light); }
 .room-desc { font-size: 21px; line-height: 1.4; margin: 0 0 14px; color: var(--text); }
 .divider { height: 1px; margin: 4px 0 14px; background: linear-gradient(90deg, var(--gold-dim), transparent); position: relative; }
 .divider::after { content: '◆'; position: absolute; left: 0; top: -9px; font-size: 11px; color: var(--gold); background: #0b0609; padding-right: 8px; }
@@ -264,13 +262,6 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 .floor-row span { flex: 1; }
 .floor-row button { padding: 5px 12px; font-size: 11px; }
 
-.exits { margin: 0; padding: 0; list-style: none; }
-.exits li { display: flex; align-items: center; gap: 10px; font-size: 18px; margin-bottom: 4px; color: var(--text); }
-.exits .side { width: 60px; font-family: var(--display); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--gold-dim); }
-.exits .pip { width: 11px; height: 11px; border-radius: 50%; flex: none; border: 1px solid #000; }
-.exits .open .pip { background: var(--good); }
-.exits .blocked .pip { background: #6b5a52; }
-.exits .blocked { color: var(--text-dim); }
 
 #notice { flex: none; min-height: 50px; padding-top: 8px; font-size: 19px; font-style: italic; line-height: 1.25; color: var(--text-dim); opacity: 0; transition: opacity .3s; }
 #notice.show { opacity: 1; }
@@ -409,7 +400,6 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
         <div id="die-row">
           <div id="die" aria-label="Fate die"></div>
           <div id="die-info">
-            <div class="die-label">Fate die</div>
             <div id="die-text">Step through a door to cast it.</div>
           </div>
         </div>
@@ -2593,7 +2583,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
  * All game rules live in game.js / dungeon.js; this file only draws and animates. */
 (function () {
   const DF = (globalThis.DF = globalThis.DF || {});
-  const { Art, CONFIG, SIDE_NAMES, SHAPES } = DF;
+  const { Art, CONFIG } = DF;
 
   const CELL = 80; // a room on the map is 80px square...
   const PITCH = 84; // ...with a 4px gap between rooms
@@ -2607,7 +2597,6 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   /** Escape text, then turn [[Item Name]] into a highlighted span. */
   const rich = (text) => esc(text).replace(/\[\[(.+?)\]\]/g, '<em class="hl">$1</em>');
-  const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
   /** Call a Voice method; speech problems must never break the game. */
   const vo = (method, ...args) => {
     try {
@@ -3157,9 +3146,6 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
     renderRoom(animate) {
       const g = this.game;
       const { cell, eventText, kind, notes, fresh, intro } = this.view;
-      const shape = SHAPES[cell.shape];
-      const doors = cell.n === 1 ? '1 door' : `${cell.n} doors`;
-
       const pending = cell.pending && !cell.pending.resolved ? cell.pending : null; // a decision still to make here
 
       let event = '';
@@ -3181,37 +3167,15 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
             .join('')}</div>`
         : '';
 
-      const exits = [];
-      for (let s = 0; s < 4; s++) {
-        const door = g.dungeon.doorAt(cell.x, cell.y, s);
-        const side = `<span class="side">${cap(SIDE_NAMES[s])}</span>`;
-        if (!door) {
-          if (cell.entrance && s === 2) exits.push(`<li class="blocked">${side}<i class="pip"></i>The great doors, barred</li>`);
-          continue;
-        }
-        if (door.state === 'locked') {
-          const kt = DF.keyType(door.keyType);
-          const has = g.heldKeyTypes().includes(door.keyType);
-          exits.push(
-            `<li class="locked">${side}<i class="pip" style="background:${kt.color}"></i>Locked, ${kt.lock} lock${has ? ' (you hold the key)' : ''}</li>`
-          );
-        } else if (door.state === 'blocked') exits.push(`<li class="blocked">${side}<i class="pip"></i>Blocked by rubble</li>`);
-        else exits.push(`<li class="open">${side}<i class="pip"></i>Open doorway</li>`);
-      }
-
       const card = $('#room-card');
       card.classList.toggle('still', !animate);
       card.innerHTML = `
-        <div class="section-label">Current chamber</div>
         <h2>${esc(cell.name)}</h2>
-        <div class="room-kind">${esc(cell.entrance ? 'Entrance hall' : shape.label)} · ${doors}</div>
         <p class="room-desc">${esc(cell.desc)}</p>
         <div class="divider"></div>
         ${event}
         ${notes.length ? `<ul class="room-notes">${notes.map((n) => `<li>${rich(n)}</li>`).join('')}</ul>` : ''}
-        ${floor}
-        <div class="section-label" style="margin-bottom:8px">Exits</div>
-        <ul class="exits">${exits.join('')}</ul>`;
+        ${floor}`;
 
       card.querySelectorAll('[data-choice]').forEach((btn) => btn.addEventListener('click', () => this.choose(+btn.dataset.choice)));
       card.querySelectorAll('[data-take]').forEach((btn) =>
