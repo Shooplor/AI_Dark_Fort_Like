@@ -4,72 +4,60 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>The Masked House</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <div id="viewport">
-    <!-- The whole game lives on a fixed 1600x900 (16:9) canvas that is scaled to fit the window. -->
+    <!-- The whole game lives on a fixed 1600x900 (16:9) canvas that is scaled to fit the window.
+         Everything is placed at exact pixel positions on that canvas (see css/style.css). -->
     <main id="stage">
 
-      <!-- LEFT: the masked figure, health, inventory -->
-      <section id="left">
-        <div id="hud">
-          <div class="stat" id="stat-health">
-            <div class="stat-icon" id="hp-icon"></div>
-            <div class="stat-body">
-              <div class="stat-label">Health</div>
-              <div class="stat-value"><span id="hp-now">10</span><span class="sep">/</span><span id="hp-max">10</span></div>
-            </div>
-            <div class="bar"><i id="hp-bar"></i></div>
-          </div>
+      <!-- LEFT: the masked figure, counters, inventory -->
+      <div id="figure"></div>
+      <div id="flash"></div>
+
+      <div id="hud">
+        <div id="stat-health">
+          <img id="hp-icon" src="assets/ui/hp-counter.png" alt="Health" draggable="false">
+          <div class="nums" id="hp-nums"><span class="big" id="hp-now">10</span><span class="dash">/</span><span class="small" id="hp-max">10</span></div>
         </div>
-
-        <div id="portrait">
-          <div id="portrait-art"></div>
-          <div class="flash" id="portrait-flash"></div>
-          <div id="inventory" aria-label="Inventory"></div>
-          <div id="item-pop" hidden></div>
+        <div id="stat-turns" title="Turns before you are discovered">
+          <img id="eye-icon" src="assets/ui/eye-counter.png" alt="Turns" draggable="false">
+          <div class="nums" id="eye-nums"><span class="big" id="turn-now">1</span><span class="dash">/</span><span class="small" id="turn-max">20</span></div>
         </div>
-      </section>
+      </div>
 
-      <!-- CENTRE: the map -->
-      <section id="center">
-        <header id="center-head">
-          <h1>The Masked House</h1>
-          <div class="head-right">
-            <span class="turn">Turn <b id="turn">0</b></span>
-            <button id="new-game" type="button">New game</button>
-          </div>
-        </header>
+      <div id="inventory" aria-label="Inventory"></div>
+      <div id="item-pop" hidden></div>
 
-        <div id="board-wrap">
-          <div id="board">
-            <div id="cells"></div>
-            <div id="doors"></div>
-            <div id="marker"></div>
-          </div>
+      <!-- CENTRE: the map, inside the carved frame -->
+      <div id="board-wrap">
+        <div id="board">
+          <div id="cells"></div>
+          <div id="doors"></div>
+          <div id="marker"></div>
         </div>
+      </div>
+      <img id="frame" src="assets/ui/center-pillars.png" alt="" draggable="false">
 
-        <footer id="center-foot">
+      <!-- RIGHT: the fate die, the current room, the chronicle -->
+      <section id="right">
+        <div id="die-row">
           <div id="die" aria-label="Fate die"></div>
           <div id="die-info">
             <div class="die-label">Fate die</div>
             <div id="die-text">Step through a door to cast it.</div>
           </div>
-          <div id="notice" role="status"></div>
-          <div id="seed"></div>
-        </footer>
-      </section>
-
-      <!-- RIGHT: what you find in the current room -->
-      <section id="right">
+        </div>
         <div id="room-card"></div>
+        <div id="notice" role="status"></div>
         <div id="chronicle-wrap">
           <div class="section-label">Chronicle</div>
           <ol id="chronicle"></ol>
+        </div>
+        <div id="right-foot">
+          <span id="seed"></span>
+          <button id="new-game" type="button">New game</button>
         </div>
       </section>
 

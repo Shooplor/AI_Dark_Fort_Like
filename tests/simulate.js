@@ -111,7 +111,7 @@ function housekeeping(g) {
 }
 
 function playBot(seed, maxSteps = 600) {
-  const g = new DF.Game(seed);
+  const g = new DF.Game(seed, { maxTurns: Infinity }); // the generator is tested without the turn limit
   let steps = 0;
   const stats = { rooms: 1, locks: 0, unlocked: 0, blocked: 0, shapes: {} };
   while (g.status === 'playing' && steps++ < maxSteps) {
@@ -186,7 +186,7 @@ for (let seed = 1; seed <= games; seed++) {
   totals.maxRooms = Math.max(totals.maxRooms, stats.rooms);
   for (const [k, v] of Object.entries(stats.shapes)) totals.shapes[k] = (totals.shapes[k] || 0) + v;
 }
-const cells = DF.CONFIG.cols * DF.CONFIG.rows;
+const cells = DF.CONFIG.layout.join('').split('#').length - 1;
 console.log(`${games} games in ${Date.now() - t0}ms — all invariants held.`);
 console.log(`ended: ${totals.dead} died, ${totals.stuck} ran out of rooms, ${totals.playing} hit the step cap`);
 console.log(`avg rooms explored: ${(totals.rooms / games).toFixed(1)} of ${cells} (min ${totals.minRooms}, max ${totals.maxRooms})`);

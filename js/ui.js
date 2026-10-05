@@ -5,7 +5,10 @@
   const DF = (globalThis.DF = globalThis.DF || {});
   const { Art, CONFIG, SIDE_NAMES, SHAPES } = DF;
 
-  const CELL = 80;
+  const CELL = 80; // a room on the map is 80px square...
+  const PITCH = 84; // ...with a 4px gap between rooms
+  // top-left corner of each of the six inventory slots (127px images), taken from the art mockup
+  const SLOT_POS = [[10, 650], [142, 650], [273, 650], [28, 764], [159, 764], [290, 764]];
   const MOVE_MS = 650; // keep in sync with the #marker transition in style.css
   const DIE_MS = 850;
 
@@ -33,8 +36,7 @@
       this.doorEls = new Map();
 
       document.body.insertAdjacentHTML('afterbegin', Art.defs);
-      $('#portrait-art').innerHTML = Art.portrait();
-      $('#hp-icon').innerHTML = Art.icon('heart');
+      $('#figure').innerHTML = Art.portrait();
       $('#marker').innerHTML = `<div class="token">${Art.playerToken()}</div>`;
       this.buildBoard();
       this.bindInput();
@@ -45,16 +47,19 @@
     buildBoard() {
       const cells = $('#cells');
       cells.innerHTML = '';
-      this.cellEls = [];
+      this.cellEls = new Array(CONFIG.cols * CONFIG.rows).fill(null); // null where the map has no room
       for (let y = 0; y < CONFIG.rows; y++) {
         for (let x = 0; x < CONFIG.cols; x++) {
+          if (CONFIG.layout[y][x] !== '#') continue;
           const el = document.createElement('div');
           el.className = 'cell';
           el.dataset.x = x;
           el.dataset.y = y;
+          el.style.left = x * PITCH + 'px';
+          el.style.top = y * PITCH + 'px';
           el.innerHTML = Art.fogTile();
           cells.appendChild(el);
-          this.cellEls.push(el);
+          this.cellEls[y * CONFIG.cols + x] = el;
         }
       }
     }
@@ -223,7 +228,7 @@
     placeMarker(pos, animate) {
       const m = $('#marker');
       if (!animate) m.style.transition = 'none';
-      m.style.transform = `translate(${pos.x * CELL}px, ${pos.y * CELL}px)`;
+      m.style.transform = `translate(${pos.x * PITCH}px, ${pos.y * PITCH}px)`;
       if (!animate) {
         void m.offsetWidth; // flush so the next move animates again
         m.style.transition = '';
@@ -249,12 +254,16 @@
         let el = this.doorEls.get(door.id);
         if (!el) {
           el = document.createElement('div');
+          // the doorway sits in the middle of the 4px gap between two rooms
           const half = CELL / 2;
+          const gap = (PITCH - CELL) / 2;
+          const x0 = door.x * PITCH;
+          const y0 = door.y * PITCH;
           const pos = [
-            [door.x * CELL + half, door.y * CELL],
-            [(door.x + 1) * CELL, door.y * CELL + half],
-            [door.x * CELL + half, (door.y + 1) * CELL],
-            [door.x * CELL, door.y * CELL + half],
+            [x0 + half, y0 - gap],
+            [x0 + CELL + gap, y0 + half],
+            [x0 + half, y0 + CELL + gap],
+            [x0 - gap, y0 + half],
           ][door.side];
           el.style.left = pos[0] + 'px';
           el.style.top = pos[1] + 'px';
@@ -276,12 +285,12 @@
 
     /** Mark the room the player is standing in. */
     setHere() {
-      this.cellEls.forEach((el) => el.classList.remove('here'));
+      this.cellEls.forEach((el) => el && el.classList.remove('here'));
       this.cellEl(this.game.player.x, this.game.player.y).classList.add('here');
     }
 
     clearHints() {
-      this.cellEls.forEach((el) => el.classList.remove('go'));
+      this.cellEls.forEach((el) => el && el.classList.remove('go'));
     }
 
     /** Highlight the neighbouring rooms the player can step into right now. */
@@ -298,7 +307,7 @@
     }
 
     setWalking(on) {
-      $('#portrait').classList.toggle('walking', on);
+      $('#figure').classList.toggle('walking', on);
     }
 
     /* ---------------------------------------------------------------- left panel */
@@ -307,19 +316,17 @@
       const g = this.game;
       $('#hp-now').textContent = g.hp;
       $('#hp-max').textContent = g.maxHp;
-      $('#hp-bar').style.width = (100 * g.hp) / g.maxHp + '%';
       if (!delta) return;
-      const stat = $('#stat-health');
-      const cls = delta < 0 ? 'dmg' : 'heal';
-      stat.classList.remove('dmg', 'heal');
-      void stat.offsetWidth;
-      stat.classList.add(cls);
-      const flash = $('#portrait-flash');
-      flash.className = 'flash ' + (delta < 0 ? 'hurt' : 'heal');
+      const nums = $('#hp-nums');
+      nums.classList.remove('dmg', 'heal');
+      void nums.offsetWidth;
+      nums.classList.add(delta < 0 ? 'dmg' : 'heal');
+      const flash = $('#flash');
+      flash.className = delta < 0 ? 'hurt' : 'heal';
       if (delta < 0) {
-        const p = $('#portrait');
-        p.classList.add('hurt');
-        setTimeout(() => p.classList.remove('hurt'), 500);
+        const fig = $('#figure');
+        fig.classList.add('hurt');
+        setTimeout(() => fig.classList.remove('hurt'), 500);
       }
     }
 
@@ -332,7 +339,9 @@
         b.type = 'button';
         b.className = 'slot' + (item ? ' has' : '');
         b.dataset.slot = i;
-        b.innerHTML = `<span class="num">${i + 1}</span>` + (item ? Art.icon(item.icon, item.color) : '');
+        b.style.left = SLOT_POS[i][0] + 'px';
+        b.style.top = SLOT_POS[i][1] + 'px';
+        b.innerHTML = item ? Art.icon(item.icon, item.color) : '';
         if (item) {
           uids.add(item.uid);
           b.title = item.name;
@@ -459,7 +468,8 @@
     }
 
     renderTurn() {
-      $('#turn').textContent = this.game.turn;
+      $('#turn-now').textContent = this.game.turnNumber;
+      $('#turn-max').textContent = this.game.maxTurns;
     }
 
     notice(msg, bad) {
@@ -476,6 +486,9 @@
       if (status === 'dead') {
         title.textContent = 'You have fallen';
         text.textContent = 'The house keeps what it takes. Your golden mask is hung upon the wall, beside all the others.';
+      } else if (status === 'caught') {
+        title.textContent = 'You have been discovered';
+        text.textContent = 'The music stops. One by one, every mask in the room turns to look at you.';
       } else {
         title.textContent = 'Nowhere left to go';
         text.textContent = 'Every remaining door is sealed, barred or buried. The house has shown you all it means to, tonight.';

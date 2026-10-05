@@ -7,14 +7,30 @@
 
   /* ---------- Tuning ---------- */
   DF.CONFIG = {
-    cols: 7,
-    rows: 8,
+    // The map. '#' is a room, '.' is no room (the corners cut off by the oval frame): 56 rooms in all.
+    layout: [
+      '.####.',
+      '######',
+      '######',
+      '######',
+      '######',
+      '######',
+      '######',
+      '######',
+      '######',
+      '.####.',
+    ],
+    start: { x: 2, y: 9 }, // the entrance foyer: bottom row, second room from the left
+    maxTurns: 20, // moves before the player is discovered
     maxHp: 10,
-    slots: 5,
+    slots: 6,
     potionHeal: 4,
     doorOdds: { locked: 0.14, blocked: 0.1 }, // everything else is an open door
     keyDropChance: 0.3, // per newly explored room, while a key is still "owed"
   };
+
+  DF.CONFIG.rows = DF.CONFIG.layout.length;
+  DF.CONFIG.cols = DF.CONFIG.layout[0].length;
 
   /* ---------- Geometry ---------- */
   // Sides are indexed clockwise from the top: 0 north, 1 east, 2 south, 3 west.

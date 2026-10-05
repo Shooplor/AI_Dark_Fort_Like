@@ -17,17 +17,20 @@
   const { DIRS, opposite, CONFIG } = DF;
 
   class Dungeon {
-    constructor(cols, rows, rng) {
+    /** `layout` is an array of strings, one per row: '#' = room, '.' = no room (outside the map). */
+    constructor(cols, rows, rng, layout) {
       this.cols = cols;
       this.rows = rows;
       this.rng = rng;
+      this.grid = new Array(cols * rows).fill(null); // by position; null where there is no room
       this.doors = new Map();
       this.owedKeys = []; // { keyType, doorId, placed }
       this.nextDoorId = 1;
       this.cells = [];
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
-          this.cells.push({
+          if (layout && layout[y][x] !== '#') continue;
+          const cell = {
             x,
             y,
             explored: false,
@@ -40,17 +43,17 @@
             entrance: false,
             floor: [], // items lying in the room
             outcome: null, // what happened when the room was first explored
-          });
+          };
+          this.cells.push(cell);
+          this.grid[y * cols + x] = cell;
         }
       }
     }
 
     /* ---------- lookups ---------- */
-    inBounds(x, y) {
-      return x >= 0 && y >= 0 && x < this.cols && y < this.rows;
-    }
+    /** The room at (x, y), or null if that is off the map or in a cut-off corner. */
     cellAt(x, y) {
-      return this.inBounds(x, y) ? this.cells[y * this.cols + x] : null;
+      return x >= 0 && y >= 0 && x < this.cols && y < this.rows ? this.grid[y * this.cols + x] : null;
     }
     neighbor(x, y, side) {
       return this.cellAt(x + DIRS[side].dx, y + DIRS[side].dy);

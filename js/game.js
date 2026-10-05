@@ -12,22 +12,29 @@
   DF.fill = fill;
 
   class Game {
-    constructor(seed) {
+    /** `opts.maxTurns` overrides the turn limit (the headless tests pass Infinity). */
+    constructor(seed, opts = {}) {
       this.seed = seed >>> 0;
       this.rng = DF.makeRng(this.seed);
       this.fluff = DF.makeRng(this.seed ^ 0x9e3779b9); // cosmetic text picks; never affects the layout
-      this.dungeon = new DF.Dungeon(CONFIG.cols, CONFIG.rows, this.rng);
+      this.dungeon = new DF.Dungeon(CONFIG.cols, CONFIG.rows, this.rng, CONFIG.layout);
 
       this.maxHp = CONFIG.maxHp;
       this.hp = CONFIG.maxHp;
       this.slots = new Array(CONFIG.slots).fill(null);
-      this.turn = 0;
-      this.status = 'playing'; // playing | dead | stuck
+      this.turn = 0; // moves made so far
+      this.maxTurns = opts.maxTurns === undefined ? CONFIG.maxTurns : opts.maxTurns;
+      this.status = 'playing'; // playing | dead | caught (out of turns) | stuck
       this.log = []; // chronicle entries { turn, name, summary }
       this.nextUid = 1;
 
-      this.player = { x: Math.floor(CONFIG.cols / 2), y: CONFIG.rows - 1 };
+      this.player = { x: CONFIG.start.x, y: CONFIG.start.y };
       this.dungeon.buildStart(this.player.x, this.player.y);
+    }
+
+    /** The turn number shown on the eye counter: the turn you are about to take (1 at the start). */
+    get turnNumber() {
+      return Math.min(this.turn + 1, this.maxTurns);
     }
 
     get cell() {
@@ -102,6 +109,7 @@
       }
 
       if (this.hp <= 0) this.status = 'dead';
+      else if (this.turn >= this.maxTurns) this.status = 'caught';
       else if (d.analyze(cell.x, cell.y, this.heldKeyTypes()).frontier === 0) this.status = 'stuck';
       result.status = this.status;
       return result;
