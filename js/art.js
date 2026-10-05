@@ -253,5 +253,9 @@
   Art.walkFrames = () =>
     [asset('assets/ui/walk-1.png'), asset('assets/ui/walk-2.png'), asset('assets/ui/walk-3.png')]
       .map((src) => `<img class="anim-frame" src="${src}" alt="" draggable="false">`).join('');
+  /** The four healing frames (assets/ui/heal-1..4.png), played once when health is gained. Drawn at normal size (not 2x). */
+  Art.healFrames = () =>
+    [asset('assets/ui/heal-1.png'), asset('assets/ui/heal-2.png'), asset('assets/ui/heal-3.png'), asset('assets/ui/heal-4.png')]
+      .map((src) => `<img class="anim-frame" src="${src}" alt="" draggable="false">`).join('');
   Art.portrait = () => `<img class="figure-img" src="${asset('assets/ui/character.png')}" alt="" draggable="false">`;
 })();

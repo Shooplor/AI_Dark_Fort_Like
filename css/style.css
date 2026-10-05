@@ -84,7 +84,7 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 /* Hit: five frames (assets/ui/hurt-1..5.png, drawn at normal size) replace the figure for ~0.45 s (11 frames a second).
    The frames were drawn on a canvas whose top-left sits 40px right and 30px below the figure's, so the first frame lines up
    exactly with the normal picture. */
-#figure.hurt .figure-img { visibility: hidden; }
+#figure.hurt .figure-img, #figure.healing .figure-img { visibility: hidden; }
 /* Walking: three frames (assets/ui/walk-1..3.png, same canvas as the hit frames) looped at 8 a second while the figure walks. */
 #figure.walking .figure-img { visibility: hidden; }
 .anim-frames { position: absolute; left: -5px; top: 99px; width: 439px; height: 824px; z-index: 1; pointer-events: none; }

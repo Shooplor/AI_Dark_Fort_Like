@@ -63,6 +63,7 @@
       $('#figure').innerHTML = Art.portrait();
       $('#hurt-frames').innerHTML = Art.hurtFrames();
       $('#walk-frames').innerHTML = Art.walkFrames();
+      $('#heal-frames').innerHTML = Art.healFrames();
       $('#marker').innerHTML = `<div class="token">${Art.playerToken()}</div>`;
       this.buildBoard();
       this.bindInput();
@@ -457,7 +458,7 @@
       heart.classList.remove('pulse-hurt', 'pulse-heal');
       void heart.offsetWidth;
       heart.classList.add(delta < 0 ? 'pulse-hurt' : 'pulse-heal');
-      if (delta < 0) this.playHurt();
+      this.playFrames(delta < 0 ? 'hurt' : 'heal');
     }
 
     /** A number that floats up from the figure's head: red "-2" when hurt, green "+3" when healed. */
@@ -469,28 +470,31 @@
       $('#floaters').appendChild(el);
     }
 
-    /** The five hit frames, one after another at 11 per second, then back to the normal picture. */
-    playHurt() {
-      const frames = $('#hurt-frames').children;
+    /** The hit (5 frames) or healing (4 frames) animation: one frame after another at 11 a second, then back to the normal picture. */
+    playFrames(kind) {
+      const frames = $(`#${kind}-frames`).children;
       const fig = $('#figure');
+      const cls = kind === 'hurt' ? 'hurt' : 'healing';
       this.setWalking(false);
-      clearInterval(this.hurtTimer);
+      this.stopFrames();
       let i = 0;
       const show = () => {
         for (let k = 0; k < frames.length; k++) frames[k].classList.toggle('on', k === i);
       };
-      fig.classList.add('hurt');
+      fig.classList.add(cls);
       show();
-      this.hurtTimer = setInterval(() => {
+      this.frameTimer = setInterval(() => {
         i++;
-        if (i >= frames.length) {
-          clearInterval(this.hurtTimer);
-          for (const f of frames) f.classList.remove('on');
-          fig.classList.remove('hurt');
-          return;
-        }
-        show();
+        if (i >= frames.length) this.stopFrames();
+        else show();
       }, 1000 / 11);
+    }
+
+    /** Cut any hit / healing animation short. */
+    stopFrames() {
+      clearInterval(this.frameTimer);
+      for (const box of ['#hurt-frames', '#heal-frames']) for (const f of $(box).children) f.classList.remove('on');
+      $('#figure').classList.remove('hurt', 'healing');
     }
 
     renderInventory() {
