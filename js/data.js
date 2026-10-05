@@ -250,7 +250,7 @@
   /* ---------- Choice events ---------- */
   // A room with a decision: the player reads `intro`, then picks one of the `choices` (buttons in the right-hand
   // panel). Each choice rolls one of its `outcomes` by weight, so no choice is a sure thing. Choosing is free
-  // (it costs no turn), and the player may also just walk away and come back later.
+  // (it costs no turn). The player cannot leave the room until a choice has been made.
   //
   // An outcome is { weight, text } plus at most one effect:
   //   item: 'potion' | 'curio' (random curio) | a curio id   -> the item is found (or left on the floor if the pack is full)
@@ -414,5 +414,9 @@
     ],
     locked: 'The door is locked, with a {lock} lock. You need the {key}.',
     unlocked: 'The {key} turns. The lock gives way, and the key crumbles to dust.',
+    choice: [
+      'Something here demands a decision. You cannot leave until you have made it.',
+      'You hesitate at the door, but the choice before you will not wait. Decide first.',
+    ],
   };
 })();

@@ -287,6 +287,10 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 .sound-settings button { padding: 6px 12px; font-size: 11px; }
 .sound-settings button.off { color: var(--bad); border-color: var(--bad); }
 
+/* the buttons pulse when the player tries to leave before choosing */
+.choices.attention button.choice { animation: attention .7s ease-out; }
+@keyframes attention { 0% { border-color: var(--gold-light); box-shadow: 0 0 0 0 rgba(244, 221, 140, .8); transform: translateX(0); } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); box-shadow: 0 0 18px 4px rgba(244, 221, 140, .6); } 60% { transform: translateX(-3px); } 100% { box-shadow: 0 0 0 0 rgba(244, 221, 140, 0); transform: none; } }
+
 </style>
 <script>
 (function () {
@@ -698,7 +702,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
   /* ---------- Choice events ---------- */
   // A room with a decision: the player reads `intro`, then picks one of the `choices` (buttons in the right-hand
   // panel). Each choice rolls one of its `outcomes` by weight, so no choice is a sure thing. Choosing is free
-  // (it costs no turn), and the player may also just walk away and come back later.
+  // (it costs no turn). The player cannot leave the room until a choice has been made.
   //
   // An outcome is { weight, text } plus at most one effect:
   //   item: 'potion' | 'curio' (random curio) | a curio id   -> the item is found (or left on the floor if the pack is full)
@@ -862,6 +866,10 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
     ],
     locked: 'The door is locked, with a {lock} lock. You need the {key}.',
     unlocked: 'The {key} turns. The lock gives way, and the key crumbles to dust.',
+    choice: [
+      'Something here demands a decision. You cannot leave until you have made it.',
+      'You hesitate at the door, but the choice before you will not wait. Decide first.',
+    ],
   };
 })();
 
@@ -1229,6 +1237,9 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 
     beginMove(side) {
       if (this.status !== 'playing') return { ok: false, reason: 'over', msg: '' };
+      // A room with an undecided choice holds the player until a button is pressed. This comes before the
+      // door checks, so a key is never spent on a move that is refused.
+      if (this.pendingChoice) return { ok: false, reason: 'choice', msg: this.fluff.pick(DF.MOVE_TEXT.choice) };
       const { x, y } = this.player;
       const d = this.dungeon;
       const door = d.doorAt(x, y, side);
@@ -2450,6 +2461,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
         this.notice(res.msg, true);
         snd('play', res.reason === 'locked' ? 'locked' : 'bump');
         this.nudge(side);
+        if (res.reason === 'choice') this.flashChoices();
         return;
       }
 
@@ -2515,6 +2527,15 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
         await sleep(1400); // let the last room's text be read before the end screen
         this.showEnd(r.status);
       }
+    }
+
+    /** Make the choice buttons pulse, to say "this first". */
+    flashChoices() {
+      const box = document.querySelector('#room-card .choices');
+      if (!box) return;
+      box.classList.remove('attention');
+      void box.offsetWidth;
+      box.classList.add('attention');
     }
 
     /** Press a choice button in the current room (the 1st, 2nd, ... option). */
@@ -2640,7 +2661,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
     /** Highlight the neighbouring rooms the player can step into right now. */
     refreshHints() {
       this.clearHints();
-      if (this.game.status !== 'playing') return;
+      if (this.game.status !== 'playing' || this.game.pendingChoice) return; // a pending choice holds you here
       const { x, y } = this.game.player;
       for (let s = 0; s < 4; s++) {
         const st = this.game.exitStatus(s);

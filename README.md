@@ -48,7 +48,7 @@ Add `?seed=1234` to the URL to replay a specific house. The seed is shown under 
   health), a restorative fountain, or (about 3 rooms in 10) **a choice**.
 - **Choices:** the room describes something (a cupboard and a chest, a mirror, a bell-rope...) and offers two or
   three buttons. Each button rolls a good, neutral or bad outcome (an item, nothing, or damage), so nothing is
-  a sure thing. Choosing is free (it costs no turn). You can walk away and the choice waits for you.
+  a sure thing. Choosing is free (it costs no turn), but you cannot leave the room until you have chosen.
 - **Health** starts at 10. Reaching 0 ends the run. **Inventory** has 6 slots; a full satchel leaves
   finds on the floor.
 - The generator works to keep a way forward open: it adds doors when you would be boxed in, rubble can

@@ -14,8 +14,13 @@ const test = (name, fn) => {
   console.log('ok:', name);
 };
 
-/** Move one step through an open door; fails the test if the move is refused. */
+/** Move one step through an open door; fails the test if the move is refused. Like a player, it first has to decide
+ *  any choice waiting in the room. Returns null if the run ended while doing so (a choice can be fatal). */
 const step = (g, side) => {
+  if (g.pendingChoice) {
+    g.choose(0);
+    if (g.status !== 'playing') return null;
+  }
   const r = g.beginMove(side);
   assert.ok(r.ok, 'move refused: ' + r.msg);
   return g.arrive();
@@ -40,7 +45,10 @@ function exploreNew(g) {
         const sides = [s];
         for (let c = cell; prev.get(c); c = prev.get(c).from) sides.unshift(prev.get(c).side);
         let res;
-        for (const side of sides) res = step(g, side);
+        for (const side of sides) {
+          res = step(g, side);
+          if (!res) return null;
+        }
         return res;
       }
       if (!prev.has(nb)) {
@@ -109,6 +117,34 @@ test('you are discovered exactly when the last point is spent', () => {
     }
   }
   assert.ok(verified >= 3, 'verified on at least 3 seeds');
+});
+
+test('a room with an undecided choice holds the player until it is decided', () => {
+  for (let seed = 1; seed <= 400; seed++) {
+    const g = new DF.Game(seed, { maxExplorations: Infinity });
+    const r = step(g, 0);
+    if (!r.cell.pending) continue;
+    const here = { x: g.player.x, y: g.player.y, turn: g.turn, explored: g.explored };
+    for (let side = 0; side < 4; side++) {
+      const refused = g.beginMove(side);
+      assert.strictEqual(refused.ok, false, 'a move is refused while the choice is open');
+      assert.strictEqual(refused.reason, 'choice');
+      assert.ok(refused.msg.length > 0, 'and the player is told why');
+    }
+    assert.deepStrictEqual({ x: g.player.x, y: g.player.y, turn: g.turn, explored: g.explored }, here, 'nothing moved or was spent');
+    // a refused move must not spend a key either: hold a key, put a locked door in the way
+    const door = g.dungeon.doorAt(g.player.x, g.player.y, 2); // the way back, always a door
+    door.state = 'locked';
+    door.keyType = 'brass';
+    g.slots[0] = g.makeItem(DF.keyItemDef('brass'));
+    assert.strictEqual(g.beginMove(2).reason, 'choice');
+    assert.ok(g.slots[0], 'the key was not used up by a refused move');
+    assert.strictEqual(door.state, 'locked');
+    g.choose(0);
+    assert.strictEqual(g.beginMove(2).ok, true, 'once the choice is made the way is open (the key now opens the door)');
+    return;
+  }
+  assert.fail('no seed with a choice in the first room');
 });
 
 test('a choice costs no exploration point and no move', () => {

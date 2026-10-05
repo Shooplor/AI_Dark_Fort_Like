@@ -188,6 +188,7 @@
         this.notice(res.msg, true);
         snd('play', res.reason === 'locked' ? 'locked' : 'bump');
         this.nudge(side);
+        if (res.reason === 'choice') this.flashChoices();
         return;
       }
 
@@ -253,6 +254,15 @@
         await sleep(1400); // let the last room's text be read before the end screen
         this.showEnd(r.status);
       }
+    }
+
+    /** Make the choice buttons pulse, to say "this first". */
+    flashChoices() {
+      const box = document.querySelector('#room-card .choices');
+      if (!box) return;
+      box.classList.remove('attention');
+      void box.offsetWidth;
+      box.classList.add('attention');
     }
 
     /** Press a choice button in the current room (the 1st, 2nd, ... option). */
@@ -378,7 +388,7 @@
     /** Highlight the neighbouring rooms the player can step into right now. */
     refreshHints() {
       this.clearHints();
-      if (this.game.status !== 'playing') return;
+      if (this.game.status !== 'playing' || this.game.pendingChoice) return; // a pending choice holds you here
       const { x, y } = this.game.player;
       for (let s = 0; s < 4; s++) {
         const st = this.game.exitStatus(s);

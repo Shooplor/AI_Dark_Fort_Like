@@ -63,6 +63,9 @@
 
     beginMove(side) {
       if (this.status !== 'playing') return { ok: false, reason: 'over', msg: '' };
+      // A room with an undecided choice holds the player until a button is pressed. This comes before the
+      // door checks, so a key is never spent on a move that is refused.
+      if (this.pendingChoice) return { ok: false, reason: 'choice', msg: this.fluff.pick(DF.MOVE_TEXT.choice) };
       const { x, y } = this.player;
       const d = this.dungeon;
       const door = d.doorAt(x, y, side);
