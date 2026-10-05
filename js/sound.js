@@ -6,7 +6,8 @@
  *   and an uneasy, beating tone creep in (see setTension).
  *
  * Real recordings can replace any of it: put the files in assets/audio/ and list them in FILES below (music
- * and/or any effect name). Anything not listed stays synthesised.
+ * and/or any effect name). Anything not listed stays synthesised. The background music is currently a real file
+ * (assets/audio/music.ogg); delete the `music` line in FILES to go back to the synthesised music.
  *
  * Browsers only allow sound after the player has pressed a key or clicked, so everything starts on that first input. */
 (function () {
@@ -15,7 +16,7 @@
 
   /** Real sound files, if any: name -> path. Effect names are the keys of SFX below; `music` is the looping background.
    *  Example:  music: 'assets/audio/music.mp3',  unlock: 'assets/audio/unlock.wav' */
-  const FILES = {};
+  const FILES = { music: 'assets/audio/music.ogg' };
   Sound.FILES = FILES;
   const asset = (p) => (globalThis.DF_ASSETS && globalThis.DF_ASSETS[p]) || p;
 
@@ -441,17 +442,36 @@
       music.el = new Audio(asset(FILES.music));
       music.el.loop = true;
     }
+    clearInterval(music.fadeTimer);
+    music.fadeMul = 1;
     music.running = true;
     music.el.volume = fileVolume('music');
-    music.el.play().catch(() => {});
+    music.el.play().catch(() => { music.running = false; }); // blocked by the browser: try again on the next input
   }
-  function stopMusicFile() {
-    if (!music.el) return;
+  /** Fade the file music out over `fade` seconds (default 2), then pause it. */
+  function stopMusicFile(fade) {
+    if (!music.el || !music.running) return;
     music.running = false;
-    music.el.pause();
+    clearInterval(music.fadeTimer);
+    const el = music.el;
+    const secs = fade === undefined ? 2 : fade;
+    const steps = Math.max(1, Math.round(secs * 20));
+    let i = 0;
+    music.fadeTimer = setInterval(() => {
+      i++;
+      music.fadeMul = Math.max(0, 1 - i / steps);
+      el.volume = fileVolume('music');
+      if (i >= steps) {
+        clearInterval(music.fadeTimer);
+        el.pause();
+      }
+    }, 50);
   }
   function fileVolume(kind) {
-    return state.muted ? 0 : clamp01(curve(kind === 'music' ? state.music : state.sfx) * (kind === 'music' && state.ducked ? 0.5 : 1));
+    if (state.muted) return 0;
+    if (kind !== 'music') return clamp01(curve(state.sfx));
+    const mul = (state.ducked ? 0.5 : 1) * (state.voiceDucked ? 0.45 : 1) * (music.fadeMul === undefined ? 1 : music.fadeMul);
+    return clamp01(curve(state.music) * mul);
   }
 
   /* ---------------------------------------------------------------- public controls */
@@ -469,6 +489,8 @@
     return state.ctx;
   }
 
+  let unlocked = false; // the player has pressed a key or clicked, so the browser allows sound
+
   function applyLevels(instant) {
     const b = state.buses;
     if (b) {
@@ -483,6 +505,7 @@
 
   /** Call from a key press or click: the browser then allows sound. Starts the music the first time. */
   Sound.unlock = function () {
+    unlocked = true;
     const c = ensureContext();
     if (!c) {
       if (FILES.music) startMusic();
@@ -508,7 +531,7 @@
   };
 
   /** (Re)start the music, but only once the player has given the browser permission (first key press / click). */
-  Sound.startMusic = () => { if (state.ctx || FILES.music) startMusic(); };
+  Sound.startMusic = () => { if (state.ctx || (FILES.music && unlocked)) startMusic(); };
   Sound.isMusicPlaying = () => music.running;
   Sound.stopMusic = stopMusic;
   Sound.setMusicVolume = (v) => { state.music = clamp01(v); applyLevels(); save(); };

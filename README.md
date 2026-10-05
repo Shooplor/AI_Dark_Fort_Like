@@ -90,13 +90,15 @@ tests/balance.js  how often a bot wins under the real rules (use it to tune the 
 
 ### Sound
 
-All sound is **synthesised in the browser** (no files): effects for steps, the die, locks, pickups, damage, healing and
-the endings, plus a slow generative baroque-flavoured loop in D minor. As the eye counter nears 20 a heartbeat and an
-uneasy tone fade in. Volumes are on the pause screen (Esc), M mutes, and the settings are remembered. Browsers only
-start sound after the first key press or click.
+The **background music** is a real recording, `assets/audio/music.ogg` (your "Ritual Edit", about 3.5 minutes, looping).
+It starts after the first key press or click, dips while the voice speaks or the game is paused, fades out when a run
+ends and comes back in a new game. The **sound effects** are still **synthesised in the browser** (steps, the die, locks,
+pickups, damage, healing and the endings). Volumes are on the pause screen (Esc), M mutes, and the settings are
+remembered. The synthesised heartbeat that crept in near 20/20 only exists with the synthesised music.
 
-To use real recordings instead, drop the files in `assets/audio/` and list them in `FILES` at the top of
-`js/sound.js` (see `assets/audio/README.md` for the names). Anything not listed stays synthesised.
+To change the music, replace `assets/audio/music.ogg` (same name). To go back to the synthesised music, delete the `music`
+line in `FILES` at the top of `js/sound.js`. Real recordings can replace any effect too: list them in `FILES` (see
+`assets/audio/README.md` for the names). Anything not listed stays synthesised.
 
 ### Voice
 
