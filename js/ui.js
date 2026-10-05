@@ -185,7 +185,11 @@
 
       const res = game.beginMove(side);
       if (!res.ok) {
+        // a repeated mistake while the red message is still showing: shake it, in a "no" motion
+        const el = $('#notice');
+        const again = el.classList.contains('show') && el.classList.contains('bad');
         this.notice(res.msg, true);
+        if (again) this.shakeNotice();
         snd('play', res.reason === 'locked' ? 'locked' : 'bump');
         this.nudge(side);
         if (res.reason === 'choice') this.flashChoices();
@@ -588,6 +592,14 @@
       }
       $('#turn-max').textContent = this.game.maxExplorations;
       snd('setTension', this.game.explored / this.game.maxExplorations); // the music grows uneasy as discovery nears
+    }
+
+    /** Shake the message from side to side, like a head saying no, so a repeated mistake cannot miss it. */
+    shakeNotice() {
+      const el = $('#notice');
+      el.classList.remove('shake');
+      void el.offsetWidth; // restart the animation if it is already running
+      el.classList.add('shake');
     }
 
     notice(msg, bad) {

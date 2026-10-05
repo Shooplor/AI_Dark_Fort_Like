@@ -237,6 +237,21 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 #notice { flex: none; min-height: 50px; padding-top: 8px; font-size: 19px; font-style: italic; line-height: 1.25; color: var(--text-dim); opacity: 0; transition: opacity .3s; }
 #notice.show { opacity: 1; }
 #notice.bad { color: var(--bad); }
+/* a head-shake "no": the whole message swings left and right, settling down */
+#notice.shake { animation: noShake .6s ease-in-out; }
+@keyframes noShake {
+  0%, 100% { transform: translateX(0); }
+  10% { transform: translateX(-14px); }
+  25% { transform: translateX(14px); }
+  40% { transform: translateX(-11px); }
+  55% { transform: translateX(11px); }
+  70% { transform: translateX(-6px); }
+  85% { transform: translateX(6px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #notice.shake { animation: noFlash .6s ease-in-out; } /* for people who ask for less motion: a flash instead */
+  @keyframes noFlash { 0%, 100% { filter: none; } 30% { filter: brightness(1.8); } }
+}
 
 /* the chronicle is tucked away: it slides over the room text when opened (Chronicle button or the C key) */
 #chronicle-wrap { position: absolute; left: 0; right: 0; top: 0; bottom: 56px; z-index: 3; padding: 18px 22px 8px; display: flex; flex-direction: column; background: #0b0609; border-radius: 6px 6px 0 0; animation: fadeUp .25s ease-out; }
