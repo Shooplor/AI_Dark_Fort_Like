@@ -152,7 +152,7 @@
 
   /* ---------------------------------------------------------------- fate die (d4) */
 
-  /** The d4. `assets/ui/die.png` (250x250, shown at 54px) with the rolled number written over it. */
+  /** The d4. `assets/ui/die.png` (250x250, shown at 72px) with the rolled number written over it. */
   const dieNum = (value) => ({ y: value ? 188 : 172, size: value ? 84 : 72 });
   Art.die = (value) => {
     const n = dieNum(value);

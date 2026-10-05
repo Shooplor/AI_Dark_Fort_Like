@@ -317,9 +317,7 @@
       die.className = 'rolling';
       $('#die-text').textContent = 'The die falls…';
       snd('play', 'diceRattle');
-      const flicker = setInterval(() => Art.setDie(die, 1 + Math.floor(Math.random() * 4)), 90);
       await sleep(DIE_MS);
-      clearInterval(flicker);
       snd('play', 'dieLand');
       Art.setDie(die, value);
       die.className = 'landed';
