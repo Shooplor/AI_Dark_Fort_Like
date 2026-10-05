@@ -12,7 +12,7 @@
   DF.fill = fill;
 
   class Game {
-    /** `opts.maxTurns` overrides the turn limit (the headless tests pass Infinity). */
+    /** `opts.maxExplorations` overrides the exploration limit (the headless tests pass Infinity). */
     constructor(seed, opts = {}) {
       this.seed = seed >>> 0;
       this.rng = DF.makeRng(this.seed);
@@ -23,19 +23,15 @@
       this.maxHp = CONFIG.maxHp;
       this.hp = CONFIG.maxHp;
       this.slots = new Array(CONFIG.slots).fill(null);
-      this.turn = 0; // moves made so far
-      this.maxTurns = opts.maxTurns === undefined ? CONFIG.maxTurns : opts.maxTurns;
-      this.status = 'playing'; // playing | dead | caught (out of turns) | stuck
+      this.turn = 0; // moves made so far (walking back through explored rooms counts here...)
+      this.explored = 0; // ...but only exploring a NEW room spends one of the limited exploration points
+      this.maxExplorations = opts.maxExplorations === undefined ? CONFIG.maxExplorations : opts.maxExplorations;
+      this.status = 'playing'; // playing | dead | caught (out of exploration points) | stuck
       this.log = []; // chronicle entries { turn, name, summary }
       this.nextUid = 1;
 
       this.player = { x: CONFIG.start.x, y: CONFIG.start.y };
       this.dungeon.buildStart(this.player.x, this.player.y);
-    }
-
-    /** The turn number shown on the eye counter: the turn you are about to take (1 at the start). */
-    get turnNumber() {
-      return Math.min(this.turn + 1, this.maxTurns);
     }
 
     get cell() {
@@ -98,21 +94,21 @@
       let result;
 
       if (!cell.explored) {
+        this.explored++; // a new room costs one exploration point
         const hpBefore = this.hp;
         const info = d.reveal(cell.x, cell.y, this.heldKeyTypes());
         const outcome = this.resolveEvent(cell, info);
         cell.outcome = outcome;
-        const entry = { turn: this.turn, name: cell.name, summary: outcome.short };
+        const entry = { turn: this.explored, name: cell.name, summary: outcome.short }; // numbered like the eye counter
         this.log.push(entry);
         if (cell.pending) cell.pending.logEntry = entry; // updated once the player decides
         result = { newRoom: true, cell, roll: info.roll, outcome, hpBefore, hpAfter: this.hp };
       } else {
-        result = { newRoom: false, cell, hpBefore: this.hp, hpAfter: this.hp };
-        this.log.push({ turn: this.turn, name: cell.name, summary: 'Returned' });
+        result = { newRoom: false, cell, hpBefore: this.hp, hpAfter: this.hp }; // backtracking is free and not logged
       }
 
       if (this.hp <= 0) this.status = 'dead';
-      else if (this.turn >= this.maxTurns) this.status = 'caught';
+      else if (this.explored >= this.maxExplorations) this.status = 'caught';
       else if (d.analyze(cell.x, cell.y, this.heldKeyTypes()).frontier === 0) this.status = 'stuck';
       result.status = this.status;
       return result;

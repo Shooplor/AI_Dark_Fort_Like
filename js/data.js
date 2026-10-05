@@ -21,7 +21,7 @@
       '.####.',
     ],
     start: { x: 2, y: 9 }, // the entrance foyer: bottom row, second room from the left
-    maxTurns: 20, // moves before the player is discovered
+    maxExplorations: 20, // new rooms the player may explore before being discovered (walking back is free)
     maxHp: 10,
     slots: 6,
     potionHeal: 4,

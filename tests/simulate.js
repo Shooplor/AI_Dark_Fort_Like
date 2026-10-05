@@ -120,7 +120,7 @@ function housekeeping(g) {
 }
 
 function playBot(seed, maxSteps = 600) {
-  const g = new DF.Game(seed, { maxTurns: Infinity }); // the generator is tested without the turn limit
+  const g = new DF.Game(seed, { maxExplorations: Infinity }); // the generator is tested without the limit
   let steps = 0;
   const stats = { rooms: 1, locks: 0, unlocked: 0, blocked: 0, shapes: {} };
   while (g.status === 'playing' && steps++ < maxSteps) {

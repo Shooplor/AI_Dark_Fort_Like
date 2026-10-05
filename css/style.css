@@ -65,9 +65,11 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 #hp-nums .big { color: #d55a7d; }
 #eye-nums { left: 281px; top: 39px; }
 #eye-nums .big { color: #6d99c2; }
+.nums.tick { animation: numTick .8s; }
 .nums.dmg { animation: numHurt .7s; }
 .nums.heal { animation: numHeal .7s; }
 @keyframes numHurt { 0%, 100% { transform: none; } 30% { transform: translateX(-3px); filter: brightness(1.6); } 60% { transform: translateX(3px); } }
+@keyframes numTick { 0% { filter: brightness(2) drop-shadow(0 0 10px #6d99c2); transform: scale(1.12); transform-origin: left center; } 100% { filter: none; transform: none; } }
 @keyframes numHeal { 0%, 100% { filter: none; } 40% { filter: brightness(1.5) drop-shadow(0 0 8px #5fe0a0); } }
 
 /* The figure is one image for now: idle = slow breathing, walking = bob and sway of the whole picture.

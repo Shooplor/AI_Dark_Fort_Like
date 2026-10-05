@@ -24,15 +24,17 @@ Add `?seed=1234` to the URL to replay a specific house. The seed is shown under 
 ## The rules so far
 
 - **The map** is 56 unexplored rooms in an oval (6 columns by 10 rows, with the four corners cut off by the
-  frame). You start in the entrance foyer, the second room of the bottom row.
-- **Discovery:** you have 20 turns (the eye counter, top left) before you are discovered and the run ends.
-- **Moving** costs a turn. You can only pass through a door that exists on that wall.
+  frame). You start in the entrance foyer, the second room of the bottom row (it does not cost a point).
+- **Discovery:** the eye counter (top left) starts at 0/20 and goes up by one each time you explore a **new** room.
+  Reach 20/20 and you are discovered, and the run ends. Walking back through rooms you have already explored is
+  free.
+- **Moving** is one room at a time, and only through a door that exists on that wall.
 - **Entering a new room casts the fate die (d4)**: the roll is the number of doors the room has, counting
   the one you came through. 1 = dead end, 2 = passage (straight or bending), 3 = junction, 4 = crossroads.
   Rooms always agree with their neighbours: a door never opens onto a wall.
 - **Doors** can be open, **locked** (coloured lock, needs the matching key) or **blocked** (rubble; a
   permanent wall for now). Keys are found in other rooms, and are used up when they turn, so backtracking
-  is part of the game.
+  is part of the game (and free, see above).
 - **Room events** are rolled for each new room: nothing, a healing draught, a curio, a trap (-1 to -3
   health), a restorative fountain, or (about 3 rooms in 10) **a choice**.
 - **Choices:** the room describes something (a cupboard and a chest, a mirror, a bell-rope...) and offers two or
@@ -62,6 +64,7 @@ js/art.js         where every picture is produced: real art + remaining placehol
 js/ui.js          rendering and turn animation (walk -> die -> reveal -> text)
 js/main.js        boot, window scaling, ?seed=
 tests/simulate.js headless bot that plays thousands of games and checks the generator
+tests/rules.js    quick checks of the exploration counter, backtracking and choices
 ```
 
 ### Swapping in real art
@@ -75,9 +78,10 @@ placeholders: `Art.roomTile` (receives the room's `shape`, `rot` and `exits`), `
 ### Tests
 
 ```
-node tests/simulate.js 2000
+node tests/rules.js          # exploration counter, free backtracking, choices
+node tests/simulate.js 2000  # the dungeon generator
 ```
 
-Plays 2000 seeded games with a bot and fails if any invariant breaks: doors disagreeing between rooms,
-a locked door without exactly one key in the world, orphaned keys, or the game declaring itself stuck
-while an unexplored room is still reachable.
+`simulate.js` plays 2000 seeded games with a bot (making choices as it goes) and fails if any invariant breaks:
+doors disagreeing between rooms, a locked door without exactly one key in the world, orphaned keys, or the game
+declaring itself stuck while an unexplored room is still reachable.

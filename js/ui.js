@@ -195,7 +195,6 @@
       // 1. walk to the next room
       this.setWalking(true);
       this.placeMarker(res.to, true);
-      this.renderTurn();
       await sleep(MOVE_MS);
       this.setWalking(false);
 
@@ -205,6 +204,7 @@
         await this.rollDie(r.roll);
         this.revealCell(r.cell, true);
         this.refreshDoors();
+        this.renderTurn(); // the new room costs one exploration point
         await sleep(420);
       } else {
         $('#die').className = 'idle';
@@ -529,8 +529,16 @@
     }
 
     renderTurn() {
-      $('#turn-now').textContent = this.game.turnNumber;
-      $('#turn-max').textContent = this.game.maxTurns;
+      const now = $('#turn-now');
+      const shown = this.game.explored;
+      if (now.textContent !== String(shown)) {
+        now.textContent = shown;
+        const nums = $('#eye-nums');
+        nums.classList.remove('tick');
+        void nums.offsetWidth;
+        nums.classList.add('tick'); // a little pulse each time a point is spent
+      }
+      $('#turn-max').textContent = this.game.maxExplorations;
     }
 
     notice(msg, bad) {
