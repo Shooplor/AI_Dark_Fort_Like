@@ -101,8 +101,14 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 .slot .icon svg, .slot .icon img { width: 100%; height: 100%; display: block; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .7)); }
 .slot.has { cursor: pointer; }
 .slot.has:hover::before, .slot.open::before { filter: drop-shadow(0 0 7px rgba(244, 221, 140, .7)); }
-/* evidence (quest items): a green outline that follows the shape of the slot */
-.slot.quest::before { filter: drop-shadow(0 0 1px #4fe38c) drop-shadow(0 0 1px #4fe38c) drop-shadow(0 0 2px #4fe38c) drop-shadow(0 0 9px rgba(79, 227, 140, .55)); }
+/* evidence (quest items): the ITEM glows green, tracing its own shape; the slot stays as it is */
+.slot.quest .icon svg, .slot.quest .icon img {
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .6)) drop-shadow(0 0 1px #4fe38c) drop-shadow(0 0 2px #4fe38c) drop-shadow(0 0 7px rgba(79, 227, 140, .75));
+  animation: questGlow 2.8s ease-in-out infinite;
+}
+@keyframes questGlow {
+  50% { filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .6)) drop-shadow(0 0 1px #7dffb0) drop-shadow(0 0 3px #4fe38c) drop-shadow(0 0 12px rgba(79, 227, 140, .95)); }
+}
 .slot.got { animation: slotGot .7s; }
 @keyframes slotGot { 0% { transform: scale(1); } 35% { transform: scale(1.1); } 100% { transform: scale(1); } }
 

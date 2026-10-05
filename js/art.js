@@ -16,6 +16,11 @@
 
   const GOLD = '#d4a63a';
 
+  /** Where an image file lives. In the normal game that is just its path; in the single-file build
+   *  (tools/build.js) the pictures are packed inside the page and looked up here instead. */
+  const asset = (path) => (globalThis.DF_ASSETS && globalThis.DF_ASSETS[path]) || path;
+  Art.asset = asset;
+
   /** Shared gradients/patterns, injected once into the page (referenced as url(#id) by the pieces below). */
   Art.defs = `
   <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -112,7 +117,7 @@
   };
 
   /** An unexplored room (the dashed dark field). `assets/ui/room-field.png` */
-  Art.fogTile = () => `<img class="art-tile" src="assets/ui/room-field.png" alt="" draggable="false">`;
+  Art.fogTile = () => `<img class="art-tile" src="${asset('assets/ui/room-field.png')}" alt="" draggable="false">`;
 
 
   /* ---------------------------------------------------------------- doors (drawn on the edge between rooms) */
@@ -143,7 +148,7 @@
   /* ---------------------------------------------------------------- player marker (shown on the map) */
 
   /** The golden pendant. `assets/ui/player-symbol.png` (drawn at 100x100 over the current room). */
-  Art.playerToken = () => `<img src="assets/ui/player-symbol.png" alt="" draggable="false">`;
+  Art.playerToken = () => `<img src="${asset('assets/ui/player-symbol.png')}" alt="" draggable="false">`;
 
   /* ---------------------------------------------------------------- fate die (d4) */
 
@@ -219,12 +224,12 @@
   Art.ITEM_IMAGES = new Set([]);
   Art.itemIcon = (item) =>
     Art.ITEM_IMAGES.has(item.id)
-      ? `<img src="assets/items/${item.id.replace(':', '-')}.png" alt="" draggable="false">`
+      ? `<img src="${asset('assets/items/' + item.id.replace(':', '-') + '.png')}" alt="" draggable="false">`
       : Art.icon(item.icon, item.color);
 
   /* ---------------------------------------------------------------- the masked figure (left of the map) */
 
   /** The character. `assets/ui/character.png`. For now the whole image moves to idle / walk (see css/style.css);
    *  animation frames can later replace the single <img>. */
-  Art.portrait = () => `<img class="figure-img" src="assets/ui/character.png" alt="" draggable="false">`;
+  Art.portrait = () => `<img class="figure-img" src="${asset('assets/ui/character.png')}" alt="" draggable="false">`;
 })();

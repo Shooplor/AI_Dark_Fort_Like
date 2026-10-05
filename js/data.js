@@ -22,10 +22,12 @@
     ],
     start: { x: 2, y: 9 }, // the entrance foyer: bottom row, second room from the left
     maxExplorations: 20, // new rooms the player may explore before being discovered (walking back is free)
-    // The evidence (quest items) is hidden in rooms at random, spread over explorations `from` .. `maxExplorations + slack`.
-    // With slack 0 a player who explores all 20 rooms is always shown every piece. A bigger `slack` pushes some pieces
-    // beyond the limit, so winning stops being certain (higher = harder). See Game.maybePlaceQuestItem.
-    quest: { from: 4, slack: 0 },
+    // The evidence (quest items) is hidden at random among the rooms you explore, in the order you explore them:
+    // from your `from`-th new room up to your (maxExplorations + extraRooms)-th.
+    //   extraRooms 0: every piece is hidden somewhere within your 20 rooms, so exploring all 20 always shows you everything.
+    //   extraRooms 4: the hiding places run to room 24, so some pieces land in rooms 21-24, which you can never reach.
+    // More extra rooms = harder to win. (tests/balance.js --extra=N shows the win rate.) See Game.maybePlaceQuestItem.
+    quest: { from: 4, extraRooms: 0 },
     maxHp: 10,
     slots: 6,
     potionHeal: 4,

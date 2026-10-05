@@ -190,7 +190,7 @@
     maybePlaceQuestItem(cell) {
       const left = this.questQueue.length;
       if (!left || this.explored < CONFIG.quest.from) return null;
-      const end = (Number.isFinite(this.maxExplorations) ? this.maxExplorations : CONFIG.maxExplorations) + CONFIG.quest.slack;
+      const end = (Number.isFinite(this.maxExplorations) ? this.maxExplorations : CONFIG.maxExplorations) + CONFIG.quest.extraRooms;
       const roomsLeft = Math.max(1, end - this.explored + 1);
       if (!this.rng.chance(left / roomsLeft)) return null;
       const def = this.questQueue.shift();

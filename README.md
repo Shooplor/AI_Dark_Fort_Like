@@ -21,6 +21,12 @@ it also works offline.
 | Inspect, use or drop an item | Click it in the inventory strip on the left |
 | Pick an item up from the floor | "Take" button in the right-hand panel |
 
+### Sharing the game with friends
+
+`dist/TheMaskedHouse.html` is the whole game in **one file** (pictures and fonts packed inside, 4.5 MB). Send that
+single file; friends double-click it and it opens in their browser, with no folder, install or internet needed.
+It is rebuilt with `node tools/build.js` after every change (the file in the repo is always the current build).
+
 Add `?seed=1234` to the URL to replay a specific house. The seed is shown under the map.
 
 ## The rules so far
@@ -51,8 +57,9 @@ Add `?seed=1234` to the URL to replay a specific house. The seed is shown under 
 - **Winning:** three pieces of evidence (a flute, a scroll and a camera, for now) are hidden in rooms, marked in the
   inventory by a green outline. Holding all three ends the game with a victory popup. Evidence cannot be dropped;
   if the satchel is full when a piece turns up, something less important is left behind to make room.
-  `CONFIG.quest` in `js/data.js` decides how they are spread: with `slack: 0` every piece is certain to turn up
-  within your 20 new rooms; a larger `slack` makes winning less certain (see `tests/balance.js`).
+  `CONFIG.quest` in `js/data.js` decides how they are spread: with `extraRooms: 0` every piece is certain to turn up
+  within your 20 new rooms; with `extraRooms: 4` some pieces hide in rooms 21-24, out of reach, so winning is less
+  certain (see `tests/balance.js`).
 
 ## Project layout
 
@@ -69,6 +76,8 @@ js/game.js        turns, health, inventory, events                      (pure lo
 js/art.js         where every picture is produced: real art + remaining placeholders
 js/ui.js          rendering and turn animation (walk -> die -> reveal -> text)
 js/main.js        boot, window scaling, ?seed=
+tools/build.js    packs the game into the single file dist/TheMaskedHouse.html
+dist/             the packed, shareable game
 tests/simulate.js headless bot that plays thousands of games and checks the generator
 tests/rules.js    quick checks of the exploration counter, backtracking, choices and evidence
 tests/balance.js  how often a bot wins under the real rules (use it to tune the difficulty)
@@ -87,7 +96,7 @@ placeholders: `Art.roomTile` (receives the room's `shape`, `rot` and `exits`), `
 ```
 node tests/rules.js          # exploration counter, free backtracking, choices, evidence
 node tests/simulate.js 2000  # the dungeon generator
-node tests/balance.js 2000   # win rate under the real rules (add --slack=4 to try a harder setting)
+node tests/balance.js 2000   # win rate under the real rules (add --extra=4 to try a harder setting)
 ```
 
 `simulate.js` plays 2000 seeded games with a bot (making choices as it goes) and fails if any invariant breaks:
