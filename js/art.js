@@ -152,13 +152,27 @@
 
   /* ---------------------------------------------------------------- fate die (d4) */
 
-  Art.die = (value) => `<svg viewBox="0 0 100 100" aria-hidden="true">
-      <polygon points="50,6 95,88 5,88" fill="#241019" stroke="url(#goldGrad)" stroke-width="3.5" stroke-linejoin="round"/>
-      <polygon points="50,6 50,66 5,88" fill="#3a1927" opacity=".75"/>
-      <polygon points="50,6 95,88 50,66" fill="#170a11" opacity=".75"/>
-      <g stroke="${GOLD}" stroke-width="1.4" opacity=".7"><line x1="50" y1="6" x2="50" y2="66"/><line x1="5" y1="88" x2="50" y2="66"/><line x1="95" y1="88" x2="50" y2="66"/></g>
-      <text x="50" y="${value ? 78 : 70}" text-anchor="middle" font-size="${value ? 34 : 30}" font-weight="700" font-family="Cinzel, Georgia, serif" fill="#f4dd8c">${value || '?'}</text>
+  /** The d4. `assets/ui/die.png` (250x250, shown at 54px) with the rolled number written over it. */
+  const dieNum = (value) => ({ y: value ? 188 : 172, size: value ? 84 : 72 });
+  Art.die = (value) => {
+    const n = dieNum(value);
+    return `<svg viewBox="0 0 250 250" aria-hidden="true">
+      <image href="${asset('assets/ui/die.png')}" x="0" y="0" width="250" height="250"/>
+      <text x="130" y="${n.y}" text-anchor="middle" font-size="${n.size}" font-weight="700" font-family="Cinzel, Georgia, serif" fill="#f4dd8c" stroke="#1a0a12" stroke-width="9" paint-order="stroke" stroke-linejoin="round">${value || '?'}</text>
     </svg>`;
+  };
+  /** Change the number on a die already on screen (keeps the picture in place, so rolling does not flicker). */
+  Art.setDie = (el, value) => {
+    const t = el.querySelector('text');
+    if (!t) {
+      el.innerHTML = Art.die(value);
+      return;
+    }
+    const n = dieNum(value);
+    t.textContent = value || '?';
+    t.setAttribute('y', n.y);
+    t.setAttribute('font-size', n.size);
+  };
 
   /* ---------------------------------------------------------------- icons (48x48) */
 

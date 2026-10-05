@@ -178,7 +178,7 @@
       this.notice('');
       $('#overlay').hidden = true;
       $('#seed').textContent = 'Seed ' + this.game.seed;
-      $('#die').innerHTML = Art.die(null);
+      Art.setDie($('#die'), null);
       $('#die').className = '';
       $('#die-text').textContent = 'Step through a door to cast it.';
       const ng = $('#new-game');
@@ -317,11 +317,11 @@
       die.className = 'rolling';
       $('#die-text').textContent = 'The die falls…';
       snd('play', 'diceRattle');
-      const flicker = setInterval(() => (die.innerHTML = Art.die(1 + Math.floor(Math.random() * 4))), 90);
+      const flicker = setInterval(() => Art.setDie(die, 1 + Math.floor(Math.random() * 4)), 90);
       await sleep(DIE_MS);
       clearInterval(flicker);
       snd('play', 'dieLand');
-      die.innerHTML = Art.die(value);
+      Art.setDie(die, value);
       die.className = 'landed';
       $('#die-text').textContent = DIE_TEXT[value];
       await sleep(380);

@@ -118,7 +118,7 @@ Nothing is recorded or sent anywhere. Without speech support in the browser the 
 
 Every image in the game is a function in `js/art.js` returning an HTML string. The pieces that are already
 drawn load from `assets/ui/` (replace a file with a new one of the same name and it shows up). Item pictures go in `assets/items/` (see `assets/ART-LIST.md`). Still
-placeholders: `Art.roomTile` (receives the room's `shape`, `rot` and `exits`), `Art.doorGlyph`, `Art.die` and
+placeholders: `Art.roomTile` (receives the room's `shape`, `rot` and `exits`), `Art.doorGlyph` and
 `Art.icon` (item icons). The figure is one idle image (slow breathing, `.figure-img` in `css/style.css`), a three-frame walk loop at 8 a second
 (`assets/ui/walk-1..3.png`) and a five-frame hit animation at 11 a second (`assets/ui/hurt-1..5.png`).
 
