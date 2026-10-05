@@ -195,11 +195,12 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 
 /* ------------------------------------------------------------------ RIGHT: die, room, event text, chronicle */
 
+/* The panel's own artwork (assets/ui/right-panel.png, drawn at normal size) fills the gap right of the pillars; its corner
+   ornaments mean the text sits well inside and the two buttons are kept away from the corners. */
 #right {
-  position: absolute; left: 1180px; top: 26px; width: 392px; height: 848px; z-index: 3;
-  display: flex; flex-direction: column; padding: 16px 22px 12px; min-height: 0;
-  background: linear-gradient(rgba(10, 5, 9, .74), rgba(10, 5, 9, .62)); border: 1px solid var(--line); border-radius: 6px;
-  box-shadow: 0 0 40px rgba(0, 0, 0, .55);
+  position: absolute; left: 1162px; top: 10px; width: 438px; height: 881px; z-index: 3;
+  display: flex; flex-direction: column; padding: 46px 44px 64px; min-height: 0;
+  background: url('../assets/ui/right-panel.png') center / 100% 100% no-repeat;
 }
 
 #die-row { display: flex; align-items: center; gap: 16px; height: 84px; flex: none; padding-bottom: 10px; margin-bottom: 12px; border-bottom: 1px solid var(--line); }
@@ -209,10 +210,10 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 #die.rolling text { opacity: 0; } /* no number while it tumbles */
 #die.landed text { transition: opacity .18s .05s; }
 #die.rolling svg { animation: tumble .22s linear infinite; }
-#die.landed svg { animation: land .5s ease-out; }
+#die.landed svg { animation: land .6s cubic-bezier(.2, .7, .3, 1); }
 #die.idle svg { opacity: .4; filter: grayscale(.7); }
-@keyframes tumble { 0% { transform: rotate(0) scale(1); } 25% { transform: rotate(90deg) scale(1.2); } 50% { transform: rotate(180deg) scale(.8); } 75% { transform: rotate(270deg) scale(1.2); } 100% { transform: rotate(360deg) scale(1); } }
-@keyframes land { 0% { transform: scale(1.35) rotate(-14deg); } 60% { transform: scale(.94) rotate(3deg); } 100% { transform: none; } }
+@keyframes tumble { 0% { transform: rotate(0) scale(.46); } 25% { transform: rotate(90deg) scale(.58); } 50% { transform: rotate(180deg) scale(.4); } 75% { transform: rotate(270deg) scale(.58); } 100% { transform: rotate(360deg) scale(.46); } }
+@keyframes land { 0% { transform: scale(.46) rotate(-20deg); } 70% { transform: scale(1.07) rotate(3deg); } 100% { transform: none; } } /* grows smoothly from its small tumbling size */
 #die-text { font-size: 19px; line-height: 1.15; color: var(--text); }
 
 #room-card { flex: 1; min-height: 0; overflow-y: auto; padding-right: 6px; }
@@ -276,7 +277,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 }
 
 /* the chronicle is tucked away: it slides over the room text when opened (Chronicle button or the C key) */
-#chronicle-wrap { position: absolute; left: 0; right: 0; top: 0; bottom: 56px; z-index: 3; padding: 18px 22px 8px; display: flex; flex-direction: column; background: #0b0609; border-radius: 6px 6px 0 0; animation: fadeUp .25s ease-out; }
+#chronicle-wrap { position: absolute; left: 20px; right: 20px; top: 24px; bottom: 100px; z-index: 3; padding: 22px 24px 8px; display: flex; flex-direction: column; background: #0b0609; border-radius: 6px 6px 0 0; animation: fadeUp .25s ease-out; }
 #chronicle-wrap[hidden] { display: none; }
 .chronicle-head { display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
 .chronicle-head button { padding: 4px 10px; font-size: 10px; }
@@ -288,7 +289,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 #chronicle .n small { display: block; font-size: 16px; opacity: .85; }
 #chronicle:empty::before { content: 'No rooms explored yet.'; font-style: italic; color: var(--text-dim); }
 
-#right-foot { flex: none; display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+#right-foot { flex: none; display: flex; justify-content: space-between; align-items: center; margin: 8px 18px 0; }
 #seed { font-family: var(--display); font-size: 10px; letter-spacing: .2em; color: #5e4850; }
 #new-game, #chronicle-toggle { padding: 5px 11px; font-size: 10px; }
 #chronicle-toggle.on { border-color: var(--gold); color: var(--gold-light); }
