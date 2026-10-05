@@ -17,6 +17,7 @@
       this.seed = seed >>> 0;
       this.rng = DF.makeRng(this.seed);
       this.fluff = DF.makeRng(this.seed ^ 0x9e3779b9); // cosmetic text picks; never affects the layout
+      this.luck = DF.makeRng(this.seed ^ 0x51ed270b); // the outcome of choices, so deciding never reshuffles the house
       this.dungeon = new DF.Dungeon(CONFIG.cols, CONFIG.rows, this.rng, CONFIG.layout);
 
       this.maxHp = CONFIG.maxHp;
@@ -101,7 +102,9 @@
         const info = d.reveal(cell.x, cell.y, this.heldKeyTypes());
         const outcome = this.resolveEvent(cell, info);
         cell.outcome = outcome;
-        this.log.push({ turn: this.turn, name: cell.name, summary: outcome.short });
+        const entry = { turn: this.turn, name: cell.name, summary: outcome.short };
+        this.log.push(entry);
+        if (cell.pending) cell.pending.logEntry = entry; // updated once the player decides
         result = { newRoom: true, cell, roll: info.roll, outcome, hpBefore, hpAfter: this.hp };
       } else {
         result = { newRoom: false, cell, hpBefore: this.hp, hpAfter: this.hp };
@@ -156,6 +159,12 @@
           this.hp += n;
           return { kind: 'heal', hpDelta: n, text: fill(pick(DF.EVENT_TEXT.blessing), { n }), short: `Regained ${n} health` };
         }
+        case 'choice': {
+          // A decision: the room shows buttons, and nothing happens until one is pressed (see choose()).
+          const def = pick(DF.CHOICE_EVENTS);
+          cell.pending = { eventId: def.id, intro: def.intro, labels: def.choices.map((c) => c.label), resolved: false, logEntry: null };
+          return { kind: 'choice', text: def.intro, short: 'A choice awaits' };
+        }
         default:
           return { kind: 'nothing', text: pick(DF.EVENT_TEXT.nothing), short: 'Nothing of note' };
       }
@@ -170,6 +179,50 @@
       }
       cell.floor.push(item);
       return { kind, item, taken: false, text: text + DF.EVENT_TEXT.packFull, short: `Found ${item.name} (left behind)` };
+    }
+
+    /* ---------- choices (a free action, like using an item) ---------- */
+    /** The undecided choice in the current room, if there is one. */
+    get pendingChoice() {
+      const p = this.cell.pending;
+      return p && !p.resolved ? p : null;
+    }
+
+    /** Press choice button `index` in the current room: roll one of its outcomes and apply it. */
+    choose(index) {
+      const cell = this.cell;
+      const p = this.pendingChoice;
+      if (this.status !== 'playing' || !p) return { ok: false };
+      const def = DF.CHOICE_EVENTS.find((e) => e.id === p.eventId);
+      const choice = def.choices[index];
+      if (!choice) return { ok: false };
+
+      const o = this.luck.weighted(choice.outcomes);
+      const hpBefore = this.hp;
+      let res;
+      if (o.item) {
+        const itemDef = o.item === 'potion' ? DF.ITEM_DEFS.potion : o.item === 'curio' ? this.luck.pick(DF.CURIOS) : DF.CURIOS.find((c) => c.id === o.item);
+        const item = this.makeItem(itemDef);
+        res = this.grantItem(cell, item, 'item', fill(o.text, { item: item.name }));
+      } else if (o.damage) {
+        const n = Array.isArray(o.damage) ? o.damage[0] + this.luck.int(o.damage[1] - o.damage[0] + 1) : o.damage;
+        this.hp = Math.max(0, this.hp - n);
+        res = { kind: 'trap', text: fill(o.text, { n }), short: `Lost ${n} health` };
+      } else if (o.heal) {
+        const n = Math.min(o.heal, this.maxHp - this.hp);
+        this.hp += n;
+        res = n > 0
+          ? { kind: 'heal', text: fill(o.text, { n }), short: `Regained ${n} health` }
+          : { kind: 'nothing', text: o.fullText || 'You are unhurt, and nothing comes of it.', short: 'Nothing came of it' };
+      } else {
+        res = { kind: 'nothing', text: o.text, short: 'Nothing came of it' };
+      }
+
+      p.resolved = true;
+      cell.outcome = res;
+      if (p.logEntry) p.logEntry.summary = res.short;
+      if (this.hp <= 0) this.status = 'dead';
+      return { ok: true, outcome: res, hpBefore, hpAfter: this.hp, status: this.status };
     }
 
     /* ---------- items (free actions) ---------- */

@@ -14,7 +14,8 @@ it also works offline.
 
 | Action | Control |
 | --- | --- |
-| Move one room (no diagonals) | Arrow keys / WASD, or click an adjacent room |
+| Move one room (no diagonals) | Arrow keys / WASD (any keyboard layout), or click an adjacent room |
+| Make a choice in a room | Click one of the buttons in the right-hand panel, or press 1 / 2 / 3 |
 | Inspect, use or drop an item | Click it in the inventory strip on the left |
 | Pick an item up from the floor | "Take" button in the right-hand panel |
 
@@ -33,7 +34,10 @@ Add `?seed=1234` to the URL to replay a specific house. The seed is shown under 
   permanent wall for now). Keys are found in other rooms, and are used up when they turn, so backtracking
   is part of the game.
 - **Room events** are rolled for each new room: nothing, a healing draught, a curio, a trap (-1 to -3
-  health), or a restorative fountain.
+  health), a restorative fountain, or (about 3 rooms in 10) **a choice**.
+- **Choices:** the room describes something (a cupboard and a chest, a mirror, a bell-rope...) and offers two or
+  three buttons. Each button rolls a good, neutral or bad outcome (an item, nothing, or damage), so nothing is
+  a sure thing. Choosing is free (it costs no turn). You can walk away and the choice waits for you.
 - **Health** starts at 10. Reaching 0 ends the run. **Inventory** has 6 slots; a full satchel leaves
   finds on the floor.
 - The generator works to keep a way forward open: it adds doors when you would be boxed in, rubble can
@@ -50,7 +54,8 @@ css/style.css     pixel-exact layout (from the art mockup), theme, figure idle /
 assets/ui/        the real artwork (see assets/ui/README.md)
 assets/fonts/     bundled fonts (Cinzel, Cormorant Garamond; SIL Open Font License)
 js/rng.js         seeded random numbers
-js/data.js        tuning numbers, room names and text, items, events    <- add content here
+js/data.js        tuning numbers, room names and text, items, events,
+                  choice events (CHOICE_EVENTS)                         <- add content here
 js/dungeon.js     the grid, doors, room generation, reachability        (pure logic, no DOM)
 js/game.js        turns, health, inventory, events                      (pure logic, no DOM)
 js/art.js         where every picture is produced: real art + remaining placeholders

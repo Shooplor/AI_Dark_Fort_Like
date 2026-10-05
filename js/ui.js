@@ -19,6 +19,14 @@
   const rich = (text) => esc(text).replace(/\[\[(.+?)\]\]/g, '<em class="hl">$1</em>');
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
+  /** Which style the event box in the right-hand panel gets for an outcome. */
+  const outcomeClass = (o) => (o.kind === 'trap' ? 'trap' : o.kind === 'heal' ? 'heal' : o.kind === 'nothing' ? 'quiet' : o.kind === 'choice' ? 'choice' : '');
+
+  // Movement keys by physical position (`code`, so they work on any keyboard layout, e.g. Cyrillic) and by
+  // the character typed (`key`) as a fallback. Numbers 1-9 pick a choice.
+  const SIDE_BY_CODE = { ArrowUp: 0, KeyW: 0, ArrowRight: 1, KeyD: 1, ArrowDown: 2, KeyS: 2, ArrowLeft: 3, KeyA: 3 };
+  const SIDE_BY_KEY = { arrowup: 0, w: 0, arrowright: 1, d: 1, arrowdown: 2, s: 2, arrowleft: 3, a: 3 };
+
   const DIE_TEXT = {
     1: 'One. A dead end: a hallway with a single door.',
     2: 'Two. A passage with two doors.',
@@ -74,14 +82,25 @@
         if (side >= 0) this.attempt(side);
       });
 
-      const keys = { ArrowUp: 0, w: 0, W: 0, ArrowRight: 1, d: 1, D: 1, ArrowDown: 2, s: 2, S: 2, ArrowLeft: 3, a: 3, A: 3 };
-      document.addEventListener('keydown', (ev) => {
-        if (ev.key === 'Escape') return this.closePop();
-        if (ev.key in keys && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
-          ev.preventDefault();
-          this.attempt(keys[ev.key]);
-        }
-      });
+      // Listen on the window, in the capture phase, so nothing on the page can swallow a key press.
+      window.addEventListener(
+        'keydown',
+        (ev) => {
+          if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+          if (ev.key === 'Escape') return this.closePop();
+          let side = SIDE_BY_CODE[ev.code];
+          if (side === undefined && typeof ev.key === 'string') side = SIDE_BY_KEY[ev.key.toLowerCase()];
+          if (side !== undefined) {
+            ev.preventDefault();
+            this.attempt(side);
+            return;
+          }
+          const digit = /^[1-9]$/.test(ev.key) ? +ev.key : +((/^Digit([1-9])$/.exec(ev.code) || [])[1] || 0);
+          if (digit) this.choose(digit - 1);
+        },
+        true
+      );
+      window.focus();
 
       document.addEventListener('click', (ev) => {
         if (!ev.target.closest('#item-pop') && !ev.target.closest('.slot')) this.closePop();
@@ -151,6 +170,19 @@
       }
 
       this.busy = true;
+      try {
+        await this.playTurn(res);
+      } catch (err) {
+        console.error('The turn failed:', err); // never leave the game locked
+      } finally {
+        this.busy = false;
+        this.setWalking(false);
+        this.refreshHints();
+      }
+    }
+
+    async playTurn(res) {
+      const game = this.game;
       this.clearHints();
       this.notice('');
       if (res.unlocked) {
@@ -180,21 +212,42 @@
       }
       this.setHere();
 
-      // 3. the text outcome, health and inventory
+      // 3. the text outcome (or a choice to make), health and inventory
       this.view = {
         cell: r.cell,
         fresh: r.newRoom,
         eventText: r.newRoom ? r.outcome.text : null,
-        kind: r.newRoom ? (r.outcome.kind === 'trap' ? 'trap' : r.outcome.kind === 'heal' ? 'heal' : r.outcome.kind === 'nothing' ? 'quiet' : '') : 'quiet',
+        kind: r.newRoom ? outcomeClass(r.outcome) : 'quiet',
         notes: [],
       };
       this.renderRoom(true);
       this.renderHp(r.hpAfter - r.hpBefore);
       this.renderInventory();
       this.renderChronicle();
+      if (r.status !== 'playing') {
+        await sleep(1400); // let the last room's text be read before the end screen
+        this.showEnd(r.status);
+      }
+    }
+
+    /** Press a choice button in the current room (the 1st, 2nd, ... option). */
+    choose(index) {
+      const game = this.game;
+      if (this.busy || game.status !== 'playing' || !game.pendingChoice) return;
+      const res = game.choose(index);
+      if (!res.ok) return;
+      this.closePop();
+      this.view.fresh = true;
+      this.view.eventText = res.outcome.text;
+      this.view.kind = outcomeClass(res.outcome);
+      this.renderRoom(false);
+      const box = document.querySelector('#room-card .room-event');
+      if (box) box.classList.add('pop');
+      this.renderHp(res.hpAfter - res.hpBefore);
+      this.renderInventory();
+      this.renderChronicle();
       this.refreshHints();
-      this.busy = false;
-      if (r.status !== 'playing') this.showEnd(r.status);
+      if (res.status !== 'playing') setTimeout(() => this.showEnd(res.status), 1600);
     }
 
     async rollDie(value) {
@@ -400,9 +453,16 @@
       const shape = SHAPES[cell.shape];
       const doors = cell.n === 1 ? '1 door' : `${cell.n} doors`;
 
+      const pending = cell.pending && !cell.pending.resolved ? cell.pending : null; // a decision still to make here
+
       let event = '';
       if (intro) event = '<p class="room-event quiet">The house is silent. Choose a door.</p>';
-      else if (fresh && eventText) event = `<p class="room-event ${kind}">${rich(eventText)}</p>`;
+      else if (pending) {
+        event = `<p class="room-event choice">${rich(pending.intro)}</p>
+          <div class="choices">${pending.labels
+            .map((label, i) => `<button type="button" class="choice" data-choice="${i}"><span class="k">${i + 1}</span>${esc(label)}</button>`)
+            .join('')}</div>`;
+      } else if (fresh && eventText) event = `<p class="room-event ${kind}">${rich(eventText)}</p>`;
       else if (!fresh) event = '<p class="room-event quiet">You have been here before. Nothing has changed, except you.</p>';
 
       const floor = cell.floor.length
@@ -446,6 +506,7 @@
         <div class="section-label" style="margin-bottom:8px">Exits</div>
         <ul class="exits">${exits.join('')}</ul>`;
 
+      card.querySelectorAll('[data-choice]').forEach((btn) => btn.addEventListener('click', () => this.choose(+btn.dataset.choice)));
       card.querySelectorAll('[data-take]').forEach((btn) =>
         btn.addEventListener('click', () => {
           if (this.busy) return;

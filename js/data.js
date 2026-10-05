@@ -1,5 +1,5 @@
 /* Static game data: tuning numbers, room names, flavour text, items and events.
- * Add new rooms / events / items here — nothing else needs to change for plain text content.
+ * Add new rooms / events / items / choice events here — nothing else needs to change for plain text content.
  *
  * Text conventions: [[double brackets]] mark a highlighted item name in the log. */
 (function () {
@@ -174,6 +174,7 @@
     { id: 'curio', weight: 14 },
     { id: 'trap', weight: 10 },
     { id: 'blessing', weight: 8 },
+    { id: 'choice', weight: 34 }, // a decision with buttons (see CHOICE_EVENTS below): roughly 3 rooms in 10
   ];
 
   DF.EVENT_TEXT = {
@@ -211,6 +212,160 @@
     ],
     packFull: ' Your satchel is full, so it stays on the floor.',
   };
+
+  /* ---------- Choice events ---------- */
+  // A room with a decision: the player reads `intro`, then picks one of the `choices` (buttons in the right-hand
+  // panel). Each choice rolls one of its `outcomes` by weight, so no choice is a sure thing. Choosing is free
+  // (it costs no turn), and the player may also just walk away and come back later.
+  //
+  // An outcome is { weight, text } plus at most one effect:
+  //   item: 'potion' | 'curio' (random curio) | a curio id   -> the item is found (or left on the floor if the pack is full)
+  //   damage: n | [min, max]                                  -> lose health
+  //   heal: n                                                 -> regain health (`fullText` is shown if already at full health)
+  // Text may use {n} (health amount) and [[{item}]] (the item's name, highlighted).
+  DF.CHOICE_EVENTS = [
+    {
+      id: 'cupboard_chest',
+      intro: 'A tall walnut cupboard stands against the wall, one door hanging ajar. Beside it squats an iron-bound chest, the wood around its lock scratched bright.',
+      choices: [
+        { label: 'Open the cupboard', outcomes: [
+          { weight: 4, item: 'potion', text: 'Behind folded linens you find a stoppered flask of ruby liquid: a [[Healing Draught]].' },
+          { weight: 3, text: 'Moth-eaten linens and the smell of cedar. Nothing else.' },
+          { weight: 1, damage: [1, 2], text: 'A spring-loaded blade snaps across your hand as you reach in. You lose {n} health.' },
+        ] },
+        { label: 'Pry open the chest', outcomes: [
+          { weight: 2, item: 'curio', text: 'Beneath a layer of straw lies a [[{item}]].' },
+          { weight: 2, text: 'The chest is empty, except for a card that reads: "Too late."' },
+          { weight: 3, damage: [1, 3], text: 'The lock is trapped. A needle jabs deep into your thumb. You lose {n} health.' },
+        ] },
+      ],
+    },
+    {
+      id: 'mask_table',
+      intro: 'A long table holds three masks on velvet cushions: one of white porcelain, one of black lacquer, one of gold. Only the gold one looks undisturbed.',
+      choices: [
+        { label: 'Lift the white mask', outcomes: [
+          { weight: 3, item: 'porcelain_mask', text: 'The porcelain is cold as a hand in winter. You take the [[Porcelain Mask]].' },
+          { weight: 2, text: 'It crumbles to white dust between your fingers.' },
+          { weight: 1, damage: 1, text: 'It is sharp at the edges and bites your palm. You lose {n} health.' },
+        ] },
+        { label: 'Try on the black mask', outcomes: [
+          { weight: 2, heal: 2, text: 'It fits like a second face, and fear drains out of you. You regain {n} health.', fullText: 'It fits like a second face, and your fear drains away. You were not hurt, but it is good to feel.' },
+          { weight: 3, damage: [1, 2], text: 'It tightens around your skull until you tear it off. You lose {n} health.' },
+          { weight: 2, text: 'You see the room through it for a moment. It was fuller than you thought.' },
+        ] },
+        { label: 'Leave the gold mask alone', outcomes: [
+          { weight: 4, text: 'You step back. The gold mask seems to sigh, softly, in relief.' },
+          { weight: 1, item: 'curio', text: 'As you turn away, you notice a [[{item}]] tucked beneath its cushion.' },
+        ] },
+      ],
+    },
+    {
+      id: 'decanters',
+      intro: 'Two crystal decanters sit on a silver tray: one of dark ruby wine, the other of something clear that does not ripple when the tray is touched.',
+      choices: [
+        { label: 'Drink the ruby wine', outcomes: [
+          { weight: 3, heal: 2, text: 'It tastes of cherries and iron. You regain {n} health.', fullText: 'It tastes of cherries and iron. You were unhurt, but it was very good wine.' },
+          { weight: 2, damage: [1, 2], text: 'The wine is bitter and wrong. Your stomach knots. You lose {n} health.' },
+          { weight: 1, text: 'Only wine, and rather old.' },
+        ] },
+        { label: 'Sniff the clear decanter', outcomes: [
+          { weight: 3, text: 'It smells of nothing at all, which is somehow worse.' },
+          { weight: 1, item: 'potion', text: 'Not water: a clear tincture that smells of cloves. A [[Healing Draught]].' },
+          { weight: 2, damage: [1, 3], text: 'The fumes burn your eyes and throat. You lose {n} health.' },
+        ] },
+      ],
+    },
+    {
+      id: 'portrait',
+      intro: 'A portrait of a masked noble hangs crooked on the wall. The eyes have been cut out of the canvas, and something small glints behind them.',
+      choices: [
+        { label: 'Reach behind the portrait', outcomes: [
+          { weight: 3, item: 'curio', text: 'Your fingers find a [[{item}]] in the dust behind the canvas.' },
+          { weight: 3, damage: [1, 2], text: 'Something behind the canvas bites down on your fingers. You lose {n} health.' },
+        ] },
+        { label: 'Straighten the frame', outcomes: [
+          { weight: 2, item: 'potion', text: 'A hidden panel clicks open beneath the frame. Inside: a [[Healing Draught]].' },
+          { weight: 4, text: 'The portrait settles. Its missing eyes seem to follow you regardless.' },
+        ] },
+      ],
+    },
+    {
+      id: 'piano',
+      intro: 'A grand piano stands open, one key held down as though by a finger. A drawer beneath the keyboard is slightly ajar.',
+      choices: [
+        { label: 'Release the held key', outcomes: [
+          { weight: 2, text: 'The key rises. Somewhere inside the walls, a bell stops ringing.' },
+          { weight: 2, damage: [1, 2], text: 'The lid slams down on your fingers, hard. You lose {n} health.' },
+          { weight: 2, item: 'curio', text: 'A hidden compartment springs open in the lid. Inside lies a [[{item}]].' },
+        ] },
+        { label: 'Search the drawer', outcomes: [
+          { weight: 2, item: 'curio', text: 'Under yellowed sheet music you find a [[{item}]].' },
+          { weight: 2, text: 'Sheet music, every page the same waltz, every page stained with wine.' },
+          { weight: 1, damage: 1, text: 'A mousetrap, and a very large one. You lose {n} health.' },
+        ] },
+      ],
+    },
+    {
+      id: 'confessional',
+      intro: 'A confessional booth stands in the corner, its curtain drawn. From inside, a soft voice says your name, and then waits.',
+      choices: [
+        { label: 'Step inside and listen', outcomes: [
+          { weight: 2, heal: 2, text: 'The voice forgives you, in a language you do not know. Something in you eases. You regain {n} health.', fullText: 'The voice forgives you, in a language you do not know. Something in you eases.' },
+          { weight: 3, text: 'The voice says nothing more. You wait until it feels foolish to.' },
+          { weight: 1, damage: 1, text: 'The voice laughs, long and ragged, and the booth shudders around you. You stumble out bruised. You lose {n} health.' },
+        ] },
+        { label: 'Tear the curtain aside', outcomes: [
+          { weight: 3, damage: [1, 2], text: 'Nobody is there, but something shoves you hard across the room. You lose {n} health.' },
+          { weight: 2, item: 'curio', text: 'The booth is empty, but for a [[{item}]] on the kneeler.' },
+        ] },
+      ],
+    },
+    {
+      id: 'fireplace',
+      intro: 'A fire burns in the grate, though the chimney is bricked shut. Something metal glints among the coals.',
+      choices: [
+        { label: 'Reach into the fire', outcomes: [
+          { weight: 3, item: 'curio', text: 'Your fingers close on a [[{item}]], and it is, impossibly, cool.' },
+          { weight: 3, damage: [2, 3], text: 'The coals are quite real. You lose {n} health.' },
+        ] },
+        { label: 'Rake the ashes with the poker', outcomes: [
+          { weight: 1, item: 'curio', text: 'The poker turns up a [[{item}]] in the ash.' },
+          { weight: 4, text: 'Ash, bone-white and fine as flour. Nothing more.' },
+        ] },
+      ],
+    },
+    {
+      id: 'mirror',
+      intro: 'A tall mirror shows the room perfectly, except that you are not in it. A faint handprint marks the glass at shoulder height.',
+      choices: [
+        { label: 'Press your hand to the print', outcomes: [
+          { weight: 3, damage: [1, 2], text: 'The glass is ice-cold, and takes something from you. You lose {n} health.' },
+          { weight: 2, item: 'potion', text: 'The mirror swings inward on a hidden hinge. Behind it: a [[Healing Draught]].' },
+        ] },
+        { label: 'Turn the mirror to the wall', outcomes: [
+          { weight: 4, text: 'It is heavier than it looks, and the wall behind it is bare.' },
+          { weight: 1, item: 'curio', text: 'Taped to the back of the frame is a [[{item}]].' },
+        ] },
+      ],
+    },
+    {
+      id: 'bell_rope',
+      intro: 'A bell-rope hangs by the door, its tassel threaded with gold. A small brass plaque beneath it reads: PLEASE RING.',
+      choices: [
+        { label: 'Ring for service', outcomes: [
+          { weight: 2, item: 'potion', text: 'A silent figure in livery sets a tray at your feet and is gone. On it: a [[Healing Draught]].' },
+          { weight: 2, damage: 1, text: 'The bell is enormous, and very close. Your ears ring for an hour. You lose {n} health.' },
+          { weight: 2, text: 'You wait. No one comes. It feels, somehow, like a refusal.' },
+        ] },
+        { label: 'Cut the rope', outcomes: [
+          { weight: 2, item: 'curio', text: 'A weight falls from the rope\'s end: a [[{item}]].' },
+          { weight: 2, damage: [1, 2], text: 'Somewhere above you, something heavy gives way. You lose {n} health.' },
+          { weight: 1, text: 'The rope falls limp. Far away, a bell rings once, in alarm.' },
+        ] },
+      ],
+    },
+  ];
 
   DF.MOVE_TEXT = {
     wall: [

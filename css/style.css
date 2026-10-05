@@ -195,6 +195,15 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 .room-event.trap { border-color: #d6304f; background: rgba(214, 48, 79, .1); }
 .room-event.heal { border-color: #4fd08d; background: rgba(79, 208, 141, .08); }
 .room-event.quiet { border-color: var(--gold-dim); background: transparent; color: var(--text-dim); font-style: italic; }
+.room-event.choice { border-color: var(--gold-light); font-style: normal; }
+.room-event.pop { animation: fadeUp .5s ease-out; }
+.choices { display: flex; flex-direction: column; gap: 8px; margin: 0 0 16px; }
+button.choice {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 11px 14px;
+  font-size: 14px; letter-spacing: .06em; line-height: 1.25;
+}
+button.choice .k { flex: none; width: 22px; height: 22px; display: grid; place-items: center; border: 1px solid var(--gold-dim); border-radius: 50%; font-size: 11px; color: var(--gold); }
+button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-light); }
 .room-notes { margin: 0 0 12px; padding: 0; list-style: none; font-size: 19px; font-style: italic; color: var(--text-dim); }
 .room-notes li { margin-bottom: 4px; }
 

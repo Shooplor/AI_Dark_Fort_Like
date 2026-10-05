@@ -84,7 +84,16 @@ function findStep(g, goal) {
   return null;
 }
 
+let choicesMade = 0;
 function housekeeping(g) {
+  // decide any open choice in this room (which button is arbitrary but reproducible)
+  const pending = g.pendingChoice;
+  if (pending && g.status === 'playing') {
+    const r = g.choose((g.seed + g.turn) % pending.labels.length);
+    if (!r.ok) fail(g.seed, 'a pending choice could not be resolved');
+    choicesMade++;
+    if (g.status === 'dead') return;
+  }
   // drink potions when hurt
   const potion = g.slots.findIndex((i) => i && i.id === 'potion');
   if (potion >= 0 && g.hp <= 5) g.useItem(potion);
@@ -116,6 +125,7 @@ function playBot(seed, maxSteps = 600) {
   const stats = { rooms: 1, locks: 0, unlocked: 0, blocked: 0, shapes: {} };
   while (g.status === 'playing' && steps++ < maxSteps) {
     housekeeping(g);
+    if (g.status !== 'playing') break; // a choice may have been fatal
 
     // 1. head for the nearest room with a passable door to an unexplored room
     let target = findStep(g, (cell) => {
@@ -192,3 +202,4 @@ console.log(`ended: ${totals.dead} died, ${totals.stuck} ran out of rooms, ${tot
 console.log(`avg rooms explored: ${(totals.rooms / games).toFixed(1)} of ${cells} (min ${totals.minRooms}, max ${totals.maxRooms})`);
 console.log(`avg turns: ${(totals.turns / games).toFixed(1)}, avg doors unlocked: ${(totals.unlocked / games).toFixed(2)}`);
 console.log('room shapes revealed:', totals.shapes);
+console.log(`choices decided: ${choicesMade} (${(choicesMade / totals.rooms * 100).toFixed(0)}% of explored rooms)`);
