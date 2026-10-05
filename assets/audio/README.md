@@ -19,7 +19,8 @@ Short effects should be trimmed tight (no silence at the start). Music should lo
 | `tick` | the eye counter goes up | ~0.6 s |
 | `pickup` | an item goes into the satchel | ~0.7 s |
 | `evidence` | a piece of evidence (quest item) is found | ~2 s |
-| `hurt` | losing health | ~0.5 s |
+| `hurt` | losing 1-2 health | ~0.8 s |
+| `hurtBig` | losing 3 or more health (if missing, `hurt` is used) | ~1.2 s |
 | `heal` | regaining health | ~1.5 s |
 | `click` | a button, a choice, opening an item | ~0.05 s |
 | `drop` | dropping an item | ~0.15 s |

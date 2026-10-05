@@ -63,6 +63,7 @@
       document.body.insertAdjacentHTML('afterbegin', Art.defs);
       $('#figure').innerHTML = Art.portrait();
       $('#hurt-frames').innerHTML = Art.hurtFrames();
+      $('#walk-frames').innerHTML = Art.walkFrames();
       $('#marker').innerHTML = `<div class="token">${Art.playerToken()}</div>`;
       this.buildBoard();
       this.bindInput();
@@ -423,8 +424,21 @@
       }
     }
 
+    /** While walking, the three walk frames loop at 8 a second (the normal picture is hidden meanwhile). */
     setWalking(on) {
-      $('#figure').classList.toggle('walking', on);
+      const fig = $('#figure');
+      clearInterval(this.walkTimer);
+      const frames = $('#walk-frames').children;
+      for (const f of frames) f.classList.remove('on');
+      fig.classList.toggle('walking', on);
+      if (!on) return;
+      let i = 0;
+      frames[0].classList.add('on');
+      this.walkTimer = setInterval(() => {
+        frames[i].classList.remove('on');
+        i = (i + 1) % frames.length;
+        frames[i].classList.add('on');
+      }, 1000 / 8);
     }
 
     /* ---------------------------------------------------------------- left panel */
@@ -434,7 +448,7 @@
       $('#hp-now').textContent = g.hp;
       $('#hp-max').textContent = g.maxHp;
       if (!delta) return;
-      snd('play', delta < 0 ? 'hurt' : 'heal');
+      snd('play', delta < 0 ? (delta <= -3 ? 'hurtBig' : 'hurt') : 'heal');
       const nums = $('#hp-nums');
       nums.classList.remove('dmg', 'heal');
       void nums.offsetWidth;
@@ -462,6 +476,7 @@
     playHurt() {
       const frames = $('#hurt-frames').children;
       const fig = $('#figure');
+      this.setWalking(false);
       clearInterval(this.hurtTimer);
       let i = 0;
       const show = () => {

@@ -234,6 +234,10 @@
   /** The five hit frames (assets/ui/hurt-1..5.png), stacked; ui.js shows one at a time. Drawn at normal size (not 2x). */
   Art.hurtFrames = () =>
     [asset('assets/ui/hurt-1.png'), asset('assets/ui/hurt-2.png'), asset('assets/ui/hurt-3.png'), asset('assets/ui/hurt-4.png'), asset('assets/ui/hurt-5.png')]
-      .map((src) => `<img class="hurt-frame" src="${src}" alt="" draggable="false">`).join('');
+      .map((src) => `<img class="anim-frame" src="${src}" alt="" draggable="false">`).join('');
+  /** The three walking frames (assets/ui/walk-1..3.png), looped while the figure walks. Drawn at normal size (not 2x). */
+  Art.walkFrames = () =>
+    [asset('assets/ui/walk-1.png'), asset('assets/ui/walk-2.png'), asset('assets/ui/walk-3.png')]
+      .map((src) => `<img class="anim-frame" src="${src}" alt="" draggable="false">`).join('');
   Art.portrait = () => `<img class="figure-img" src="${asset('assets/ui/character.png')}" alt="" draggable="false">`;
 })();

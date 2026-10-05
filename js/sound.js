@@ -262,11 +262,23 @@
       tone(b, b.sfx, { t: t + 0.3, f: mtof(62), a: 0.3, dur: 2.2, peak: 0.1 });
       tone(b, b.sfx, { t: t + 0.3, f: mtof(69), a: 0.3, dur: 2.2, peak: 0.08 });
     },
+    // a real blow: a deep thump with a second, smaller one behind it, a crack, a crunch of noise, a sour chord and a
+    // thin ringing that lingers
     hurt(b, t) {
-      tone(b, b.sfx, { t, f: 160, f2: 45, dur: 0.32, peak: 0.65 });
-      noise(b, b.sfx, { t, f: 900, q: 1, dur: 0.14, peak: 0.3 });
-      tone(b, b.sfx, { t, f: 233.08, type: 'sawtooth', dur: 0.5, peak: 0.08, lp: 700 });
-      tone(b, b.sfx, { t, f: 246.94, type: 'sawtooth', dur: 0.5, peak: 0.08, lp: 700 });
+      tone(b, b.sfx, { t, f: 130, f2: 32, dur: 0.55, peak: 0.85 });
+      tone(b, b.sfx, { t, f: 240, f2: 60, type: 'triangle', dur: 0.26, peak: 0.45 });
+      tone(b, b.sfx, { t: t + 0.11, f: 78, f2: 34, dur: 0.42, peak: 0.5 });
+      noise(b, b.sfx, { t, type: 'highpass', f: 1800, dur: 0.05, peak: 0.4 });
+      noise(b, b.sfx, { t, type: 'lowpass', f: 1500, f2: 200, dur: 0.38, peak: 0.5 });
+      [233.08, 246.94, 329.63].forEach((f) => tone(b, b.sfx, { t, f, type: 'sawtooth', a: 0.01, dur: 0.9, peak: 0.07, lp: 650 }));
+      tone(b, b.sfx, { t: t + 0.05, f: 2900, f2: 2700, a: 0.03, dur: 0.8, peak: 0.022 });
+    },
+    // the same, heavier, for hits of 3 or more
+    hurtBig(b, t) {
+      SFX.hurt(b, t);
+      tone(b, b.sfx, { t, f: 55, f2: 28, dur: 1.1, peak: 0.7 });
+      noise(b, b.sfx, { t: t + 0.02, type: 'lowpass', f: 700, f2: 90, dur: 0.9, peak: 0.4 });
+      tone(b, b.sfx, { t: t + 0.24, f: 62, f2: 30, dur: 0.5, peak: 0.45 });
     },
     heal(b, t) {
       [62, 66, 69, 74].forEach((m, i) => tone(b, b.sfx, { t: t + i * 0.05, f: mtof(m), a: 0.12, dur: 1.5, peak: 0.09 }));
@@ -516,6 +528,7 @@
   };
 
   Sound.play = function (name) {
+    if (name === 'hurtBig' && !FILES.hurtBig && FILES.hurt) name = 'hurt'; // a recorded `hurt` covers both
     if (FILES[name]) {
       const a = new Audio(asset(FILES[name]));
       a.volume = fileVolume('sfx');

@@ -50,7 +50,7 @@ Add `?seed=1234` to the URL to replay a specific house. The seed is shown under 
 - **Choices:** the room describes something (a cupboard and a chest, a mirror, a bell-rope...) and offers two or
   three buttons. Each button rolls a good, neutral or bad outcome (an item, nothing, or damage), so nothing is
   a sure thing. Choosing is free (it costs no turn), but you cannot leave the room until you have chosen.
-- **Health** starts at 10. Losing health plays the five-frame hit animation (11 frames a second), shows a red "-2" floating up from the figure's head and makes the heart icon shrink and bounce back; healing shows a green "+3" and makes the heart swell. Reaching 0 ends the run. **Inventory** has 6 slots; a full satchel leaves
+- **Health** starts at 10. A hit of 3 or more also sounds heavier (`hurtBig`). Losing health plays the five-frame hit animation (11 frames a second), shows a red "-2" floating up from the figure's head and makes the heart icon shrink and bounce back; healing shows a green "+3" and makes the heart swell. Reaching 0 ends the run. **Inventory** has 6 slots; a full satchel leaves
   finds on the floor.
 - The generator works to keep a way forward open: it adds doors when you would be boxed in, rubble can
   give way, and a key you need is dropped where you can reach it. Even so, a run can end with
@@ -116,8 +116,8 @@ Nothing is recorded or sent anywhere. Without speech support in the browser the 
 Every image in the game is a function in `js/art.js` returning an HTML string. The pieces that are already
 drawn load from `assets/ui/` (replace a file with a new one of the same name and it shows up). Item pictures go in `assets/items/` (see `assets/ART-LIST.md`). Still
 placeholders: `Art.roomTile` (receives the room's `shape`, `rot` and `exits`), `Art.doorGlyph`, `Art.die` and
-`Art.icon` (item icons). The figure is a single image for now; its idle and walking motion is in
-`css/style.css` (`.figure-img`), and animation frames can replace it later.
+`Art.icon` (item icons). The figure is one idle image (slow breathing, `.figure-img` in `css/style.css`), a three-frame walk loop at 8 a second
+(`assets/ui/walk-1..3.png`) and a five-frame hit animation at 11 a second (`assets/ui/hurt-1..5.png`).
 
 ### Tests
 
