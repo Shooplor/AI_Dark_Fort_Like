@@ -26,7 +26,7 @@
 }
 
 * { box-sizing: border-box; }
-/* the game's own mouse pointer (assets/ui/cursor.png, 40px; the 2x file is used on sharp screens); the tip is the hotspot */
+/* the game's own mouse pointer (assets/ui/cursor.png, 28px; the 2x file is used on sharp screens); the tip is the hotspot */
 * { cursor: url('../assets/ui/cursor.png') 1 1, auto !important; cursor: image-set(url('../assets/ui/cursor.png') 1x, url('../assets/ui/cursor-2x.png') 2x) 1 1, auto !important; }
 html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
 body { font-family: var(--body); color: var(--text); user-select: none; -webkit-user-select: none; }
