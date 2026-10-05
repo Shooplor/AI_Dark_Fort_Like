@@ -51,16 +51,34 @@
         </div>
         <div id="room-card"></div>
         <div id="notice" role="status"></div>
-        <div id="chronicle-wrap">
-          <div class="section-label">Chronicle</div>
-          <ol id="chronicle"></ol>
-        </div>
         <div id="right-foot">
+          <button id="chronicle-toggle" type="button" class="quiet" title="The rooms you have explored (C)">Chronicle</button>
           <span id="seed"></span>
           <button id="new-game" type="button">New game</button>
         </div>
+        <!-- tucked away until the Chronicle button (or the C key) is pressed -->
+        <div id="chronicle-wrap" hidden>
+          <div class="chronicle-head">
+            <div class="section-label">Chronicle</div>
+            <button id="chronicle-close" type="button" class="quiet" aria-label="Close the chronicle">Close</button>
+          </div>
+          <ol id="chronicle"></ol>
+        </div>
       </section>
 
+      <!-- pause screen (Esc) -->
+      <div id="pause" hidden>
+        <div class="overlay-card">
+          <h2>Paused</h2>
+          <p>The house holds its breath. Nothing stirs until you return.</p>
+          <div class="overlay-buttons">
+            <button id="pause-resume" type="button">Return to game</button>
+            <button id="pause-new" type="button" class="quiet">New game</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- end of the run: won, discovered, fallen, or nowhere left to go -->
       <div id="overlay" hidden>
         <div class="overlay-card">
           <h2 id="overlay-title"></h2>

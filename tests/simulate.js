@@ -43,6 +43,15 @@ function checkInvariants(g, seed) {
     if (!cell.entrance && cell.n < 1) fail(seed, 'a room with no doors');
   }
 
+  // Each piece of evidence exists exactly once: still hidden, carried, or lying in a room. Never more, never less.
+  for (const q of Number.isFinite(g.questTotal) ? DF.QUEST_ITEMS : []) {
+    let n = g.questQueue.filter((x) => x.id === q.id).length;
+    n += g.slots.filter((i) => i && i.id === q.id).length;
+    for (const c of d.cells) n += c.floor.filter((i) => i.id === q.id).length;
+    if (n !== 1) fail(seed, `${q.id} exists ${n} times`);
+  }
+  if (g.questCount() > DF.QUEST_ITEMS.length) fail(seed, 'more evidence carried than exists');
+
   // Every locked door has exactly one key somewhere (owed, carried or on a floor); no orphan keys.
   const keysInWorld = {};
   const count = (t) => (keysInWorld[t] = (keysInWorld[t] || 0) + 1);
@@ -107,9 +116,9 @@ function housekeeping(g) {
       // a key is useless once its door no longer leads anywhere new
       const useless = (i) =>
         i.keyType && ![...g.dungeon.doors.values()].some((d) => d.state === 'locked' && d.keyType === i.keyType && g.dungeon.leadsToUnexplored(d));
-      let junk = g.slots.findIndex((i) => i && !i.keyType && i.id !== 'potion');
+      let junk = g.slots.findIndex((i) => i && !i.quest && !i.keyType && i.id !== 'potion');
       if (junk < 0) junk = g.slots.findIndex((i) => i && useless(i));
-      if (junk < 0) junk = g.slots.findIndex((i) => i && !i.keyType);
+      if (junk < 0) junk = g.slots.findIndex((i) => i && !i.quest && !i.keyType);
       if (junk < 0) break;
       g.dropItem(junk); // lands on this floor; the bot never picks curios back up, so no ping-pong
       continue;
@@ -119,8 +128,13 @@ function housekeeping(g) {
   }
 }
 
-function playBot(seed, maxSteps = 600) {
-  const g = new DF.Game(seed, { maxExplorations: Infinity }); // the generator is tested without the limit
+/** Plays one game. By default without the exploration limit (to test the generator); balance.js passes the real one. */
+function playBot(seed, opts = {}) {
+  const maxSteps = opts.maxSteps === undefined ? 600 : opts.maxSteps;
+  const g = new DF.Game(seed, {
+    maxExplorations: opts.maxExplorations === undefined ? Infinity : opts.maxExplorations,
+    questItems: opts.questItems === true, // off for the generator test, so games run until the whole house is explored
+  });
   let steps = 0;
   const stats = { rooms: 1, locks: 0, unlocked: 0, blocked: 0, shapes: {} };
   while (g.status === 'playing' && steps++ < maxSteps) {
@@ -182,24 +196,28 @@ function playBot(seed, maxSteps = 600) {
   return { g, steps, stats };
 }
 
-/* ---------- run ---------- */
-const games = parseInt(process.argv[2] || '2000', 10);
-const totals = { dead: 0, stuck: 0, playing: 0, rooms: 0, turns: 0, unlocked: 0, minRooms: 99, maxRooms: 0, shapes: {} };
-const t0 = Date.now();
-for (let seed = 1; seed <= games; seed++) {
-  const { g, stats } = playBot(seed);
-  totals[g.status]++;
-  totals.rooms += stats.rooms;
-  totals.turns += g.turn;
-  totals.unlocked += stats.unlocked;
-  totals.minRooms = Math.min(totals.minRooms, stats.rooms);
-  totals.maxRooms = Math.max(totals.maxRooms, stats.rooms);
-  for (const [k, v] of Object.entries(stats.shapes)) totals.shapes[k] = (totals.shapes[k] || 0) + v;
+module.exports = { playBot };
+
+if (require.main === module) {
+  /* ---------- run ---------- */
+  const games = parseInt(process.argv[2] || '2000', 10);
+  const totals = { dead: 0, stuck: 0, playing: 0, rooms: 0, turns: 0, unlocked: 0, minRooms: 99, maxRooms: 0, shapes: {} };
+  const t0 = Date.now();
+  for (let seed = 1; seed <= games; seed++) {
+    const { g, stats } = playBot(seed);
+    totals[g.status]++;
+    totals.rooms += stats.rooms;
+    totals.turns += g.turn;
+    totals.unlocked += stats.unlocked;
+    totals.minRooms = Math.min(totals.minRooms, stats.rooms);
+    totals.maxRooms = Math.max(totals.maxRooms, stats.rooms);
+    for (const [k, v] of Object.entries(stats.shapes)) totals.shapes[k] = (totals.shapes[k] || 0) + v;
+  }
+  const cells = DF.CONFIG.layout.join('').split('#').length - 1;
+  console.log(`${games} games in ${Date.now() - t0}ms — all invariants held.`);
+  console.log(`ended: ${totals.dead} died, ${totals.stuck} ran out of rooms, ${totals.playing} hit the step cap`);
+  console.log(`avg rooms explored: ${(totals.rooms / games).toFixed(1)} of ${cells} (min ${totals.minRooms}, max ${totals.maxRooms})`);
+  console.log(`avg turns: ${(totals.turns / games).toFixed(1)}, avg doors unlocked: ${(totals.unlocked / games).toFixed(2)}`);
+  console.log('room shapes revealed:', totals.shapes);
+  console.log(`choices decided: ${choicesMade} (${(choicesMade / totals.rooms * 100).toFixed(0)}% of explored rooms)`);
 }
-const cells = DF.CONFIG.layout.join('').split('#').length - 1;
-console.log(`${games} games in ${Date.now() - t0}ms — all invariants held.`);
-console.log(`ended: ${totals.dead} died, ${totals.stuck} ran out of rooms, ${totals.playing} hit the step cap`);
-console.log(`avg rooms explored: ${(totals.rooms / games).toFixed(1)} of ${cells} (min ${totals.minRooms}, max ${totals.maxRooms})`);
-console.log(`avg turns: ${(totals.turns / games).toFixed(1)}, avg doors unlocked: ${(totals.unlocked / games).toFixed(2)}`);
-console.log('room shapes revealed:', totals.shapes);
-console.log(`choices decided: ${choicesMade} (${(choicesMade / totals.rooms * 100).toFixed(0)}% of explored rooms)`);

@@ -186,6 +186,25 @@
         return wrap(`<path d="M24 24 C24 34 22 40 20 45" fill="none" stroke="#2f5a3a" stroke-width="3"/>
           <circle cx="24" cy="16" r="10" fill="#7a1024"/><path d="M16 14 C20 8 28 8 32 14 C28 12 20 12 16 14Z M18 20 C21 14 27 14 30 20 C27 18 21 18 18 20Z" fill="#c42b46"/>
           <circle cx="24" cy="16" r="3.2" fill="#4a0a15"/>`);
+      case 'flute':
+        return wrap(`<g transform="rotate(-42 24 24)">
+            <rect x="2" y="20" width="44" height="8" rx="4" fill="#cfd5de" stroke="#6c7482" stroke-width="1.6"/>
+            <rect x="2" y="19" width="7" height="10" rx="2.5" fill="#aab2c0" stroke="#6c7482" stroke-width="1.4"/>
+            <circle cx="16" cy="24" r="1.7" fill="#262b34"/><circle cx="23" cy="24" r="1.7" fill="#262b34"/><circle cx="30" cy="24" r="1.7" fill="#262b34"/><circle cx="37" cy="24" r="1.7" fill="#262b34"/>
+            <line x1="10" y1="22" x2="43" y2="22" stroke="#fff" stroke-opacity=".55" stroke-width="1.2"/>
+          </g>`);
+      case 'scroll':
+        return wrap(`<rect x="10" y="9" width="28" height="30" fill="#e8dcb8" stroke="#8b7a4a" stroke-width="1.6"/>
+          <ellipse cx="24" cy="9" rx="15" ry="4" fill="#d9c895" stroke="#8b7a4a" stroke-width="1.6"/>
+          <ellipse cx="24" cy="39" rx="15" ry="4" fill="#d9c895" stroke="#8b7a4a" stroke-width="1.6"/>
+          <g stroke="#8b7a4a" stroke-width="1.3" stroke-linecap="round" opacity=".8"><line x1="15" y1="16" x2="33" y2="16"/><line x1="15" y1="21" x2="31" y2="21"/><line x1="15" y1="26" x2="33" y2="26"/></g>
+          <circle cx="24" cy="33" r="5.5" fill="#17101a" stroke="#6b5a70" stroke-width="1.3"/><path d="M21.5 33 H26.5 M24 30.5 V35.5" stroke="#8a7a90" stroke-width="1.2"/>`);
+      case 'camera':
+        return wrap(`<rect x="13" y="9" width="13" height="7" rx="1.8" fill="#3a3f4a" stroke="#8a93a6" stroke-width="1.4"/>
+          <rect x="5" y="14" width="38" height="25" rx="3.5" fill="#2b2f38" stroke="#8a93a6" stroke-width="1.6"/>
+          <circle cx="24" cy="27" r="10" fill="#14202a" stroke="#c4cad4" stroke-width="2.6"/>
+          <circle cx="24" cy="27" r="5.5" fill="#2a4a6a"/><circle cx="21.8" cy="24.8" r="1.7" fill="#fff" opacity=".65"/>
+          <rect x="34" y="17" width="6" height="4" rx="1" fill="#f4dd8c"/><circle cx="9.5" cy="19" r="1.3" fill="#c42b46"/>`);
       case 'glasses':
         return wrap(`<circle cx="14" cy="28" r="9" fill="#14202a" stroke="${GOLD}" stroke-width="3"/><circle cx="34" cy="28" r="9" fill="#14202a" stroke="${GOLD}" stroke-width="3"/>
           <rect x="21" y="25" width="6" height="4" fill="${GOLD}"/><path d="M14 19 V10 M34 19 V10" stroke="${GOLD}" stroke-width="3"/>
@@ -194,6 +213,14 @@
         return wrap(`<circle cx="24" cy="24" r="14" fill="none" stroke="${c}" stroke-width="3"/><circle cx="24" cy="24" r="4" fill="${c}"/>`);
     }
   };
+
+  /** An item's picture: its own file in assets/items/ once it has been drawn (list its id in ITEM_IMAGES),
+   *  otherwise the placeholder icon. File names are the item id with ':' written as '-' (e.g. key-brass.png). */
+  Art.ITEM_IMAGES = new Set([]);
+  Art.itemIcon = (item) =>
+    Art.ITEM_IMAGES.has(item.id)
+      ? `<img src="assets/items/${item.id.replace(':', '-')}.png" alt="" draggable="false">`
+      : Art.icon(item.icon, item.color);
 
   /* ---------------------------------------------------------------- the masked figure (left of the map) */
 

@@ -12,7 +12,8 @@
   DF.fill = fill;
 
   class Game {
-    /** `opts.maxExplorations` overrides the exploration limit (the headless tests pass Infinity). */
+    /** `opts.maxExplorations` overrides the exploration limit; `opts.questItems: false` removes the evidence and so the
+     *  way to win (both are used by the headless tests, which want to explore the whole house). */
     constructor(seed, opts = {}) {
       this.seed = seed >>> 0;
       this.rng = DF.makeRng(this.seed);
@@ -26,12 +27,16 @@
       this.turn = 0; // moves made so far (walking back through explored rooms counts here...)
       this.explored = 0; // ...but only exploring a NEW room spends one of the limited exploration points
       this.maxExplorations = opts.maxExplorations === undefined ? CONFIG.maxExplorations : opts.maxExplorations;
-      this.status = 'playing'; // playing | dead | caught (out of exploration points) | stuck
+      this.status = 'playing'; // playing | won | dead | caught (out of exploration points) | stuck
       this.log = []; // chronicle entries { turn, name, summary }
       this.nextUid = 1;
 
       this.player = { x: CONFIG.start.x, y: CONFIG.start.y };
       this.dungeon.buildStart(this.player.x, this.player.y);
+
+      const evidence = opts.questItems !== false;
+      this.questTotal = evidence ? DF.QUEST_ITEMS.length : Infinity;
+      this.questQueue = evidence ? this.rng.shuffle(DF.QUEST_ITEMS) : []; // the evidence still hidden in the house, in the order it turns up
     }
 
     get cell() {
@@ -107,7 +112,8 @@
         result = { newRoom: false, cell, hpBefore: this.hp, hpAfter: this.hp }; // backtracking is free and not logged
       }
 
-      if (this.hp <= 0) this.status = 'dead';
+      if (this.questCount() >= this.questTotal) this.status = 'won';
+      else if (this.hp <= 0) this.status = 'dead';
       else if (this.explored >= this.maxExplorations) this.status = 'caught';
       else if (d.analyze(cell.x, cell.y, this.heldKeyTypes()).frontier === 0) this.status = 'stuck';
       result.status = this.status;
@@ -120,12 +126,17 @@
       const rng = this.rng;
       const pick = (arr) => rng.pick(arr);
 
-      // 1. A key is owed. Drop it if the player is boxed in, otherwise now and then.
+      // 1. Keys and evidence. If the player is boxed in, the key that frees them comes first; otherwise a piece of
+      //    evidence may turn up here, or a key that is still owed.
       let owed = null;
       if (d.analyze(cell.x, cell.y, this.heldKeyTypes()).frontier === 0) owed = d.keyForBoxedIn();
-      if (!owed && rng.chance(CONFIG.keyDropChance)) {
-        const pending = d.pendingKeys(info.addedDoors.map((door) => door.id));
-        if (pending.length) owed = rng.pick(pending);
+      if (!owed) {
+        const evidence = this.maybePlaceQuestItem(cell);
+        if (evidence) return evidence;
+        if (rng.chance(CONFIG.keyDropChance)) {
+          const pending = d.pendingKeys(info.addedDoors.map((door) => door.id));
+          if (pending.length) owed = rng.pick(pending);
+        }
       }
       if (owed) {
         owed.placed = true;
@@ -164,6 +175,46 @@
         default:
           return { kind: 'nothing', text: pick(DF.EVENT_TEXT.nothing), short: 'Nothing of note' };
       }
+    }
+
+    /* ---------- quest items (the evidence) ---------- */
+    questCount() {
+      return this.slots.filter((i) => i && i.quest).length;
+    }
+
+    /**
+     * Possibly hide the next piece of evidence in this newly explored room. Rooms from CONFIG.quest.from onwards
+     * hold a piece with probability (pieces left) / (rooms left to explore, this one included): a uniformly random
+     * spread that is certain to have shown every piece by the last exploration.
+     */
+    maybePlaceQuestItem(cell) {
+      const left = this.questQueue.length;
+      if (!left || this.explored < CONFIG.quest.from) return null;
+      const end = (Number.isFinite(this.maxExplorations) ? this.maxExplorations : CONFIG.maxExplorations) + CONFIG.quest.slack;
+      const roomsLeft = Math.max(1, end - this.explored + 1);
+      if (!this.rng.chance(left / roomsLeft)) return null;
+      const def = this.questQueue.shift();
+      return this.grantQuestItem(cell, this.makeItem(def), def.found);
+    }
+
+    /** Evidence always goes into the satchel; if it is full, something less important is left behind. */
+    grantQuestItem(cell, item, text) {
+      let slot = this.freeSlot();
+      let note = '';
+      if (slot < 0) {
+        const rank = (i) => (i.keyType ? 2 : i.id === 'potion' ? 1 : 0); // curios go first, keys last
+        slot = -1;
+        this.slots.forEach((it, i) => {
+          if (it && !it.quest && (slot < 0 || rank(it) < rank(this.slots[slot]))) slot = i;
+        });
+        const left = this.slots[slot];
+        cell.floor.push(left);
+        note = ` Your satchel is full, so you leave the [[${left.name}]] behind to make room.`;
+      }
+      this.slots[slot] = item;
+      const n = this.questCount();
+      const done = n >= this.questTotal ? ' That is all of it.' : '';
+      return { kind: 'quest', item, taken: true, text: `${text} Evidence gathered: ${n} of ${this.questTotal}.${done}${note}`, short: `Found evidence: ${item.name}` };
     }
 
     /** Put a found item in the satchel, or leave it on the floor if there is no room. */
@@ -238,6 +289,7 @@
     dropItem(slot) {
       const item = this.slots[slot];
       if (this.status !== 'playing' || !item) return { ok: false, msg: '' };
+      if (item.quest) return { ok: false, msg: 'You cannot part with the evidence.' };
       this.slots[slot] = null;
       this.cell.floor.push(item);
       return { ok: true, msg: `You leave the [[${item.name}]] on the floor.` };
@@ -251,7 +303,8 @@
       if (slot < 0) return { ok: false, msg: 'Your satchel is full. Drop something first.' };
       cell.floor.splice(index, 1);
       this.slots[slot] = item;
-      return { ok: true, msg: `You pick up the [[${item.name}]].` };
+      if (this.questCount() >= this.questTotal) this.status = 'won';
+      return { ok: true, status: this.status, msg: `You pick up the [[${item.name}]].` };
     }
   }
 

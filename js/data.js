@@ -22,6 +22,10 @@
     ],
     start: { x: 2, y: 9 }, // the entrance foyer: bottom row, second room from the left
     maxExplorations: 20, // new rooms the player may explore before being discovered (walking back is free)
+    // The evidence (quest items) is hidden in rooms at random, spread over explorations `from` .. `maxExplorations + slack`.
+    // With slack 0 a player who explores all 20 rooms is always shown every piece. A bigger `slack` pushes some pieces
+    // beyond the limit, so winning stops being certain (higher = harder). See Game.maybePlaceQuestItem.
+    quest: { from: 4, slack: 0 },
     maxHp: 10,
     slots: 6,
     potionHeal: 4,
@@ -157,6 +161,34 @@
       desc: `Fits a ${k.lock} lock somewhere in this house. It is used up when it turns.`,
     };
   };
+
+  /* Quest items: the evidence. Holding all of them wins the game. They cannot be dropped. */
+  DF.QUEST_ITEMS = [
+    {
+      id: 'flute',
+      name: 'Silver Flute',
+      icon: 'flute',
+      quest: true,
+      desc: 'A slender silver flute engraved with the cult\'s sigil. Its notes opened every rite. Evidence.',
+      found: 'On a velvet-lined stand, among the sheet music, lies a slender silver flute engraved with a sigil you have seen before: [[Silver Flute]].',
+    },
+    {
+      id: 'scroll',
+      name: 'Ritual Scroll',
+      icon: 'scroll',
+      quest: true,
+      desc: 'A scroll sealed with black wax: the order of the ceremony, and the names of those who attend. Evidence.',
+      found: 'Beneath a loose floorboard lies a scroll sealed with black wax, the order of the ceremony in a careful hand: [[Ritual Scroll]].',
+    },
+    {
+      id: 'camera',
+      name: 'Press Camera',
+      icon: 'camera',
+      quest: true,
+      desc: 'A heavy press camera with the film still wound. Whatever it saw, the pictures will speak for themselves. Evidence.',
+      found: 'Forgotten on a windowsill, a heavy press camera with the film still wound: [[Press Camera]]. Whoever left it left in a hurry.',
+    },
+  ];
 
   DF.CURIOS = [
     { id: 'porcelain_mask', name: 'Porcelain Mask', icon: 'mask', desc: 'Blank, white and eyeless. It is cold, as though it had been breathing a moment ago.' },

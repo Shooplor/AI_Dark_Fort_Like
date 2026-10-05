@@ -20,7 +20,7 @@
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
   /** Which style the event box in the right-hand panel gets for an outcome. */
-  const outcomeClass = (o) => (o.kind === 'trap' ? 'trap' : o.kind === 'heal' ? 'heal' : o.kind === 'nothing' ? 'quiet' : o.kind === 'choice' ? 'choice' : '');
+  const outcomeClass = (o) => (o.kind === 'trap' ? 'trap' : o.kind === 'heal' ? 'heal' : o.kind === 'nothing' ? 'quiet' : o.kind === 'choice' ? 'choice' : o.kind === 'quest' ? 'quest' : '');
 
   // Movement keys by physical position (`code`, so they work on any keyboard layout, e.g. Cyrillic) and by
   // the character typed (`key`) as a fallback. Numbers 1-9 pick a choice.
@@ -38,6 +38,7 @@
     constructor() {
       this.game = null;
       this.busy = false;
+      this.paused = false;
       this.noticeTimer = null;
       this.prevUids = new Set();
       this.view = null; // what the right-hand panel is showing
@@ -87,7 +88,9 @@
         'keydown',
         (ev) => {
           if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
-          if (ev.key === 'Escape') return this.closePop();
+          if (ev.key === 'Escape') return this.onEscape();
+          if (this.paused) return; // nothing else works while the game is paused
+          if (ev.code === 'KeyC' && !ev.repeat) return this.toggleChronicle();
           let side = SIDE_BY_CODE[ev.code];
           if (side === undefined && typeof ev.key === 'string') side = SIDE_BY_KEY[ev.key.toLowerCase()];
           if (side !== undefined) {
@@ -120,6 +123,10 @@
         }
       });
       $('#overlay-new').addEventListener('click', () => this.newGame());
+      $('#pause-resume').addEventListener('click', () => this.resume());
+      $('#pause-new').addEventListener('click', () => this.newGame());
+      $('#chronicle-toggle').addEventListener('click', () => this.toggleChronicle());
+      $('#chronicle-close').addEventListener('click', () => this.toggleChronicle(false));
       $('#overlay-look').addEventListener('click', () => ($('#overlay').hidden = true));
     }
 
@@ -128,6 +135,8 @@
       this.game = new DF.Game(seed);
       this.busy = false;
       this.prevUids = new Set();
+      this.resume();
+      this.toggleChronicle(false);
       this.doorEls.forEach((el) => el.remove());
       this.doorEls.clear();
       this.buildBoard();
@@ -390,11 +399,11 @@
       this.game.slots.forEach((item, i) => {
         const b = document.createElement('button');
         b.type = 'button';
-        b.className = 'slot' + (item ? ' has' : '');
+        b.className = 'slot' + (item ? ' has' : '') + (item && item.quest ? ' quest' : '');
         b.dataset.slot = i;
         b.style.left = SLOT_POS[i][0] + 'px';
         b.style.top = SLOT_POS[i][1] + 'px';
-        b.innerHTML = item ? Art.icon(item.icon, item.color) : '';
+        b.innerHTML = item ? `<span class="icon">${Art.itemIcon(item)}</span>` : '';
         if (item) {
           uids.add(item.uid);
           b.title = item.name;
@@ -416,8 +425,9 @@
       if (!item) return this.closePop();
       const pop = $('#item-pop');
       pop.dataset.slot = slot;
-      pop.innerHTML = `<h3>${esc(item.name)}</h3><p>${esc(item.desc)}</p>
-        <div class="row">${item.usable ? '<button type="button" data-act="use">Use</button>' : ''}<button type="button" data-act="drop" class="quiet">Drop</button></div>`;
+      pop.className = item.quest ? 'quest' : '';
+      pop.innerHTML = `${item.quest ? '<div class="tag">Evidence</div>' : ''}<h3>${esc(item.name)}</h3><p>${esc(item.desc)}</p>
+        <div class="row">${item.usable ? '<button type="button" data-act="use">Use</button>' : ''}${item.quest ? '' : '<button type="button" data-act="drop" class="quiet">Drop</button>'}</div>`;
       pop.hidden = false;
       document.querySelectorAll('.slot').forEach((s) => s.classList.toggle('open', s.dataset.slot === String(slot)));
       pop.querySelectorAll('button').forEach((btn) =>
@@ -468,7 +478,7 @@
       const floor = cell.floor.length
         ? `<div class="floor"><div class="section-label">On the floor</div>${cell.floor
             .map(
-              (it, i) => `<div class="floor-row">${Art.icon(it.icon, it.color)}<span>${esc(it.name)}</span>
+              (it, i) => `<div class="floor-row"><i class="mini">${Art.itemIcon(it)}</i><span>${esc(it.name)}</span>
                 <button type="button" data-take="${i}" ${g.freeSlot() < 0 ? 'disabled title="Your satchel is full"' : ''}>Take</button></div>`
             )
             .join('')}</div>`
@@ -515,6 +525,7 @@
           this.renderInventory();
           this.renderRoom(false);
           this.refreshHints();
+          if (res.status && res.status !== 'playing') setTimeout(() => this.showEnd(res.status), 1200);
         })
       );
     }
@@ -555,6 +566,9 @@
       if (status === 'dead') {
         title.textContent = 'You have fallen';
         text.textContent = 'The house keeps what it takes. Your golden mask is hung upon the wall, beside all the others.';
+      } else if (status === 'won') {
+        title.textContent = 'The mystery is revealed';
+        text.textContent = 'With the flute, the scroll and the camera, you now have enough evidence to reveal the existence of this cult. Its secret gathering will not stay secret for long.';
       } else if (status === 'caught') {
         title.textContent = 'You have been discovered';
         text.textContent = 'The music stops. One by one, every mask in the room turns to look at you.';
@@ -562,7 +576,41 @@
         title.textContent = 'Nowhere left to go';
         text.textContent = 'Every remaining door is sealed, barred or buried. The house has shown you all it means to, tonight.';
       }
+      $('#overlay').classList.toggle('won', status === 'won');
       $('#overlay').hidden = false;
+    }
+
+    /* ---------------------------------------------------------------- pause and chronicle */
+
+    onEscape() {
+      if (!$('#overlay').hidden) return; // an end screen is up: use its buttons
+      if (this.paused) return this.resume();
+      if (!$('#item-pop').hidden) return this.closePop();
+      if (!$('#chronicle-wrap').hidden) return this.toggleChronicle(false);
+      this.pause();
+    }
+
+    pause() {
+      this.paused = true;
+      this.closePop();
+      $('#stage').classList.add('paused');
+      $('#pause').hidden = false;
+      $('#pause-resume').focus({ preventScroll: true });
+    }
+
+    resume() {
+      this.paused = false;
+      $('#stage').classList.remove('paused');
+      $('#pause').hidden = true;
+      $('#pause-resume').blur();
+    }
+
+    /** Show or hide the chronicle (hidden by default; it opens over the room text). */
+    toggleChronicle(show) {
+      const wrap = $('#chronicle-wrap');
+      const open = show === undefined ? wrap.hidden : show;
+      wrap.hidden = !open;
+      $('#chronicle-toggle').classList.toggle('on', open);
     }
   }
 

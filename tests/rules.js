@@ -34,7 +34,8 @@ function exploreNew(g) {
     for (let s = 0; s < 4; s++) {
       const door = d.doorAt(cell.x, cell.y, s);
       const nb = d.neighbor(cell.x, cell.y, s);
-      if (!door || door.state !== 'open' || !nb) continue;
+      const passable = door && (door.state === 'open' || (door.state === 'locked' && g.heldKeyTypes().includes(door.keyType)));
+      if (!passable || !nb) continue;
       if (!nb.explored) {
         const sides = [s];
         for (let c = cell; prev.get(c); c = prev.get(c).from) sides.unshift(prev.get(c).side);
@@ -137,6 +138,54 @@ test('a healing outcome at full health explains itself instead of showing a raw 
     g.hp = g.maxHp;
     g.status = 'playing';
   }
+});
+
+test('every piece of evidence shows up within the 20 rooms you may explore (so the run is winnable)', () => {
+  let won = 0, early = 0;
+  for (let seed = 1; seed <= 80; seed++) {
+    const g = new DF.Game(seed); // the real rules: 20 rooms, evidence on
+    let guard = 0;
+    while (g.status === 'playing' && guard++ < 40) {
+      const r = exploreNew(g);
+      if (!r) break;
+      // keep the pack from filling up with junk: evidence must always find room anyway
+    }
+    if (g.status === 'won') won++;
+    else if (g.status === 'dead' || g.status === 'stuck') early++;
+    else if (g.status === 'playing') early++; // this helper found no way on (e.g. a key lying in another room)
+    else assert.fail(`seed ${seed} ended as "${g.status}" with ${g.questCount()} of ${g.questTotal} pieces: the evidence should have been found`);
+  }
+  assert.ok(won >= 50, `most runs should be won by simply exploring (won ${won}, died or got stuck ${early})`);
+});
+
+test('holding all three pieces of evidence wins, even in the 20th room', () => {
+  const g = new DF.Game(5);
+  g.slots[0] = g.makeItem(DF.QUEST_ITEMS[0]);
+  g.slots[1] = g.makeItem(DF.QUEST_ITEMS[1]);
+  g.questQueue = [DF.QUEST_ITEMS[2]];
+  g.explored = 19; // the next new room is the 20th
+  const r = step(g, 0);
+  assert.strictEqual(r.outcome.kind, 'quest');
+  assert.strictEqual(g.status, 'won');
+  assert.ok(r.outcome.text.includes('3 of 3'));
+});
+
+test('evidence cannot be dropped', () => {
+  const g = new DF.Game(5);
+  g.slots[0] = g.makeItem(DF.QUEST_ITEMS[0]);
+  assert.strictEqual(g.dropItem(0).ok, false);
+  assert.ok(g.slots[0], 'the item is still there');
+});
+
+test('a full pack makes room for evidence by leaving something less important behind', () => {
+  const g = new DF.Game(5);
+  g.slots = [g.makeItem(DF.CURIOS[0]), g.makeItem(DF.ITEM_DEFS.potion), g.makeItem(DF.keyItemDef('brass')), g.makeItem(DF.CURIOS[1]), g.makeItem(DF.CURIOS[2]), g.makeItem(DF.CURIOS[3])];
+  const out = g.grantQuestItem(g.cell, g.makeItem(DF.QUEST_ITEMS[0]), 'Found.');
+  assert.strictEqual(g.questCount(), 1);
+  assert.strictEqual(g.slots.filter(Boolean).length, 6, 'still six items');
+  assert.ok(g.slots.some((i) => i.keyType) && g.slots.some((i) => i.id === 'potion'), 'the key and the potion were kept');
+  assert.strictEqual(g.cell.floor.length, 1, 'a curio was left on the floor');
+  assert.ok(out.text.includes('make room'));
 });
 
 console.log(`\n${passed} rule checks passed.`);

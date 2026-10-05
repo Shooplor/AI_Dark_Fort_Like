@@ -16,6 +16,8 @@ it also works offline.
 | --- | --- |
 | Move one room (no diagonals) | Arrow keys / WASD (any keyboard layout), or click an adjacent room |
 | Make a choice in a room | Click one of the buttons in the right-hand panel, or press 1 / 2 / 3 |
+| Pause / resume | Esc (also closes an open item popover or the chronicle first) |
+| Open / close the chronicle | The Chronicle button under the room text, or the C key |
 | Inspect, use or drop an item | Click it in the inventory strip on the left |
 | Pick an item up from the floor | "Take" button in the right-hand panel |
 
@@ -46,7 +48,11 @@ Add `?seed=1234` to the URL to replay a specific house. The seed is shown under 
   give way, and a key you need is dropped where you can reach it. Even so, a run can end with
   "Nowhere left to go" once every remaining door is sealed.
 
-There is no win condition yet (quest items are planned).
+- **Winning:** three pieces of evidence (a flute, a scroll and a camera, for now) are hidden in rooms, marked in the
+  inventory by a green outline. Holding all three ends the game with a victory popup. Evidence cannot be dropped;
+  if the satchel is full when a piece turns up, something less important is left behind to make room.
+  `CONFIG.quest` in `js/data.js` decides how they are spread: with `slack: 0` every piece is certain to turn up
+  within your 20 new rooms; a larger `slack` makes winning less certain (see `tests/balance.js`).
 
 ## Project layout
 
@@ -64,13 +70,14 @@ js/art.js         where every picture is produced: real art + remaining placehol
 js/ui.js          rendering and turn animation (walk -> die -> reveal -> text)
 js/main.js        boot, window scaling, ?seed=
 tests/simulate.js headless bot that plays thousands of games and checks the generator
-tests/rules.js    quick checks of the exploration counter, backtracking and choices
+tests/rules.js    quick checks of the exploration counter, backtracking, choices and evidence
+tests/balance.js  how often a bot wins under the real rules (use it to tune the difficulty)
 ```
 
 ### Swapping in real art
 
 Every image in the game is a function in `js/art.js` returning an HTML string. The pieces that are already
-drawn load from `assets/ui/` (replace a file with a new one of the same name and it shows up). Still
+drawn load from `assets/ui/` (replace a file with a new one of the same name and it shows up). Item pictures go in `assets/items/` (see `assets/ART-LIST.md`). Still
 placeholders: `Art.roomTile` (receives the room's `shape`, `rot` and `exits`), `Art.doorGlyph`, `Art.die` and
 `Art.icon` (item icons). The figure is a single image for now; its idle and walking motion is in
 `css/style.css` (`.figure-img`), and animation frames can replace it later.
@@ -78,8 +85,9 @@ placeholders: `Art.roomTile` (receives the room's `shape`, `rot` and `exits`), `
 ### Tests
 
 ```
-node tests/rules.js          # exploration counter, free backtracking, choices
+node tests/rules.js          # exploration counter, free backtracking, choices, evidence
 node tests/simulate.js 2000  # the dungeon generator
+node tests/balance.js 2000   # win rate under the real rules (add --slack=4 to try a harder setting)
 ```
 
 `simulate.js` plays 2000 seeded games with a bot (making choices as it goes) and fails if any invariant breaks:
