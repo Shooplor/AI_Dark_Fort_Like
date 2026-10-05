@@ -26,6 +26,8 @@
 }
 
 * { box-sizing: border-box; }
+/* the game's own mouse pointer (assets/ui/cursor.png, 40px; the 2x file is used on sharp screens); the tip is the hotspot */
+* { cursor: url('../assets/ui/cursor.png') 1 1, auto !important; cursor: image-set(url('../assets/ui/cursor.png') 1x, url('../assets/ui/cursor-2x.png') 2x) 1 1, auto !important; }
 html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
 body { font-family: var(--body); color: var(--text); user-select: none; -webkit-user-select: none; }
 img { display: block; }
@@ -77,7 +79,7 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 /* Placed 24px lower and 6px further left than the art mockup: the cloak's hem and its flat left edge sit exactly on the
    screen edges in the mockup, so the walk bob, tilt and idle breathing would show them. This hides them in every frame. */
 #figure { position: absolute; left: -45px; top: 69px; width: 500px; height: 885px; z-index: 1; pointer-events: none; }
-.figure-img { width: 100%; height: 100%; transform-origin: 0 100%; animation: breathe 4.6s ease-in-out infinite; }
+.figure-img { width: 100%; height: 100%; transform-origin: 0 100%; /* idle breathing is switched off for now; to bring it back use: animation: breathe 4.6s ease-in-out infinite; */ }
 @keyframes breathe { 0%, 100% { transform: translateY(0) scale(1, 1); } 50% { transform: translateY(-3px) scale(1.004, 1.012); } }
 /* Hit: five frames (assets/ui/hurt-1..5.png, drawn at normal size) replace the figure for ~0.45 s (11 frames a second).
    The frames were drawn on a canvas whose top-left sits 40px right and 30px below the figure's, so the first frame lines up

@@ -13,6 +13,7 @@ name and the same pixel size.
 | `walk-1.png` ... `walk-3.png` | 439x824 at (-5, 99), **normal size (not 2x)** | the walking animation, looped at 8 frames a second while the figure walks between rooms |
 | `die.png` | 250x250, shown at 72px (not 2x) in the die slot top of the right panel | the d4 fate die; the rolled number is live text drawn over it |
 | `right-panel.png` | 438x881 at (1162, 10), **normal size (not 2x)** | the frame behind the right-hand text panel (its fill is see-through; the corner ornaments set how far in the text sits) |
+| `cursor.png`, `cursor-2x.png` | 40px and 80px | the mouse pointer (browsers allow at most 128px). `cursor-large.png` is your original 250px drawing, kept for re-exporting |
 | `hp-counter.png` | 48.5px at (24, 37) | heart icon |
 | `eye-counter.png` | 86x46.5 at (192, 38) | eye icon (turns before discovery) |
 | `inventory-slot.png` | 127px, six times (see `SLOT_POS` in `js/ui.js`) | inventory slots |
