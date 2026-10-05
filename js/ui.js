@@ -62,6 +62,7 @@
 
       document.body.insertAdjacentHTML('afterbegin', Art.defs);
       $('#figure').innerHTML = Art.portrait();
+      $('#hurt-frames').innerHTML = Art.hurtFrames();
       $('#marker').innerHTML = `<div class="token">${Art.playerToken()}</div>`;
       this.buildBoard();
       this.bindInput();
@@ -440,11 +441,44 @@
       nums.classList.add(delta < 0 ? 'dmg' : 'heal');
       const flash = $('#flash');
       flash.className = delta < 0 ? 'hurt' : 'heal';
-      if (delta < 0) {
-        const fig = $('#figure');
-        fig.classList.add('hurt');
-        setTimeout(() => fig.classList.remove('hurt'), 500);
-      }
+      this.popNumber(delta);
+      const heart = $('#hp-icon');
+      heart.classList.remove('pulse-hurt', 'pulse-heal');
+      void heart.offsetWidth;
+      heart.classList.add(delta < 0 ? 'pulse-hurt' : 'pulse-heal');
+      if (delta < 0) this.playHurt();
+    }
+
+    /** A number that floats up from the figure's head: red "-2" when hurt, green "+3" when healed. */
+    popNumber(delta) {
+      const el = document.createElement('div');
+      el.className = 'floater ' + (delta < 0 ? 'bad' : 'good');
+      el.textContent = (delta < 0 ? '\u2212' : '+') + Math.abs(delta);
+      el.addEventListener('animationend', () => el.remove());
+      $('#floaters').appendChild(el);
+    }
+
+    /** The five hit frames, one after another at 11 per second, then back to the normal picture. */
+    playHurt() {
+      const frames = $('#hurt-frames').children;
+      const fig = $('#figure');
+      clearInterval(this.hurtTimer);
+      let i = 0;
+      const show = () => {
+        for (let k = 0; k < frames.length; k++) frames[k].classList.toggle('on', k === i);
+      };
+      fig.classList.add('hurt');
+      show();
+      this.hurtTimer = setInterval(() => {
+        i++;
+        if (i >= frames.length) {
+          clearInterval(this.hurtTimer);
+          for (const f of frames) f.classList.remove('on');
+          fig.classList.remove('hurt');
+          return;
+        }
+        show();
+      }, 1000 / 11);
     }
 
     renderInventory() {

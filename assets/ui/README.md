@@ -9,6 +9,7 @@ name and the same pixel size.
 | `background.png` | 1600x900, behind everything | tapestry |
 | `center-pillars.png` | 716x906 at x=442, y=-6 | carved frame around the map |
 | `character.png` | 500x885 at x=-45, y=69 | the masked figure (its hem and left edge sit just off the screen edges, so the walk animation never shows a cut) |
+| `hurt-1.png` ... `hurt-5.png` | 439x824 at (-5, 99), **normal size (not 2x)** | the hit animation, played in order at 11 frames a second whenever health is lost (frame 1 matches `character.png` exactly) |
 | `hp-counter.png` | 48.5px at (24, 37) | heart icon |
 | `eye-counter.png` | 86x46.5 at (192, 38) | eye icon (turns before discovery) |
 | `inventory-slot.png` | 127px, six times (see `SLOT_POS` in `js/ui.js`) | inventory slots |

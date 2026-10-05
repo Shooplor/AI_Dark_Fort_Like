@@ -231,5 +231,9 @@
 
   /** The character. `assets/ui/character.png`. For now the whole image moves to idle / walk (see css/style.css);
    *  animation frames can later replace the single <img>. */
+  /** The five hit frames (assets/ui/hurt-1..5.png), stacked; ui.js shows one at a time. Drawn at normal size (not 2x). */
+  Art.hurtFrames = () =>
+    [asset('assets/ui/hurt-1.png'), asset('assets/ui/hurt-2.png'), asset('assets/ui/hurt-3.png'), asset('assets/ui/hurt-4.png'), asset('assets/ui/hurt-5.png')]
+      .map((src) => `<img class="hurt-frame" src="${src}" alt="" draggable="false">`).join('');
   Art.portrait = () => `<img class="figure-img" src="${asset('assets/ui/character.png')}" alt="" draggable="false">`;
 })();
