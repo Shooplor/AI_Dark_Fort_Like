@@ -29,6 +29,8 @@ it also works offline.
 single file; friends double-click it and it opens in their browser, with no folder, install or internet needed.
 It is rebuilt with `node tools/build.js` after every change (the file in the repo is always the current build).
 
+**Quick testing link:** the game is also published as a private page (see the link Claude gives in chat). `node tools/make-artifact.js <folder>` prepares the files for it; Claude republishes after each change.
+
 Add `?seed=1234` to the URL to replay a specific house. The seed is shown under the map.
 
 ## The rules so far
@@ -82,6 +84,7 @@ js/voice.js       reads the on-screen text aloud with the browser's built-in voi
 js/ui.js          rendering and turn animation (walk -> die -> reveal -> text)
 js/main.js        boot, window scaling, ?seed=
 tools/build.js    packs the game into the single file dist/TheMaskedHouse.html
+tools/make-artifact.js  prepares the game's files for the private hosted test page
 dist/             the packed, shareable game
 tests/simulate.js headless bot that plays thousands of games and checks the generator
 tests/rules.js    quick checks of the exploration counter, backtracking, choices and evidence
