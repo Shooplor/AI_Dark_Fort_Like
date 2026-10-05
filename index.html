@@ -76,6 +76,18 @@
             <label>Effects <input id="vol-sfx" type="range" min="0" max="100" step="1"></label>
             <button id="sound-mute" type="button" class="quiet" title="Press M to mute or unmute at any time">Sound: on</button>
           </div>
+          <div class="voice-settings">
+            <div class="voice-row">
+              <button id="voice-toggle" type="button" class="quiet" title="Press V to turn the voice on or off at any time">Voice: on</button>
+              <select id="voice-select" aria-label="Voice"></select>
+              <button id="voice-test" type="button" class="quiet">Hear it</button>
+            </div>
+            <div class="voice-row">
+              <label>Volume <input id="voice-volume" type="range" min="0" max="100" step="1"></label>
+              <label>Pace <input id="voice-rate" type="range" min="50" max="120" step="1"></label>
+              <label>Pitch <input id="voice-pitch" type="range" min="30" max="120" step="1"></label>
+            </div>
+          </div>
           <div class="overlay-buttons">
             <button id="pause-resume" type="button">Return to game</button>
             <button id="pause-new" type="button" class="quiet">New game</button>
@@ -103,6 +115,7 @@
   <script src="js/game.js"></script>
   <script src="js/art.js"></script>
   <script src="js/sound.js"></script>
+  <script src="js/voice.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/main.js"></script>
 </body>

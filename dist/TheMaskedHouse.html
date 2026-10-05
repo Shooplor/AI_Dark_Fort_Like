@@ -314,6 +314,17 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 .choices.attention button.choice { animation: attention .7s ease-out; }
 @keyframes attention { 0% { border-color: var(--gold-light); box-shadow: 0 0 0 0 rgba(244, 221, 140, .8); transform: translateX(0); } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); box-shadow: 0 0 18px 4px rgba(244, 221, 140, .6); } 60% { transform: translateX(-3px); } 100% { box-shadow: 0 0 0 0 rgba(244, 221, 140, 0); transform: none; } }
 
+/* voice controls on the pause screen */
+.voice-settings { display: flex; flex-direction: column; align-items: center; gap: 12px; margin: -6px 0 26px; }
+.voice-row { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; }
+.voice-row button { padding: 6px 12px; font-size: 11px; }
+.voice-row button.off { color: var(--bad); border-color: var(--bad); }
+.voice-row label { display: flex; align-items: center; gap: 8px; font-family: var(--display); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--text-dim); }
+.voice-row input[type=range] { width: 92px; accent-color: var(--gold); cursor: pointer; }
+.voice-row select { max-width: 270px; padding: 6px 8px; font-family: var(--display); font-size: 11px; letter-spacing: .05em; color: var(--gold-light); background: #1a0c13; border: 1px solid var(--gold-dim); border-radius: 3px; cursor: pointer; }
+.voice-row select:hover:not(:disabled) { border-color: var(--gold); }
+.voice-row :disabled { opacity: .4; cursor: not-allowed; }
+
 </style>
 <script>
 (function () {
@@ -402,6 +413,18 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
             <label>Music <input id="vol-music" type="range" min="0" max="100" step="1"></label>
             <label>Effects <input id="vol-sfx" type="range" min="0" max="100" step="1"></label>
             <button id="sound-mute" type="button" class="quiet" title="Press M to mute or unmute at any time">Sound: on</button>
+          </div>
+          <div class="voice-settings">
+            <div class="voice-row">
+              <button id="voice-toggle" type="button" class="quiet" title="Press V to turn the voice on or off at any time">Voice: on</button>
+              <select id="voice-select" aria-label="Voice"></select>
+              <button id="voice-test" type="button" class="quiet">Hear it</button>
+            </div>
+            <div class="voice-row">
+              <label>Volume <input id="voice-volume" type="range" min="0" max="100" step="1"></label>
+              <label>Pace <input id="voice-rate" type="range" min="50" max="120" step="1"></label>
+              <label>Pitch <input id="voice-pitch" type="range" min="30" max="120" step="1"></label>
+            </div>
           </div>
           <div class="overlay-buttons">
             <button id="pause-resume" type="button">Return to game</button>
@@ -1772,7 +1795,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
   Sound.FILES = FILES;
   const asset = (p) => (globalThis.DF_ASSETS && globalThis.DF_ASSETS[p]) || p;
 
-  const state = { ctx: null, buses: null, music: 0.7, sfx: 0.8, muted: false, tension: 0, ducked: false };
+  const state = { ctx: null, buses: null, music: 0.7, sfx: 0.8, muted: false, tension: 0, ducked: false, voiceDucked: false };
   Sound.state = state;
 
   /* ---------------------------------------------------------------- settings (remembered between visits) */
@@ -2228,7 +2251,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       const c = state.ctx;
       const k = instant ? 0.001 : 0.05;
       b.master.gain.setTargetAtTime(state.muted ? 0 : 1, c.currentTime, k);
-      b.musicGain.gain.setTargetAtTime(curve(state.music) * (state.ducked ? 0.5 : 1), c.currentTime, k);
+      b.musicGain.gain.setTargetAtTime(curve(state.music) * (state.ducked ? 0.5 : 1) * (state.voiceDucked ? 0.45 : 1), c.currentTime, k);
       b.sfxGain.gain.setTargetAtTime(curve(state.sfx), c.currentTime, k);
     }
     if (music.el) music.el.volume = fileVolume('music');
@@ -2271,6 +2294,11 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
   /** 0 (calm) .. 1 (about to be discovered): fades in a heartbeat and an uneasy tone. */
   Sound.setTension = (t) => { state.tension = clamp01(t); applyTension(); };
   /** Muffle and lower the music (while paused). */
+  /** Turn the music down while the voice is speaking, so the words stay clear. */
+  Sound.voiceDuck = (on) => {
+    state.voiceDucked = !!on;
+    applyLevels();
+  };
   Sound.duck = (on) => {
     state.ducked = !!on;
     const b = state.buses;
@@ -2290,6 +2318,188 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 
   // for the offline checks in the test suite
   Sound._internals = { SFX, makeBuses, scheduleBar, heartbeat, BAR, BEAT, PROGRESSION };
+})();
+
+</script>
+  <script>
+/* Voice: reads the text that appears on screen aloud, using the browser's built-in speech (the Web Speech API).
+ *
+ * This is a STAND-IN for a real voice actor: the voice depends on the player's computer and browser (often robotic),
+ * so it is made easy to switch off (V key or the pause screen), tune (voice, volume, pace, pitch) and, later, replace.
+ * Nothing is recorded or sent anywhere: the browser speaks on the player's own device.
+ *
+ * Long text is spoken a sentence at a time (browsers can cut off long utterances), with short pauses in between. A new
+ * action interrupts what is being read. While the voice speaks, the music is turned down so the words stay clear. */
+(function () {
+  const DF = (globalThis.DF = globalThis.DF || {});
+  const Voice = (DF.Voice = {});
+
+  const synth = typeof globalThis.speechSynthesis !== 'undefined' && typeof globalThis.SpeechSynthesisUtterance !== 'undefined' ? globalThis.speechSynthesis : null;
+  Voice.supported = !!synth;
+
+  /* ---------------------------------------------------------------- settings (remembered between visits) */
+  const KEY = 'masked-house-voice';
+  const settings = {
+    on: true,
+    volume: 1, // 0..1
+    rate: 0.85, // pace: 0.5 (slow) .. 1.2 (quick); a little slow sounds more ominous
+    pitch: 0.7, // 0.3 (deep) .. 1.2 (high)
+    voiceName: '', // '' = pick one automatically
+  };
+  Voice.settings = settings;
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (saved) for (const k of Object.keys(settings)) if (typeof saved[k] === typeof settings[k]) settings[k] = saved[k];
+  } catch (e) { /* private mode etc.: use the defaults */ }
+  const save = () => {
+    try { localStorage.setItem(KEY, JSON.stringify(settings)); } catch (e) { /* ignore */ }
+  };
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+  /* ---------------------------------------------------------------- voices */
+  const PREFERRED = /(daniel|david|mark|george|alex|fred|guy|ryan|brian|oliver|arthur|google uk english male|male)/i;
+
+  /** The English voices the browser offers (all of them if none are English). */
+  Voice.listVoices = function () {
+    if (!synth) return [];
+    const all = synth.getVoices() || [];
+    const en = all.filter((v) => /^en/i.test(v.lang));
+    return en.length ? en : all;
+  };
+
+  function pickVoice() {
+    const voices = Voice.listVoices();
+    if (settings.voiceName) {
+      const chosen = voices.find((v) => v.name === settings.voiceName);
+      if (chosen) return chosen;
+    }
+    return voices.find((v) => PREFERRED.test(v.name) && !/female/i.test(v.name)) || voices[0] || null;
+  }
+
+  /** Call `fn` now and whenever the browser's list of voices changes (it often loads after the page). */
+  Voice.onVoices = function (fn) {
+    if (!synth) return;
+    fn();
+    if (typeof synth.addEventListener === 'function') synth.addEventListener('voiceschanged', fn);
+    else synth.onvoiceschanged = fn;
+  };
+
+  /* ---------------------------------------------------------------- speaking */
+  const queue = []; // { text, gap }
+  let speaking = false;
+  let token = 0; // bumped by stop(), so late events from an interrupted line are ignored
+  let guard = null;
+  let pumpTimer = null;
+
+  const allowed = (force) => synth && (force || settings.on) && !(DF.Sound && DF.Sound.state && DF.Sound.state.muted);
+
+  /** Plain text for the voice: no markup, no stray symbols, numbers as the player would say them. */
+  function clean(text) {
+    return String(text)
+      .replace(/\[\[|\]\]/g, '')
+      .replace(/\s+/g, ' ')
+      .replace(/(\d+)\s*of\s*(\d+)/g, '$1 of $2')
+      .trim();
+  }
+
+  /** Split into sentences, so each is a short utterance. */
+  function sentences(text) {
+    return clean(text).match(/[^.!?]+[.!?]+["')\]]*|[^.!?]+$/g) || [];
+  }
+
+  function duck(on) {
+    try { if (DF.Sound && DF.Sound.voiceDuck) DF.Sound.voiceDuck(on); } catch (e) { /* the music is optional */ }
+  }
+
+  function pump() {
+    if (speaking || !queue.length || !allowed(queue[0].force)) return;
+    const { text, gap } = queue.shift();
+    speaking = true;
+    const mine = token;
+    const u = new globalThis.SpeechSynthesisUtterance(text);
+    const voice = pickVoice();
+    if (voice) {
+      u.voice = voice;
+      u.lang = voice.lang;
+    } else {
+      u.lang = 'en-GB';
+    }
+    u.volume = settings.volume;
+    u.rate = settings.rate;
+    u.pitch = settings.pitch;
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(guard);
+      if (mine !== token) return; // interrupted: stop() has already tidied up
+      speaking = false;
+      if (!queue.length) duck(false);
+      pumpTimer = setTimeout(pump, gap);
+    };
+    u.onstart = () => { if (mine === token) duck(true); };
+    u.onend = finish;
+    u.onerror = finish;
+    // some browsers never report the end of a line: do not get stuck forever
+    guard = setTimeout(finish, 2500 + text.split(/\s+/).length * 600 / settings.rate);
+    try {
+      synth.speak(u);
+    } catch (e) {
+      finish();
+    }
+  }
+
+  /**
+   * Read some lines aloud, one after another. Each line is a string, or { text, gap } where `gap` is the pause (ms)
+   * after it. `opts.interrupt` stops whatever is being read first. Does nothing if voice is off, muted or unsupported.
+   */
+  Voice.say = function (lines, opts) {
+    const force = !!(opts && opts.force); // used by the test button: speaks even when voice is switched off
+    if (!allowed(force)) return;
+    if (opts && opts.interrupt) Voice.stop();
+    for (const line of [].concat(lines)) {
+      if (!line) continue;
+      const gap = typeof line === 'object' && line.gap !== undefined ? line.gap : 280;
+      const text = typeof line === 'object' ? line.text : line;
+      for (const [i, s] of sentences(text).entries()) {
+        const last = i === sentences(text).length - 1;
+        queue.push({ text: s.trim(), gap: last ? gap : 220, force });
+      }
+    }
+    // the browser sometimes ignores a speak() made right after a cancel(): let it settle first
+    clearTimeout(pumpTimer);
+    pumpTimer = setTimeout(pump, 60);
+  };
+
+  /** Stop talking and forget what was queued. */
+  Voice.stop = function () {
+    token++;
+    queue.length = 0;
+    speaking = false;
+    clearTimeout(guard);
+    clearTimeout(pumpTimer);
+    if (synth) {
+      try { synth.cancel(); } catch (e) { /* ignore */ }
+    }
+    duck(false);
+  };
+
+  Voice.isSpeaking = () => speaking || queue.length > 0;
+
+  /** A sample line, to hear the current settings. */
+  Voice.sample = function () {
+    Voice.say('The house remembers every one of its guests.', { interrupt: true, force: true });
+  };
+
+  /* ---------------------------------------------------------------- controls */
+  Voice.setOn = (on) => { settings.on = !!on; if (!settings.on) Voice.stop(); save(); };
+  Voice.toggle = () => { Voice.setOn(!settings.on); return settings.on; };
+  Voice.setVolume = (v) => { settings.volume = clamp(v, 0, 1); save(); };
+  Voice.setRate = (v) => { settings.rate = clamp(v, 0.5, 1.2); save(); };
+  Voice.setPitch = (v) => { settings.pitch = clamp(v, 0.3, 1.2); save(); };
+  Voice.setVoice = (name) => { settings.voiceName = name || ''; save(); };
+  Voice.sentences = sentences;
+  Voice.clean = clean;
 })();
 
 </script>
@@ -2314,6 +2524,14 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
   /** Escape text, then turn [[Item Name]] into a highlighted span. */
   const rich = (text) => esc(text).replace(/\[\[(.+?)\]\]/g, '<em class="hl">$1</em>');
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  /** Call a Voice method; speech problems must never break the game. */
+  const vo = (method, ...args) => {
+    try {
+      if (DF.Voice) return DF.Voice[method](...args);
+    } catch (err) {
+      console.warn('voice:', err);
+    }
+  };
   /** Call a Sound method; sound problems must never break the game. */
   const snd = (method, ...args) => {
     try {
@@ -2354,6 +2572,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       this.buildBoard();
       this.bindInput();
       this.bindSound();
+      this.bindVoice();
     }
 
     /* ---------------------------------------------------------------- setup */
@@ -2395,6 +2614,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
           if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
           if (ev.key === 'Escape') return this.onEscape();
           if (ev.code === 'KeyM' && !ev.repeat) return this.setMuted(snd('toggleMute'));
+          if (ev.code === 'KeyV' && !ev.repeat) return this.setVoiceOn(vo('toggle'));
           if (this.paused) return; // nothing else works while the game is paused
           if (ev.code === 'KeyC' && !ev.repeat) return this.toggleChronicle();
           let side = SIDE_BY_CODE[ev.code];
@@ -2445,6 +2665,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       this.toggleChronicle(false);
       snd('setTension', 0);
       snd('startMusic');
+      vo('stop');
       this.doorEls.forEach((el) => el.remove());
       this.doorEls.clear();
       this.buildBoard();
@@ -2470,6 +2691,10 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       this.view = { cell: this.game.cell, eventText: null, kind: 'quiet', notes: [], fresh: true, intro: true };
       this.renderRoom(true);
       this.refreshHints();
+      // read the entrance hall aloud, but only once the player has touched the page (browsers refuse speech before that)
+      if (navigator.userActivation && navigator.userActivation.hasBeenActive) {
+        vo('say', [{ text: this.game.cell.name + '.', gap: 650 }, this.game.cell.desc]);
+      }
     }
 
     /* ---------------------------------------------------------------- one turn */
@@ -2486,6 +2711,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
         const again = el.classList.contains('show') && el.classList.contains('bad');
         this.notice(res.msg, true);
         if (again) this.shakeNotice();
+        else vo('say', [res.msg], { interrupt: true }); // the shake is the signal on a repeat: do not read it again
         snd('play', res.reason === 'locked' ? 'locked' : 'bump');
         this.nudge(side);
         if (res.reason === 'choice') this.flashChoices();
@@ -2493,6 +2719,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       }
 
       this.busy = true;
+      vo('stop'); // moving on: the voice stops reading the room you are leaving
       try {
         await this.playTurn(res);
       } catch (err) {
@@ -2511,6 +2738,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       if (res.unlocked) {
         snd('play', 'unlock');
         this.notice(res.unlocked.msg);
+        vo('say', [res.unlocked.msg]);
         this.renderInventory();
         this.refreshDoors(res.unlocked.door.id);
         await sleep(550);
@@ -2547,11 +2775,12 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
         notes: [],
       };
       this.renderRoom(true);
+      this.speakRoom(r);
       this.renderHp(r.hpAfter - r.hpBefore);
       this.renderInventory();
       this.renderChronicle();
       if (r.status !== 'playing') {
-        await sleep(1400); // let the last room's text be read before the end screen
+        await this.afterVoice(1400, 9000); // let the last room's text be read before the end screen
         this.showEnd(r.status);
       }
     }
@@ -2576,6 +2805,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       this.view.fresh = true;
       this.view.eventText = res.outcome.text;
       this.view.kind = outcomeClass(res.outcome);
+      vo('say', [res.outcome.text], { interrupt: true });
       this.renderRoom(false);
       const box = document.querySelector('#room-card .room-event');
       if (box) box.classList.add('pop');
@@ -2583,7 +2813,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       this.renderInventory();
       this.renderChronicle();
       this.refreshHints();
-      if (res.status !== 'playing') setTimeout(() => this.showEnd(res.status), 1600);
+      if (res.status !== 'playing') this.afterVoice(1600, 9000).then(() => this.showEnd(res.status));
     }
 
     async rollDie(value) {
@@ -2923,6 +3153,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
         text.textContent = 'Every remaining door is sealed, barred or buried. The house has shown you all it means to, tonight.';
       }
       $('#overlay').classList.toggle('won', status === 'won');
+      vo('say', [{ text: title.textContent + '.', gap: 700 }, text.textContent], { interrupt: true });
       snd('stopMusic', status === 'won' ? 3 : 2);
       snd('play', { won: 'win', dead: 'lose', caught: 'caught' }[status] || 'stuck');
       $('#overlay').hidden = false;
@@ -2938,11 +3169,72 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       this.pause();
     }
 
+    /** Read a freshly explored room aloud: its name, what it looks like, then what happens (or the choice and its options). */
+    speakRoom(r) {
+      if (!r.newRoom) return; // a room you know is not read again
+      const cell = r.cell;
+      const lines = [{ text: cell.name + '.', gap: 650 }, { text: cell.desc, gap: 500 }];
+      const pending = cell.pending && !cell.pending.resolved ? cell.pending : null;
+      if (pending) {
+        lines.push({ text: pending.intro, gap: 600 });
+        lines.push(pending.labels.map((label, i) => `${['One', 'Two', 'Three', 'Four'][i]}: ${label}.`).join(' '));
+      } else if (r.outcome && r.outcome.text) {
+        lines.push(r.outcome.text);
+      }
+      vo('say', lines); // queued behind anything still being read (an unlock message, say)
+    }
+
+    /** Wait at least `minMs`, then (up to `maxMs` in all) until the voice has finished talking. */
+    async afterVoice(minMs, maxMs) {
+      const t0 = Date.now();
+      await sleep(minMs);
+      while (vo('isSpeaking') && Date.now() - t0 < maxMs) await sleep(150);
+    }
+
+    /** The voice on/off state: the pause-screen button, plus a notice when it was changed with the V key. */
+    setVoiceOn(on) {
+      const btn = $('#voice-toggle');
+      btn.textContent = on ? 'Voice: on' : 'Voice: off';
+      btn.classList.toggle('off', !on);
+      this.notice(on ? 'Voice on. Press V to turn it off.' : 'Voice off. Press V to turn it back on.');
+    }
+
+    bindVoice() {
+      const V = DF.Voice;
+      const all = ['#voice-toggle', '#voice-select', '#voice-test', '#voice-volume', '#voice-rate', '#voice-pitch'].map($);
+      if (!V || !V.supported) {
+        all.forEach((el) => (el.disabled = true));
+        $('#voice-toggle').textContent = 'Voice: not available here';
+        return;
+      }
+      const set = V.settings;
+      $('#voice-volume').value = Math.round(set.volume * 100);
+      $('#voice-rate').value = Math.round(set.rate * 100);
+      $('#voice-pitch').value = Math.round(set.pitch * 100);
+      $('#voice-toggle').textContent = set.on ? 'Voice: on' : 'Voice: off';
+      $('#voice-toggle').classList.toggle('off', !set.on);
+      // the browser's list of voices often arrives after the page: fill the menu whenever it changes
+      const select = $('#voice-select');
+      V.onVoices(() => {
+        const voices = V.listVoices();
+        select.innerHTML = '<option value="">Voice: automatic</option>' + voices.map((v) => `<option value="${esc(v.name)}">${esc(v.name)} (${esc(v.lang)})</option>`).join('');
+        select.value = voices.some((v) => v.name === set.voiceName) ? set.voiceName : '';
+      });
+      $('#voice-toggle').addEventListener('click', () => this.setVoiceOn(vo('toggle')));
+      select.addEventListener('change', () => { V.setVoice(select.value); V.sample(); });
+      $('#voice-volume').addEventListener('input', (e) => V.setVolume(e.target.value / 100));
+      $('#voice-rate').addEventListener('input', (e) => V.setRate(e.target.value / 100));
+      $('#voice-pitch').addEventListener('input', (e) => V.setPitch(e.target.value / 100));
+      for (const id of ['#voice-volume', '#voice-rate', '#voice-pitch']) $(id).addEventListener('change', () => V.sample()); // hear the new setting
+      $('#voice-test').addEventListener('click', () => V.sample());
+    }
+
     /** Keep the pause-screen sound controls in step with the sound settings. */
     setMuted(muted) {
       const btn = $('#sound-mute');
       btn.textContent = muted ? 'Sound: off' : 'Sound: on';
       btn.classList.toggle('off', !!muted);
+      if (muted) vo('stop');
       this.notice(muted ? 'Sound off. Press M to turn it back on.' : 'Sound on.');
     }
 
@@ -2964,6 +3256,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 
     pause() {
       this.paused = true;
+      vo('stop');
       snd('play', 'pause');
       snd('duck', true);
       this.closePop();

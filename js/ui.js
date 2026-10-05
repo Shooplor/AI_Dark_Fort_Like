@@ -18,6 +18,14 @@
   /** Escape text, then turn [[Item Name]] into a highlighted span. */
   const rich = (text) => esc(text).replace(/\[\[(.+?)\]\]/g, '<em class="hl">$1</em>');
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  /** Call a Voice method; speech problems must never break the game. */
+  const vo = (method, ...args) => {
+    try {
+      if (DF.Voice) return DF.Voice[method](...args);
+    } catch (err) {
+      console.warn('voice:', err);
+    }
+  };
   /** Call a Sound method; sound problems must never break the game. */
   const snd = (method, ...args) => {
     try {
@@ -58,6 +66,7 @@
       this.buildBoard();
       this.bindInput();
       this.bindSound();
+      this.bindVoice();
     }
 
     /* ---------------------------------------------------------------- setup */
@@ -99,6 +108,7 @@
           if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
           if (ev.key === 'Escape') return this.onEscape();
           if (ev.code === 'KeyM' && !ev.repeat) return this.setMuted(snd('toggleMute'));
+          if (ev.code === 'KeyV' && !ev.repeat) return this.setVoiceOn(vo('toggle'));
           if (this.paused) return; // nothing else works while the game is paused
           if (ev.code === 'KeyC' && !ev.repeat) return this.toggleChronicle();
           let side = SIDE_BY_CODE[ev.code];
@@ -149,6 +159,7 @@
       this.toggleChronicle(false);
       snd('setTension', 0);
       snd('startMusic');
+      vo('stop');
       this.doorEls.forEach((el) => el.remove());
       this.doorEls.clear();
       this.buildBoard();
@@ -174,6 +185,10 @@
       this.view = { cell: this.game.cell, eventText: null, kind: 'quiet', notes: [], fresh: true, intro: true };
       this.renderRoom(true);
       this.refreshHints();
+      // read the entrance hall aloud, but only once the player has touched the page (browsers refuse speech before that)
+      if (navigator.userActivation && navigator.userActivation.hasBeenActive) {
+        vo('say', [{ text: this.game.cell.name + '.', gap: 650 }, this.game.cell.desc]);
+      }
     }
 
     /* ---------------------------------------------------------------- one turn */
@@ -190,6 +205,7 @@
         const again = el.classList.contains('show') && el.classList.contains('bad');
         this.notice(res.msg, true);
         if (again) this.shakeNotice();
+        else vo('say', [res.msg], { interrupt: true }); // the shake is the signal on a repeat: do not read it again
         snd('play', res.reason === 'locked' ? 'locked' : 'bump');
         this.nudge(side);
         if (res.reason === 'choice') this.flashChoices();
@@ -197,6 +213,7 @@
       }
 
       this.busy = true;
+      vo('stop'); // moving on: the voice stops reading the room you are leaving
       try {
         await this.playTurn(res);
       } catch (err) {
@@ -215,6 +232,7 @@
       if (res.unlocked) {
         snd('play', 'unlock');
         this.notice(res.unlocked.msg);
+        vo('say', [res.unlocked.msg]);
         this.renderInventory();
         this.refreshDoors(res.unlocked.door.id);
         await sleep(550);
@@ -251,11 +269,12 @@
         notes: [],
       };
       this.renderRoom(true);
+      this.speakRoom(r);
       this.renderHp(r.hpAfter - r.hpBefore);
       this.renderInventory();
       this.renderChronicle();
       if (r.status !== 'playing') {
-        await sleep(1400); // let the last room's text be read before the end screen
+        await this.afterVoice(1400, 9000); // let the last room's text be read before the end screen
         this.showEnd(r.status);
       }
     }
@@ -280,6 +299,7 @@
       this.view.fresh = true;
       this.view.eventText = res.outcome.text;
       this.view.kind = outcomeClass(res.outcome);
+      vo('say', [res.outcome.text], { interrupt: true });
       this.renderRoom(false);
       const box = document.querySelector('#room-card .room-event');
       if (box) box.classList.add('pop');
@@ -287,7 +307,7 @@
       this.renderInventory();
       this.renderChronicle();
       this.refreshHints();
-      if (res.status !== 'playing') setTimeout(() => this.showEnd(res.status), 1600);
+      if (res.status !== 'playing') this.afterVoice(1600, 9000).then(() => this.showEnd(res.status));
     }
 
     async rollDie(value) {
@@ -627,6 +647,7 @@
         text.textContent = 'Every remaining door is sealed, barred or buried. The house has shown you all it means to, tonight.';
       }
       $('#overlay').classList.toggle('won', status === 'won');
+      vo('say', [{ text: title.textContent + '.', gap: 700 }, text.textContent], { interrupt: true });
       snd('stopMusic', status === 'won' ? 3 : 2);
       snd('play', { won: 'win', dead: 'lose', caught: 'caught' }[status] || 'stuck');
       $('#overlay').hidden = false;
@@ -642,11 +663,72 @@
       this.pause();
     }
 
+    /** Read a freshly explored room aloud: its name, what it looks like, then what happens (or the choice and its options). */
+    speakRoom(r) {
+      if (!r.newRoom) return; // a room you know is not read again
+      const cell = r.cell;
+      const lines = [{ text: cell.name + '.', gap: 650 }, { text: cell.desc, gap: 500 }];
+      const pending = cell.pending && !cell.pending.resolved ? cell.pending : null;
+      if (pending) {
+        lines.push({ text: pending.intro, gap: 600 });
+        lines.push(pending.labels.map((label, i) => `${['One', 'Two', 'Three', 'Four'][i]}: ${label}.`).join(' '));
+      } else if (r.outcome && r.outcome.text) {
+        lines.push(r.outcome.text);
+      }
+      vo('say', lines); // queued behind anything still being read (an unlock message, say)
+    }
+
+    /** Wait at least `minMs`, then (up to `maxMs` in all) until the voice has finished talking. */
+    async afterVoice(minMs, maxMs) {
+      const t0 = Date.now();
+      await sleep(minMs);
+      while (vo('isSpeaking') && Date.now() - t0 < maxMs) await sleep(150);
+    }
+
+    /** The voice on/off state: the pause-screen button, plus a notice when it was changed with the V key. */
+    setVoiceOn(on) {
+      const btn = $('#voice-toggle');
+      btn.textContent = on ? 'Voice: on' : 'Voice: off';
+      btn.classList.toggle('off', !on);
+      this.notice(on ? 'Voice on. Press V to turn it off.' : 'Voice off. Press V to turn it back on.');
+    }
+
+    bindVoice() {
+      const V = DF.Voice;
+      const all = ['#voice-toggle', '#voice-select', '#voice-test', '#voice-volume', '#voice-rate', '#voice-pitch'].map($);
+      if (!V || !V.supported) {
+        all.forEach((el) => (el.disabled = true));
+        $('#voice-toggle').textContent = 'Voice: not available here';
+        return;
+      }
+      const set = V.settings;
+      $('#voice-volume').value = Math.round(set.volume * 100);
+      $('#voice-rate').value = Math.round(set.rate * 100);
+      $('#voice-pitch').value = Math.round(set.pitch * 100);
+      $('#voice-toggle').textContent = set.on ? 'Voice: on' : 'Voice: off';
+      $('#voice-toggle').classList.toggle('off', !set.on);
+      // the browser's list of voices often arrives after the page: fill the menu whenever it changes
+      const select = $('#voice-select');
+      V.onVoices(() => {
+        const voices = V.listVoices();
+        select.innerHTML = '<option value="">Voice: automatic</option>' + voices.map((v) => `<option value="${esc(v.name)}">${esc(v.name)} (${esc(v.lang)})</option>`).join('');
+        select.value = voices.some((v) => v.name === set.voiceName) ? set.voiceName : '';
+      });
+      $('#voice-toggle').addEventListener('click', () => this.setVoiceOn(vo('toggle')));
+      select.addEventListener('change', () => { V.setVoice(select.value); V.sample(); });
+      $('#voice-volume').addEventListener('input', (e) => V.setVolume(e.target.value / 100));
+      $('#voice-rate').addEventListener('input', (e) => V.setRate(e.target.value / 100));
+      $('#voice-pitch').addEventListener('input', (e) => V.setPitch(e.target.value / 100));
+      for (const id of ['#voice-volume', '#voice-rate', '#voice-pitch']) $(id).addEventListener('change', () => V.sample()); // hear the new setting
+      $('#voice-test').addEventListener('click', () => V.sample());
+    }
+
     /** Keep the pause-screen sound controls in step with the sound settings. */
     setMuted(muted) {
       const btn = $('#sound-mute');
       btn.textContent = muted ? 'Sound: off' : 'Sound: on';
       btn.classList.toggle('off', !!muted);
+      if (muted) vo('stop');
       this.notice(muted ? 'Sound off. Press M to turn it back on.' : 'Sound on.');
     }
 
@@ -668,6 +750,7 @@
 
     pause() {
       this.paused = true;
+      vo('stop');
       snd('play', 'pause');
       snd('duck', true);
       this.closePop();

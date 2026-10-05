@@ -19,7 +19,7 @@
   Sound.FILES = FILES;
   const asset = (p) => (globalThis.DF_ASSETS && globalThis.DF_ASSETS[p]) || p;
 
-  const state = { ctx: null, buses: null, music: 0.7, sfx: 0.8, muted: false, tension: 0, ducked: false };
+  const state = { ctx: null, buses: null, music: 0.7, sfx: 0.8, muted: false, tension: 0, ducked: false, voiceDucked: false };
   Sound.state = state;
 
   /* ---------------------------------------------------------------- settings (remembered between visits) */
@@ -475,7 +475,7 @@
       const c = state.ctx;
       const k = instant ? 0.001 : 0.05;
       b.master.gain.setTargetAtTime(state.muted ? 0 : 1, c.currentTime, k);
-      b.musicGain.gain.setTargetAtTime(curve(state.music) * (state.ducked ? 0.5 : 1), c.currentTime, k);
+      b.musicGain.gain.setTargetAtTime(curve(state.music) * (state.ducked ? 0.5 : 1) * (state.voiceDucked ? 0.45 : 1), c.currentTime, k);
       b.sfxGain.gain.setTargetAtTime(curve(state.sfx), c.currentTime, k);
     }
     if (music.el) music.el.volume = fileVolume('music');
@@ -518,6 +518,11 @@
   /** 0 (calm) .. 1 (about to be discovered): fades in a heartbeat and an uneasy tone. */
   Sound.setTension = (t) => { state.tension = clamp01(t); applyTension(); };
   /** Muffle and lower the music (while paused). */
+  /** Turn the music down while the voice is speaking, so the words stay clear. */
+  Sound.voiceDuck = (on) => {
+    state.voiceDucked = !!on;
+    applyLevels();
+  };
   Sound.duck = (on) => {
     state.ducked = !!on;
     const b = state.buses;

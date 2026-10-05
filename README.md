@@ -19,6 +19,7 @@ it also works offline.
 | Pause / resume | Esc (also closes an open item popover or the chronicle first) |
 | Open / close the chronicle | The Chronicle button under the room text, or the C key |
 | Mute / unmute all sound | M (volume sliders and a Sound button are on the pause screen) |
+| Voice reading the text on / off | V (the pause screen also has a voice picker, volume, pace and pitch) |
 | Inspect, use or drop an item | Click it in the inventory strip on the left |
 | Pick an item up from the floor | "Take" button in the right-hand panel |
 
@@ -77,6 +78,7 @@ js/dungeon.js     the grid, doors, room generation, reachability        (pure lo
 js/game.js        turns, health, inventory, events                      (pure logic, no DOM)
 js/art.js         where every picture is produced: real art + remaining placeholders
 js/sound.js       sound effects and music, synthesised live (real files can replace any of it)
+js/voice.js       reads the on-screen text aloud with the browser's built-in voice (a stand-in for a voice actor)
 js/ui.js          rendering and turn animation (walk -> die -> reveal -> text)
 js/main.js        boot, window scaling, ?seed=
 tools/build.js    packs the game into the single file dist/TheMaskedHouse.html
@@ -95,6 +97,17 @@ start sound after the first key press or click.
 
 To use real recordings instead, drop the files in `assets/audio/` and list them in `FILES` at the top of
 `js/sound.js` (see `assets/audio/README.md` for the names). Anything not listed stays synthesised.
+
+### Voice
+
+The game reads its text aloud using the **browser's built-in speech** (a stand-in for a voice actor; the voice depends on
+the player's computer and is often robotic). Each new room is read: its name, its description, then what happens (or the
+choice and its options); choice outcomes, refused moves (the first time only), unlocking and the endings are read too.
+A new action interrupts the reading, and the music dips while the voice speaks.
+
+**V** turns the voice off and on at any time. On the pause screen (Esc) you can also pick another voice from the ones
+installed on the computer, and change volume, pace and pitch ("Hear it" plays a sample). The settings are remembered.
+Nothing is recorded or sent anywhere. Without speech support in the browser the controls are greyed out.
 
 ### Swapping in real art
 
