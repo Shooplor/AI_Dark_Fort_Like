@@ -7,22 +7,17 @@ parts are the corners so I can stretch only the middle.
 
 ## Already done (real art in the game)
 
-Tapestry background, pillar frame, right-panel frame, 13 item icons, character (idle, walk x3, hit x5, heal x4), heart and eye
+Tapestry background, pillar frame, right-panel frame, all 15 item icons, character (idle, walk x3, hit x5, heal x4), heart and eye
 counters, inventory slot, unexplored-room field, current-room highlight, player pendant, fate die, mouse cursor.
 
-## 1. Item icons: 2 left, in `assets/items/`
-
-13 of the 15 are in the game. Still placeholders: **Ivory Key** (`key-ivory.png`) and **Wax-Sealed Letter**
-(`wax_letter.png`). Same as the others: **128x128**, centred, a little margin.
-
-## 2. The map
+## 1. The map
 
 | Piece | Shown at | File size | Notes |
 | --- | --- | --- | --- |
 | Room tiles, 5 shapes: dead end, straight, bend, three-way, crossroads | 80x80 | 160x160 (or 240x240) | Draw one orientation, the game rotates it. Doorways are 30% of each edge, centred. Optional: a special entrance foyer (with the great doors). |
 | Doors: open, blocked (rubble), locked | 40x24 on the edge between rooms | 80x48 | Drawn horizontal, the game rotates. Locked needs 6 colours (brass, silver, crimson, violet, emerald, ivory), or one lock plus a colour I tint. |
 
-## 3. Pop-ups (shapes)
+## 2. Pop-ups (shapes)
 
 | Piece | Now | Notes |
 | --- | --- | --- |
@@ -31,7 +26,7 @@ counters, inventory slot, unexplored-room field, current-room highlight, player 
 | End-of-run card | 620x357 | One card for "victory", "you have fallen", "discovered" and "nowhere left to go". A separate victory version is optional (it has a green edge now). |
 | Chronicle drawer | the right panel's inner area, plain dark box | Optional: its own backing. |
 
-## 4. Buttons and small interface pieces (all drawn by code now)
+## 3. Buttons and small interface pieces (all drawn by code now)
 
 | Piece | Size now | Notes |
 | --- | --- | --- |
@@ -43,7 +38,7 @@ counters, inventory slot, unexplored-room field, current-room highlight, player 
 | Red error message ("The door will not open") | text only | Optional. |
 | Sliders and dropdown on the pause card | small | Optional. |
 
-## 5. Optional extras
+## 4. Optional extras
 
 | Piece | Notes |
 | --- | --- |
