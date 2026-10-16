@@ -52,6 +52,7 @@ Add `?seed=1234` to the URL to replay a specific house. The seed is shown under 
 - **Choices:** the room describes something (a cupboard and a chest, a mirror, a bell-rope...) and offers two or
   three buttons. Each button rolls a good, neutral or bad outcome (an item, nothing, or damage), so nothing is
   a sure thing. Choosing is free (it costs no turn), but you cannot leave the room until you have chosen.
+- **Warnings:** from 18/20 the screen edges glow a faint, pulsing blue; at 3 health or less, red. Hovering the heart or the eye shows a one-line hint.
 - **Health** starts at 10. A hit of 3 or more also sounds heavier (`hurtBig`). Losing health plays the five-frame hit animation (11 frames a second), shows a red "-2" floating up from the figure's head and makes the heart icon shrink and bounce back; healing plays a four-frame healing animation, shows a green "+3" and makes the heart swell. Reaching 0 ends the run. **Inventory** has 6 slots; a full satchel leaves
   finds on the floor.
 - The generator works to keep a way forward open: it adds doors when you would be boxed in, rubble can

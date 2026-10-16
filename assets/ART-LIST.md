@@ -7,28 +7,13 @@ parts are the corners so I can stretch only the middle.
 
 ## Already done (real art in the game)
 
-Tapestry background, pillar frame, right-panel frame, character (idle, walk x3, hit x5, heal x4), heart and eye
+Tapestry background, pillar frame, right-panel frame, 13 item icons, character (idle, walk x3, hit x5, heal x4), heart and eye
 counters, inventory slot, unexplored-room field, current-room highlight, player pendant, fate die, mouse cursor.
 
-## 1. Item icons (15), in `assets/items/`
+## 1. Item icons: 2 left, in `assets/items/`
 
-Shown about 64x64 in a slot and 34x34 in the "on the floor" list. Draw at **128x128**, centred, a little margin.
-
-| Item | File |
-| --- | --- |
-| Healing Draught | `potion.png` |
-| Brass / Silver / Crimson / Violet / Emerald / Ivory Key | `key-brass.png`, `key-silver.png`, `key-crimson.png`, `key-violet.png`, `key-emerald.png`, `key-ivory.png` |
-| Porcelain Mask | `porcelain_mask.png` |
-| Wax-Sealed Letter | `wax_letter.png` |
-| Silver Bell | `silver_bell.png` |
-| Withered Rose | `withered_rose.png` |
-| Opera Glasses | `opera_glasses.png` |
-| Silver Flute (evidence) | `flute.png` |
-| Ritual Scroll (evidence) | `scroll.png` |
-| Press Camera (evidence) | `camera.png` |
-
-The six keys differ only in colour (the lock on the door uses the same colour). Evidence gets a green glow from the
-code, so the icons need none.
+13 of the 15 are in the game. Still placeholders: **Ivory Key** (`key-ivory.png`) and **Wax-Sealed Letter**
+(`wax_letter.png`). Same as the others: **128x128**, centred, a little margin.
 
 ## 2. The map
 

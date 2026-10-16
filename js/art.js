@@ -235,7 +235,12 @@
 
   /** An item's picture: its own file in assets/items/ once it has been drawn (list its id in ITEM_IMAGES),
    *  otherwise the placeholder icon. File names are the item id with ':' written as '-' (e.g. key-brass.png). */
-  Art.ITEM_IMAGES = new Set([]);
+  Art.ITEM_IMAGES = new Set([
+    'potion', 'key:brass', 'key:silver', 'key:crimson', 'key:violet', 'key:emerald',
+    'porcelain_mask', 'silver_bell', 'withered_rose', 'opera_glasses',
+    'flute', 'scroll', 'camera',
+    // still to draw: 'key:ivory', 'wax_letter'
+  ]);
   Art.itemIcon = (item) =>
     Art.ITEM_IMAGES.has(item.id)
       ? `<img src="${asset('assets/items/' + item.id.replace(':', '-') + '.png')}" alt="" draggable="false">`

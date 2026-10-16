@@ -445,6 +445,7 @@
       const g = this.game;
       $('#hp-now').textContent = g.hp;
       $('#hp-max').textContent = g.maxHp;
+      $('#danger-hp').classList.toggle('on', g.hp > 0 && g.hp <= 3);
       if (!delta) return;
       snd('play', delta < 0 ? (delta <= -3 ? 'hurtBig' : 'hurt') : 'heal');
       const nums = $('#hp-nums');
@@ -636,6 +637,9 @@
         nums.classList.add('tick'); // a little pulse each time a point is spent
       }
       $('#turn-max').textContent = this.game.maxExplorations;
+      $('#eye-tip').textContent = `Reach ${this.game.maxExplorations}, and you're discovered.`;
+      // with 20 rooms: from 18 on (two or fewer left), the edges glow blue
+      $('#danger-eye').classList.toggle('on', shown >= this.game.maxExplorations - 2 && this.game.status === 'playing');
       snd('setTension', this.game.explored / this.game.maxExplorations); // the music grows uneasy as discovery nears
     }
 
@@ -656,6 +660,7 @@
     }
 
     showEnd(status) {
+      for (const id of ['#danger-eye', '#danger-hp']) $(id).classList.remove('on'); // the run is over: no more warnings
       const title = $('#overlay-title');
       const text = $('#overlay-text');
       if (status === 'dead') {
