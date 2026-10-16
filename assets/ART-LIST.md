@@ -14,7 +14,7 @@ counters, inventory slot, unexplored-room field, current-room highlight, player 
 
 | Piece | Shown at | File size | Notes |
 | --- | --- | --- | --- |
-| Room tiles, 5 shapes: dead end, straight, bend, three-way, crossroads | 80x80 | 160x160 (or 240x240) | Draw one orientation, the game rotates it. Doorways are 30% of each edge, centred. Optional: a special entrance foyer (with the great doors). |
+| Room tiles, 5 shapes: dead end, straight, bend, three-way, crossroads (templates: `assets/rooms/templates/`) | 80x80 | 160x160 (or draw at 640x640) | Draw one orientation, the game rotates it. Doorways are 30% of each edge, centred. Optional: a special entrance foyer (with the great doors). |
 | Doors: open, blocked (rubble), locked | 40x24 on the edge between rooms | 80x48 | Drawn horizontal, the game rotates. Locked needs 6 colours (brass, silver, crimson, violet, emerald, ivory), or one lock plus a colour I tint. |
 
 ## 2. Pop-ups (shapes)

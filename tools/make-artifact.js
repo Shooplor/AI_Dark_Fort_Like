@@ -15,7 +15,7 @@ const copy = (rel) => {
 const walk = (dir, ok) => {
   for (const f of fs.readdirSync(path.join(root, dir), { withFileTypes: true })) {
     const rel = dir + '/' + f.name;
-    if (f.isDirectory()) walk(rel, ok);
+    if (f.isDirectory()) { if (f.name !== 'templates') walk(rel, ok); } // drawing guides are not part of the game
     else if (ok(f.name)) copy(rel);
   }
 };
