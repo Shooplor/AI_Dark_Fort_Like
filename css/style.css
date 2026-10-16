@@ -316,7 +316,16 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 #danger-eye.on { opacity: 1; animation: dangerPulse 3.2s ease-in-out infinite; }
 #danger-hp.on { opacity: 1; animation: dangerPulse 2.2s ease-in-out infinite; }
 @keyframes dangerPulse { 0%, 100% { opacity: .3; } 50% { opacity: .8; } }
-@media (prefers-reduced-motion: reduce) { .danger.on { animation: none; opacity: .6; } }
+/* ...and the heart (or the eye) trembles a little together with its numbers, in short bursts. The whole group moves,
+   so the hit / heal / tick pulses on the icon and the numbers keep playing inside it. */
+#stat-health.uneasy { animation: tremble 2.2s infinite; }
+#stat-turns.uneasy { animation: tremble 3.2s infinite; }
+@keyframes tremble {
+  0%, 38%, 62%, 100% { translate: 0 0; }
+  41% { translate: -1.2px .4px; } 44% { translate: 1px -.5px; } 47% { translate: -.8px -.3px; } 50% { translate: 1.2px .4px; }
+  53% { translate: -1px .2px; } 56% { translate: .7px -.4px; } 59% { translate: -.4px .2px; }
+}
+@media (prefers-reduced-motion: reduce) { .danger.on { animation: none; opacity: .6; } #stat-health.uneasy, #stat-turns.uneasy { animation: none; } }
 
 /* ------------------------------------------------------------------ end-of-run overlay */
 
