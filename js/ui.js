@@ -10,7 +10,7 @@
   // top-left corner of each of the six inventory slots (127px images), taken from the art mockup
   const SLOT_POS = [[10, 650], [142, 650], [273, 650], [28, 764], [159, 764], [290, 764]];
   const MOVE_MS = 650; // keep in sync with the #marker transition in style.css
-  const DIE_MS = 850;
+  const DIE_MS = 600; // how long the die tumbles (keep the diceRattle sound in js/sound.js the same length)
 
   const $ = (sel) => document.querySelector(sel);
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

@@ -13,7 +13,7 @@ Short effects should be trimmed tight (no silence at the start). Music should lo
 | `bump` | walking into a wall or rubble | ~0.2 s |
 | `locked` | trying a locked door without its key | ~0.3 s |
 | `unlock` | a key opens a door | ~0.4 s |
-| `diceRattle` | the fate die tumbling | ~0.85 s |
+| `diceRattle` | the fate die tumbling | ~0.6 s |
 | `dieLand` | the die coming to rest | ~0.2 s |
 | `reveal` | a new room appears on the map | ~1 s |
 | `tick` | the eye counter goes up | ~0.6 s |

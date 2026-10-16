@@ -229,10 +229,11 @@
     },
     diceRattle(b, t) {
       let tt = 0;
-      while (tt < 0.82) {
+      const len = 0.58; // as long as the die tumbles on screen (DIE_MS in js/ui.js)
+      while (tt < len) {
         noise(b, b.sfx, { t: t + tt, f: rand(1800, 4000), q: 3, dur: 0.028, peak: rand(0.1, 0.24) });
         tone(b, b.sfx, { t: t + tt, f: rand(480, 900), type: 'triangle', dur: 0.035, peak: 0.05 });
-        tt += 0.035 + (tt / 0.82) * 0.07 + rand(0, 0.02); // the clatter slows as the die settles
+        tt += 0.03 + (tt / len) * 0.06 + rand(0, 0.018); // the clatter slows as the die settles
       }
     },
     dieLand(b, t) {
