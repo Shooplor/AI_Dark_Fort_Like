@@ -104,6 +104,7 @@
     void gate.offsetWidth;
     snd('play', 'gate');
     gate.classList.add('open');
+    this.quake(kind === 'quick' ? 'rumbleShort' : 'rumble');
     setTimeout(() => this.gateDust(kind === 'quick' ? 0.45 : 1), kind === 'quick' ? 120 : 350); // as the doors part
     await sleep(kind === 'quick' ? 1500 : 2650);
     gate.classList.remove('shut', 'quick');
@@ -116,9 +117,28 @@
     gate.classList.remove('open', 'quick');
     snd('play', 'gateShut');
     await sleep(560);
+    this.quake('slam');
     this.gateDust(0.35);
     await sleep(250);
     gate.classList.remove('fast');
+  };
+
+  /** Shake the whole screen: 'rumble' while the heavy doors grind open (a jolt as they come unstuck, then a tremor
+   *  that dies away), 'rumbleShort' for the quicker opening, 'slam' as they bang shut. Uses the separate CSS `translate`
+   *  property, so it adds to the stage's own scaling transform. */
+  P.quake = function (kind) {
+    if (reduced()) return;
+    const spec = { rumble: [2600, 3.2, 1.2], rumbleShort: [1500, 2, 0.8], slam: [450, 6, 0] }[kind];
+    const [ms, jolt, tremor] = spec;
+    const frames = [], n = Math.round(ms / 45);
+    for (let i = 0; i <= n; i++) {
+      const t = i / n;
+      // a sharp start, a steady grinding tremor, and a fade to rest at the end
+      const amp = i === n ? 0 : Math.max(jolt * Math.max(0, 1 - t * 6), tremor * (1 - t) ** 0.6);
+      const r = () => ((Math.random() * 2 - 1) * amp).toFixed(2);
+      frames.push({ translate: `${r()}px ${r()}px` });
+    }
+    $('#stage').animate(frames, { duration: ms, easing: 'linear' });
   };
 
   /** Dust from the seam where the doors meet: puffs drifting up and down, and grit falling. */
@@ -174,15 +194,6 @@
     const svg = $('#route-lines');
     const canMove = this.mode === 'route' && !this.gateBusy;
     const choices = new Set(R.choices().map((n) => n.id));
-    // a faint web of old streets behind the road (the same for the same road)
-    const rng = DF.makeRng(R.seed ^ 0x77aa11);
-    let streets = '';
-    for (let i = 0; i < 26; i++) {
-      let x = rng.next() * 500, y = rng.next() * 836;
-      let d = `M${x.toFixed(0)} ${y.toFixed(0)}`;
-      for (let k = 0; k < 3; k++) { x += (rng.next() - 0.5) * 220; y += (rng.next() - 0.5) * 220; d += ` L${x.toFixed(0)} ${y.toFixed(0)}`; }
-      streets += `<path class="route-street" d="${d}"/>`;
-    }
     const pos = (id) => (id === null ? START : [X(R.nodes[id]), Y(R.nodes[id])]);
     const walked = new Set();
     let prev = null;
@@ -195,7 +206,7 @@
     };
     for (const n of R.rows[0]) line(null, n.id);
     for (const n of R.nodes) for (const id of n.next) line(n.id, id);
-    svg.innerHTML = streets + lines;
+    svg.innerHTML = lines;
 
     const box = $('#route-nodes');
     box.innerHTML = `<div class="route-start" style="left:${START[0]}px;top:${START[1]}px"></div>`;
@@ -217,8 +228,8 @@
       marker = document.createElement('div');
       marker.id = 'route-marker';
       marker.innerHTML = `<img src="${DF.Art.asset('assets/ui/player-symbol.png')}" alt="" draggable="false">`;
+      $('#route-wrap').appendChild(marker); // outside the redrawn points, so it glides from point to point
     }
-    box.appendChild(marker);
     marker.style.left = mx + 'px';
     marker.style.top = my + 'px';
   };
@@ -254,9 +265,12 @@
     const node = R.go(id);
     if (!node) return;
     this.gateBusy = true;
-    snd('play', 'step');
-    this.renderRoute();
-    await sleep(750);
+    this.renderRoute(); // the pendant glides to the point (CSS transition) while the figure walks
+    this.setWalking(true);
+    for (let i = 0; i < 4; i++) setTimeout(() => snd('play', 'step'), i * 280);
+    await sleep(1100);
+    this.setWalking(false);
+    await sleep(250);
     if (node.type === 'mansion' || node.type === 'final') {
       await this.enterHouse(node);
     } else {

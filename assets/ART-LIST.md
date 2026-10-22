@@ -32,6 +32,20 @@ so draw at double.
 | Start of the road | about 40x40 | Where you stand before the first step (bottom centre). |
 | Embark button | about 200x50 | At the seam of the doors. Normal and hover. |
 
+### Door dust (particles)
+
+Puffs of dust drift up and down from the seam as the doors part, and bits of grit fall. Now they are soft code
+circles. A few variants of each size let the burst look less repeated; the code picks at random, turns and fades
+them, and scales the puffs up as they drift (to about 2.5x), so draw them at the start size. Soft edges that
+fade to transparent work best. Sizes are the file sizes (already at 2x).
+
+| Piece | File size | How many | Notes |
+| --- | --- | --- | --- |
+| Dust puff, small | 48x48 | 2-3 variants | Wispy, mostly transparent, a dusty grey-brown. |
+| Dust puff, medium | 80x80 | 2-3 variants | |
+| Dust puff, large | 128x128 | 1-2 variants | Used sparingly, for the big first burst. |
+| Grit / stone chip | 8x8, 12x12, 16x16 | one of each | Hard-edged little crumbs of stone that fall with a spin. |
+
 ## 3. Pop-ups (shapes)
 
 | Piece | Now | Notes |
