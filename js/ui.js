@@ -255,8 +255,9 @@
         this.notice(res.forced.msg);
         vo('say', [res.forced.msg]);
         this.renderInventory();
+        await this.shatterPlanks(res.to, res.side); // the planks burst; the room behind shows through
         this.refreshDoors();
-        await sleep(700);
+        await sleep(250);
       }
 
       // 1. walk to the next room
@@ -272,7 +273,7 @@
       if (r.newRoom && r.secret) {
         $('#die').className = 'idle';
         $('#die-text').textContent = 'No die is cast. This room was never meant to be found.';
-        this.revealCell(r.cell, true);
+        this.revealCell(r.cell, false); // already uncovered when the planks burst
         this.refreshDoors();
         this.renderTurn(); // still costs one exploration point
         await sleep(420);
@@ -430,7 +431,86 @@
         const known = (p) => { const c = this.game.dungeon.cellAt(p.x, p.y); return !!(c && c.explored); };
         el.classList.toggle('no-near', !known(near));
         el.classList.toggle('no-far', !known(far));
+        // rubble into a boarded-up room: the planks over the whole room say it, so no small mark on the wall
+        el.classList.toggle('into-barred', door.state === 'blocked' && (this.isBarred(near) || this.isBarred(far)));
       }
+      this.refreshBarred();
+    }
+
+    /** An unexplored room every door of which is rubble: it can only be pried open (with a crowbar). */
+    isBarred(p) {
+      const d = this.game.dungeon;
+      const c = d.cellAt(p.x, p.y);
+      if (!c || c.explored) return false;
+      const doors = [0, 1, 2, 3].map((s) => d.doorAt(p.x, p.y, s)).filter(Boolean);
+      return doors.length > 0 && doors.every((door) => door.state === 'blocked');
+    }
+
+    /** Unexplored rooms: boarded up (planks over the whole tile) or the plain dark field. */
+    refreshBarred() {
+      for (let y = 0; y < CONFIG.rows; y++) {
+        for (let x = 0; x < CONFIG.cols; x++) {
+          const el = this.cellEl(x, y);
+          const c = this.game.dungeon.cellAt(x, y);
+          if (!el || !c || c.explored || el.dataset.prying) continue;
+          const barred = this.isBarred({ x, y });
+          if ((el.dataset.barred === '1') === barred) continue;
+          el.dataset.barred = barred ? '1' : '';
+          el.innerHTML = barred ? Art.barredTile() : Art.fogTile();
+        }
+      }
+    }
+
+    /** The crowbar pries the planks off: they burst apart in pieces (cut from the planks picture itself) with a puff of
+     *  dust, and the room underneath shows through. */
+    async shatterPlanks(p, fromSide) {
+      const el = this.cellEl(p.x, p.y);
+      if (!el) return;
+      el.dataset.prying = '1';
+      const cell = this.game.dungeon.cellAt(p.x, p.y);
+      // underneath: the hidden room (facing the way you came), or darkness until an ordinary room is revealed
+      el.innerHTML = cell.hidden ? Art.secretTile((fromSide + 2) % 4) : Art.fogTile();
+      el.dataset.barred = '';
+      const board = $('#board');
+      const x0 = p.x * PITCH, y0 = p.y * PITCH;
+      const reduce = globalThis.matchMedia && globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const N = 4, size = CELL / N;
+      const pieces = [];
+      for (let i = 0; i < N; i++) {
+        for (let j = 0; j < N; j++) {
+          const bit = document.createElement('div');
+          bit.className = 'plank-bit';
+          bit.style.cssText = `left:${x0 + i * size}px;top:${y0 + j * size}px;width:${size}px;height:${size}px;background-image:url('${Art.BARRED}');background-position:${-i * size}px ${-j * size}px`;
+          board.appendChild(bit);
+          const cx = (i + 0.5) / N - 0.5, cy = (j + 0.5) / N - 0.5;
+          const dist = 45 + Math.random() * 70;
+          const len = Math.hypot(cx, cy) || 1;
+          const dx = (cx / len) * dist + (Math.random() - 0.5) * 30, dy = (cy / len) * dist + (Math.random() - 0.5) * 30;
+          const spin = (Math.random() - 0.5) * 720;
+          const ms = reduce ? 250 : 650 + Math.random() * 300;
+          pieces.push(bit.animate(reduce ? [{ opacity: 1 }, { opacity: 0 }] : [
+            { transform: 'translate(0,0) rotate(0) scale(1)', opacity: 1 },
+            { transform: `translate(${dx * 0.6}px,${dy * 0.6 - 18}px) rotate(${spin * 0.6}deg) scale(.9)`, opacity: 1, offset: 0.45 },
+            { transform: `translate(${dx}px,${dy + 26}px) rotate(${spin}deg) scale(.6)`, opacity: 0 },
+          ], { duration: ms, easing: 'cubic-bezier(.2,.7,.4,1)', fill: 'forwards' }).finished.then(() => bit.remove()));
+        }
+      }
+      if (!reduce) {
+        for (let k = 0; k < 7; k++) { // dust
+          const puff = document.createElement('div');
+          puff.className = 'plank-dust';
+          puff.style.left = x0 + 20 + Math.random() * 40 + 'px';
+          puff.style.top = y0 + 20 + Math.random() * 40 + 'px';
+          board.appendChild(puff);
+          const a = Math.random() * Math.PI * 2, r = 20 + Math.random() * 30;
+          pieces.push(puff.animate([
+            { transform: 'translate(-50%,-50%) scale(.4)', opacity: 0.7 },
+            { transform: `translate(calc(-50% + ${Math.cos(a) * r}px), calc(-50% + ${Math.sin(a) * r}px)) scale(1.6)`, opacity: 0 },
+          ], { duration: 700 + Math.random() * 300, easing: 'ease-out', fill: 'forwards' }).finished.then(() => puff.remove()));
+        }
+      }
+      await sleep(reduce ? 250 : 520);
+      delete el.dataset.prying;
     }
 
     /** Mark the room the player is standing in. */

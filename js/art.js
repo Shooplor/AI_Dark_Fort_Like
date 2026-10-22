@@ -134,6 +134,12 @@
     </svg>`;
   };
 
+  /** An unexplored room that can only be entered through rubble: boarded up. `assets/rooms/barred.png` */
+  Art.barredTile = () => `<img class="art-tile barred" src="${asset('assets/rooms/barred.png')}" alt="" draggable="false">`;
+  Art.BARRED = asset('assets/rooms/barred.png');
+  /** The hidden room behind the planks, turned so its opening faces `side` (0 top .. 3 left). */
+  Art.secretTile = (side) => Art.roomTile({ shape: 'dead_end', rot: side, secret: true, exits: [] });
+
   /** An unexplored room (the dashed dark field). `assets/ui/room-field.png` */
   Art.fogTile = () => `<img class="art-tile" src="${asset('assets/ui/room-field.png')}" alt="" draggable="false">`;
 

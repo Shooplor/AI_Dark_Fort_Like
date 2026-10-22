@@ -7,14 +7,14 @@ parts are the corners so I can stretch only the middle.
 
 ## Already done (real art in the game)
 
-Tapestry background, pillar frame, right-panel frame, all 15 item icons, all five room tiles, the hidden (rubble) room, the crowbar, the open door, character (idle, walk x3, hit x5, heal x4), heart and eye
+Tapestry background, pillar frame, right-panel frame, all 15 item icons, all five room tiles, the hidden (rubble) room, the boarded-up room, the crowbar, the open door, character (idle, walk x3, hit x5, heal x4), heart and eye
 counters, inventory slot, unexplored-room field, current-room highlight, player pendant, fate die (flat picture and the 3D die's texture), mouse cursor.
 
 ## 1. The map
 
 | Piece | Shown at | File size | Notes |
 | --- | --- | --- | --- |
-| Doors: blocked (rubble), locked (open door is done) | about 26x14 on the wall between two rooms | same as the open door: 210x116, drawn at the rooms' 640 scale | Drawn horizontal, the game rotates. Locked needs 6 colours (brass, silver, crimson, violet, emerald, ivory), or one lock plus a colour I tint. |
+| Doors: locked; rubble only where it sits between two explored rooms (a boarded-up room shows your planks tile instead) | about 26x14 on the wall between two rooms | same as the open door: 210x116, drawn at the rooms' 640 scale | Drawn horizontal, the game rotates. Locked needs 6 colours (brass, silver, crimson, violet, emerald, ivory), or one lock plus a colour I tint. |
 
 ## 2. Pop-ups (shapes)
 

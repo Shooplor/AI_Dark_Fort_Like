@@ -50,6 +50,8 @@ Add `?seed=1234` to the URL to replay a specific house. The seed is shown under 
 - **Crowbar:** now and then a room holds a crowbar. Walking into rubble while carrying one pries it aside (the crowbar is
   used up). If the room behind it has never been explored and the rubble was its only way in, it is a **hidden room**:
   always a dead end, with its own art, no die cast (it still costs an exploration point). Its events are ordinary for now.
+  An unexplored room whose every door is rubble is shown **boarded up** (planks over the whole tile); the crowbar makes
+  the planks burst apart and the room shows through.
 - **Room events** are rolled for each new room: nothing, a healing draught, a curio, a trap (-1 to -3
   health), a restorative fountain, or (about 3 rooms in 10) **a choice**.
 - **Choices:** the room describes something (a cupboard and a chest, a mirror, a bell-rope...) and offers two or

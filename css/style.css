@@ -197,6 +197,10 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 .door .door-half.near { top: 0; transform: scaleY(-1); } /* wide end down, at the wall */
 .door .door-half.far { top: 50%; }
 .door.no-near .door-half.near, .door.no-far .door-half.far { visibility: hidden; } /* not into rooms still unexplored */
+.door.into-barred > * { display: none; } /* rubble into a boarded-up room: the planks over the room show it */
+/* the planks bursting apart when the crowbar pries them off (js/ui.js shatterPlanks) */
+.plank-bit { position: absolute; z-index: 6; pointer-events: none; background-size: 80px 80px; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .7)); }
+.plank-dust { position: absolute; z-index: 6; width: 26px; height: 26px; border-radius: 50%; pointer-events: none; background: radial-gradient(rgba(150, 132, 112, .75), rgba(150, 132, 112, 0) 70%); }
 .door.locked svg { animation: lockedHint 2.4s ease-in-out infinite; }
 @keyframes lockedHint { 0%, 100% { filter: drop-shadow(0 1px 2px #000); } 50% { filter: drop-shadow(0 0 5px rgba(244, 221, 140, .8)); } }
 .door.unlocking svg { animation: unlock .6s ease-out forwards; }
