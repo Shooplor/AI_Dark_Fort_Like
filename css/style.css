@@ -176,19 +176,24 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 .room-art { position: relative; }
 .room-art img, .room-art .room-overlay { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .cell.here::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: url('../assets/ui/highlighted-field.png') center / 100% 100% no-repeat; }
-/* the room you are in: a bright spark of light runs round its border, so it stands out from the explored rooms around
-   it (a conic gradient, masked down to a thin ring, turning) */
-@property --spark { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+/* the room you are in: a steady gold ring round its border... */
 .cell.here::after {
-  content: ''; position: absolute; inset: -4px; z-index: 2; pointer-events: none; border-radius: 4px; padding: 4px;
-  background: conic-gradient(from var(--spark), rgba(255, 210, 100, .35) 0deg, rgba(255, 210, 100, .35) 190deg, rgba(255, 222, 130, .8) 280deg, #fffbe8 340deg, #ffffff 352deg, rgba(255, 210, 100, .35) 360deg);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-  filter: drop-shadow(0 0 4px rgba(255, 215, 110, 1)) drop-shadow(0 0 9px rgba(255, 200, 80, .7));
-  animation: spark 2.2s linear infinite;
+  content: ''; position: absolute; inset: -3px; z-index: 2; pointer-events: none; border-radius: 3px;
+  border: 2px solid rgba(255, 214, 110, .75); box-shadow: 0 0 8px rgba(255, 200, 90, .55), inset 0 0 6px rgba(255, 200, 90, .35);
 }
-@keyframes spark { to { --spark: 360deg; } }
-@media (prefers-reduced-motion: reduce) { .cell.here::after { animation: none; background: rgba(255, 220, 130, .7); } }
+/* ...and the spark (assets/ui/spark-strip.png: your 3 frames, from assets/ui/source/spark.psd) running round it, turning at
+   the corners, its frames flickering at 15 a second. Drawn 96x32, shown at 48x16; its bright head leads. */
+#spark { position: absolute; width: 80px; height: 80px; z-index: 6; pointer-events: none; }
+#spark[hidden] { display: none; }
+#spark .spark-sprite {
+  position: absolute; left: 0; top: 0; width: 48px; height: 16px;
+  background: url('../assets/ui/spark-strip.png') 0 0 / 144px 16px no-repeat;
+  offset-path: path('M -2 -2 L 82 -2 L 82 82 L -2 82 Z'); offset-rotate: auto; offset-anchor: 83% 50%;
+  animation: sparkRun 2.2s linear infinite, sparkFrames .2s steps(3) infinite;
+}
+@keyframes sparkRun { from { offset-distance: 0%; } to { offset-distance: 100%; } }
+@keyframes sparkFrames { to { background-position: -144px 0; } }
+@media (prefers-reduced-motion: reduce) { #spark { display: none; } }
 .cell.go { cursor: pointer; }
 .cell.go::after {
   content: ''; position: absolute; inset: 5px; border: 2px solid var(--gold-light); border-radius: 3px; opacity: .8;
@@ -245,7 +250,7 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 #die-row { display: flex; align-items: center; gap: 16px; flex: none; padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--line); }
 /* The fate die: a 3D pyramid (js/die3d.js) that rolls over the room being explored, on the map, then fades away.
    Its four faces are cut from one painted texture and turned in 3D; tumbling is done in script, the size here. */
-#map-die { position: absolute; width: 96px; height: 96px; z-index: 6; pointer-events: none; animation: mapDieIn .15s ease-out; }
+#map-die { position: absolute; width: 96px; height: 96px; z-index: 7; pointer-events: none; animation: mapDieIn .15s ease-out; }
 #map-die[hidden] { display: none; }
 #map-die::before { content: ''; position: absolute; left: 14px; right: 14px; bottom: 2px; height: 18px; border-radius: 50%; background: radial-gradient(rgba(0, 0, 0, .65), rgba(0, 0, 0, 0) 70%); } /* its shadow on the map */
 #map-die.gone { opacity: 0; transition: opacity .35s ease-in; }

@@ -524,6 +524,10 @@
 
     /** Mark the room the player is standing in. */
     setHere() {
+      const spark = $('#spark'); // the spark runs round the border of the room you are in
+      spark.style.left = this.game.player.x * PITCH + 'px';
+      spark.style.top = this.game.player.y * PITCH + 'px';
+      spark.hidden = false;
       this.cellEls.forEach((el) => el && el.classList.remove('here'));
       this.cellEl(this.game.player.x, this.game.player.y).classList.add('here');
     }
