@@ -14,7 +14,7 @@ counters, inventory slot, unexplored-room field, current-room highlight, player 
 
 | Piece | Shown at | File size | Notes |
 | --- | --- | --- | --- |
-| Doors: blocked (rubble), locked (open door is done) | 40x24 on the edge between rooms | 80x48 | Drawn horizontal, the game rotates. Locked needs 6 colours (brass, silver, crimson, violet, emerald, ivory), or one lock plus a colour I tint. |
+| Doors: blocked (rubble), locked (open door is done) | about 26x14 on the wall between two rooms | same as the open door: 210x116, drawn at the rooms' 640 scale | Drawn horizontal, the game rotates. Locked needs 6 colours (brass, silver, crimson, violet, emerald, ivory), or one lock plus a colour I tint. |
 
 ## 2. Pop-ups (shapes)
 
