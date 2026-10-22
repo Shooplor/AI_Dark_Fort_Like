@@ -14,7 +14,7 @@ counters, inventory slot, unexplored-room field, current-room highlight, player 
 
 | Piece | Shown at | File size | Notes |
 | --- | --- | --- | --- |
-| Locks for locked doors, one per key colour (guide: `assets/rooms/templates/lock-placement-guide.png`) | about 26x14 on the wall between two rooms | same as the open door: 210x116, drawn at the rooms' 640 scale | Drawn horizontal, the game rotates. Locked needs 6 colours (brass, silver, crimson, violet, emerald, ivory), or one lock plus a colour I tint. |
+| Locks for locked doors, one per key colour (guide: `assets/rooms/templates/lock-placement-guide.png`) | 16x16, centred on the wall, over your door | 128x128 (or draw at 512x512) | Files `lock-brass.png`, `lock-silver.png`, `lock-crimson.png`, `lock-violet.png`, `lock-emerald.png`, `lock-ivory.png`; stays upright on every wall. |
 
 ## 2. Pop-ups (shapes)
 
