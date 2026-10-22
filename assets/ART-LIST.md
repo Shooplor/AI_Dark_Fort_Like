@@ -16,6 +16,12 @@ counters, inventory slot, unexplored-room field, current-room highlight, player 
 | --- | --- | --- | --- |
 | Doors: blocked (rubble), locked (open door is done) | about 26x14 on the wall between two rooms | same as the open door: 210x116, drawn at the rooms' 640 scale | Drawn horizontal, the game rotates. Locked needs 6 colours (brass, silver, crimson, violet, emerald, ivory), or one lock plus a colour I tint. |
 
+## 1b. The fate die
+
+| Piece | Shown at | File size | Notes |
+| --- | --- | --- | --- |
+| Fate die texture (the 3D pyramid) | the die, top of the right panel | 1088x951, paint over `assets/ui/templates/die-uv-template.png` | Save as `die-texture.png`. Numbers are added by the game unless you paint them in. |
+
 ## 2. Pop-ups (shapes)
 
 | Piece | Now | Notes |

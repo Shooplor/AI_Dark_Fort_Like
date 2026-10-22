@@ -80,6 +80,7 @@ js/data.js        tuning numbers, room names and text, items, events,
 js/dungeon.js     the grid, doors, room generation, reachability        (pure logic, no DOM)
 js/game.js        turns, health, inventory, events                      (pure logic, no DOM)
 js/art.js         where every picture is produced: real art + remaining placeholders
+js/die3d.js       the fate die as a 3D pyramid, wrapped in one painted texture
 js/sound.js       sound effects and music, synthesised live (real files can replace any of it)
 js/voice.js       reads the on-screen text aloud with the browser's built-in voice (a stand-in for a voice actor)
 js/ui.js          rendering and turn animation (walk -> die -> reveal -> text)

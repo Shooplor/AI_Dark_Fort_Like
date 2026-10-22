@@ -187,6 +187,7 @@
       this.notice('');
       $('#overlay').hidden = true;
       $('#seed').textContent = 'Seed ' + this.game.seed;
+      this.lastDie = null;
       Art.setDie($('#die'), null);
       $('#die').className = '';
       $('#die-text').textContent = 'Step through a door to cast it.';
@@ -324,11 +325,13 @@
     async rollDie(value) {
       const die = $('#die');
       die.className = 'rolling';
+      if (DF.Die3D && DF.Die3D.active && die.querySelector('.d3-body')) DF.Die3D.spin();
       $('#die-text').textContent = 'The die falls…';
       snd('play', 'diceRattle');
       await sleep(DIE_MS);
       snd('play', 'dieLand');
       Art.setDie(die, value);
+      this.lastDie = value;
       die.className = 'landed';
       $('#die-text').textContent = DIE_TEXT[value];
       await sleep(380);
@@ -783,6 +786,19 @@
     }
 
     bindSound() {
+      // the fate die: 3D pyramid or the flat picture (lives on the pause screen next to the sound controls)
+      const dieBtn = $('#die-style');
+      const D3 = DF.Die3D;
+      if (D3) {
+        const label = () => { dieBtn.textContent = D3.active ? 'Die: 3D' : 'Die: flat'; };
+        label();
+        dieBtn.addEventListener('click', () => {
+          D3.setActive(!D3.active);
+          label();
+          snd('play', 'click');
+          Art.setDie($('#die'), this.lastDie || null);
+        });
+      } else dieBtn.hidden = true;
       const S = DF.Sound;
       if (!S) return;
       const music = $('#vol-music');

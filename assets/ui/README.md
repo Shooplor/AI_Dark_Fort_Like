@@ -11,6 +11,7 @@ name and the same pixel size.
 | `character.png` | 500x885 at x=-45, y=69 | the masked figure (its hem and left edge sit just off the screen edges, so the walk animation never shows a cut) |
 | `hurt-1.png` ... `hurt-5.png` | 439x824 at (-5, 99), **normal size (not 2x)** | the hit animation, played in order at 11 frames a second whenever health is lost (frame 1 matches `character.png` exactly) |
 | `walk-1.png` ... `walk-3.png` | 439x824 at (-5, 99), **normal size (not 2x)** | the walking animation, looped at 8 frames a second while the figure walks between rooms |
+| `die-texture.png` | 1088x951 texture, wrapped around the 3D die (template in `templates/`) | the 3D fate die (the default; the flat `die.png` is used when switched off on the pause screen) |
 | `die.png` | 250x250, shown at 72px (not 2x) in the die slot top of the right panel | the d4 fate die; the rolled number is live text drawn over it |
 | `right-panel.png` | 438x881 at (1162, 10), **normal size (not 2x)** | the frame behind the right-hand text panel (its fill is see-through; the corner ornaments set how far in the text sits) |
 | `cursor.png`, `cursor-2x.png` | 28px and 56px | the mouse pointer (browsers allow at most 128px). `cursor-large.png` is your original 250px drawing, kept for re-exporting |

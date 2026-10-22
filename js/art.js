@@ -189,6 +189,15 @@
   };
   /** Change the number on a die already on screen (keeps the picture in place, so rolling does not flicker). */
   Art.setDie = (el, value) => {
+    // the 3D pyramid (js/die3d.js), unless switched off on the pause screen
+    const D3 = DF.Die3D;
+    if (D3 && D3.active) {
+      if (!el.querySelector('.d3-body')) D3.build(el);
+      D3.setNumbers(value != null);
+      D3.show(value, el.classList.contains('rolling'));
+      return;
+    }
+    if (el.querySelector('.d3-body')) el.innerHTML = '';
     const t = el.querySelector('text');
     if (!t) {
       el.innerHTML = Art.die(value);
