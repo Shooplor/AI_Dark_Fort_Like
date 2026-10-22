@@ -80,6 +80,10 @@
   const greatDoors = () => `<svg class="room-overlay" viewBox="0 0 100 100" aria-hidden="true">${GREAT_DOORS}</svg>`;
   Art.ROOM_IMAGES = {
     dead_end: asset('assets/rooms/dead_end.png'),
+    straight: asset('assets/rooms/straight.png'),
+    bend: asset('assets/rooms/bend.png'),
+    tee: asset('assets/rooms/tee.png'),
+    cross: asset('assets/rooms/cross.png'),
   };
   Art.roomTile = function (cell) {
     const img = Art.ROOM_IMAGES[cell.shape];
@@ -134,7 +138,13 @@
 
   /* ---------------------------------------------------------------- doors (drawn on the edge between rooms) */
 
+  /** Drawn doors (drawn horizontal, at the rooms' scale; the game turns them for side walls). Locked and blocked are
+   *  still placeholders. */
+  Art.DOOR_IMAGES = {
+    open: asset('assets/rooms/door-open.png'),
+  };
   Art.doorGlyph = function (state, color) {
+    if (Art.DOOR_IMAGES[state]) return `<img class="door-art" src="${Art.DOOR_IMAGES[state]}" alt="" draggable="false">`;
     let inner;
     if (state === 'locked') {
       inner = `<rect x="5" y="2" width="30" height="20" rx="2" fill="#4b2e1c" stroke="${GOLD}" stroke-width="1.3"/>
