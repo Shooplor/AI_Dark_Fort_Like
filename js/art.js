@@ -85,8 +85,10 @@
     tee: asset('assets/rooms/tee.png'),
     cross: asset('assets/rooms/cross.png'),
   };
+  // a room found behind rubble with the crowbar (always a dead end): its own art
+  const SECRET_ROOM = asset('assets/rooms/secret.png');
   Art.roomTile = function (cell) {
-    const img = Art.ROOM_IMAGES[cell.shape];
+    const img = cell.secret && cell.shape === 'dead_end' ? SECRET_ROOM : Art.ROOM_IMAGES[cell.shape];
     if (img) {
       // the wrapper takes the reveal animation; the picture inside carries the rotation
       return `<div class="art-tile room-art"><img src="${img}" alt="" draggable="false" style="transform:rotate(${cell.rot * 90}deg)">${
@@ -273,7 +275,7 @@
   Art.ITEM_IMAGES = new Set([
     'potion', 'key:brass', 'key:silver', 'key:crimson', 'key:violet', 'key:emerald', 'key:ivory',
     'porcelain_mask', 'wax_letter', 'silver_bell', 'withered_rose', 'opera_glasses',
-    'flute', 'scroll', 'camera',
+    'flute', 'scroll', 'camera', 'crowbar',
   ]);
   Art.itemIcon = (item) =>
     Art.ITEM_IMAGES.has(item.id)

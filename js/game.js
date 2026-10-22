@@ -45,6 +45,9 @@
     heldKeyTypes() {
       return this.slots.filter((i) => i && i.keyType).map((i) => i.keyType);
     }
+    crowbarSlot() {
+      return this.slots.findIndex((i) => i && i.id === 'crowbar');
+    }
     freeSlot() {
       return this.slots.findIndex((i) => !i);
     }
@@ -58,6 +61,7 @@
       const door = this.dungeon.doorAt(this.player.x, this.player.y, side);
       if (!door) return null;
       if (door.state === 'locked') return this.heldKeyTypes().includes(door.keyType) ? 'unlockable' : 'locked';
+      if (door.state === 'blocked' && this.crowbarSlot() >= 0) return 'breakable';
       return door.state;
     }
 
@@ -74,8 +78,19 @@
         const msg = this.cell.entrance && side === 2 ? DF.MOVE_TEXT.entrance : this.fluff.pick(DF.MOVE_TEXT.wall);
         return { ok: false, reason: 'wall', msg };
       }
+      // Rubble: impassable, unless a crowbar pries it aside (used up). An unexplored room behind it is a hidden one.
+      let forced = null;
       if (door.state === 'blocked') {
-        return { ok: false, reason: 'blocked', msg: this.fluff.pick(DF.MOVE_TEXT.blocked), door };
+        const bar = this.crowbarSlot();
+        if (bar < 0) return { ok: false, reason: 'blocked', msg: this.fluff.pick(DF.MOVE_TEXT.blocked), door };
+        this.slots[bar] = null;
+        door.state = 'open';
+        door.cleared = true; // no door any more: just a gap in the rubble
+        // the room behind becomes a hidden one (always a dead end) if this rubble is its only way in; if another room
+        // already has a door into it, it is simply an ordinary room
+        const behind = d.neighbor(x, y, side);
+        if (behind && !behind.explored && [0, 1, 2, 3].filter((s) => d.doorAt(behind.x, behind.y, s)).length === 1) behind.hidden = true;
+        forced = { door, msg: DF.MOVE_TEXT.forced };
       }
 
       let unlocked = null;
@@ -93,7 +108,7 @@
       const to = d.neighbor(x, y, side);
       this.player = { x: to.x, y: to.y };
       this.turn++;
-      return { ok: true, from: { x, y }, to: { x: to.x, y: to.y }, side, door, unlocked };
+      return { ok: true, from: { x, y }, to: { x: to.x, y: to.y }, side, door, unlocked, forced };
     }
 
     arrive() {
@@ -104,13 +119,13 @@
       if (!cell.explored) {
         this.explored++; // a new room costs one exploration point
         const hpBefore = this.hp;
-        const info = d.reveal(cell.x, cell.y, this.heldKeyTypes());
+        const info = cell.hidden ? d.revealSecret(cell.x, cell.y) : d.reveal(cell.x, cell.y, this.heldKeyTypes());
         const outcome = this.resolveEvent(cell, info);
         cell.outcome = outcome;
         const entry = { turn: this.explored, name: cell.name, summary: outcome.short }; // numbered like the eye counter
         this.log.push(entry);
         if (cell.pending) cell.pending.logEntry = entry; // updated once the player decides
-        result = { newRoom: true, cell, roll: info.roll, outcome, hpBefore, hpAfter: this.hp };
+        result = { newRoom: true, cell, roll: info.roll, secret: !!cell.secret, outcome, hpBefore, hpAfter: this.hp };
       } else {
         result = { newRoom: false, cell, hpBefore: this.hp, hpAfter: this.hp }; // backtracking is free and not logged
       }
@@ -153,6 +168,11 @@
         case 'potion': {
           const item = this.makeItem(DF.ITEM_DEFS.potion);
           return this.grantItem(cell, item, 'item', pick(DF.EVENT_TEXT.potion));
+        }
+        case 'crowbar': {
+          if (this.crowbarSlot() >= 0) return { kind: 'nothing', text: pick(DF.EVENT_TEXT.nothing), short: 'Nothing of note' }; // one at a time
+          const item = this.makeItem(DF.ITEM_DEFS.crowbar);
+          return this.grantItem(cell, item, 'item', pick(DF.EVENT_TEXT.crowbar));
         }
         case 'curio': {
           const item = this.makeItem(pick(DF.CURIOS));

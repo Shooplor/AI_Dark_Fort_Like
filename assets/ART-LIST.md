@@ -7,7 +7,7 @@ parts are the corners so I can stretch only the middle.
 
 ## Already done (real art in the game)
 
-Tapestry background, pillar frame, right-panel frame, all 15 item icons, all five room tiles, the open door, character (idle, walk x3, hit x5, heal x4), heart and eye
+Tapestry background, pillar frame, right-panel frame, all 15 item icons, all five room tiles, the hidden (rubble) room, the crowbar, the open door, character (idle, walk x3, hit x5, heal x4), heart and eye
 counters, inventory slot, unexplored-room field, current-room highlight, player pendant, fate die (flat picture and the 3D die's texture), mouse cursor.
 
 ## 1. The map

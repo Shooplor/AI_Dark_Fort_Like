@@ -150,7 +150,21 @@
       usable: true,
       desc: 'A ruby tincture that smells of cloves and old churches. Restores health when drunk.',
     },
+    crowbar: {
+      id: 'crowbar',
+      name: 'Crowbar',
+      icon: 'crowbar',
+      tool: true,
+      desc: 'Cold iron, bent at one end. Walk into a doorway choked with rubble and it will pry a way through, once.',
+    },
   };
+
+  /* Rooms found by prying rubble aside with the crowbar: always a dead end, with their own art (assets/rooms/secret.png). */
+  DF.SECRET_ROOMS = [
+    { name: 'A Room Behind the Rubble', desc: 'Dust hangs in the air like smoke. Nobody has stood here for years, and the floor is scattered with fallen plaster.' },
+    { name: 'The Walled-Up Chamber', desc: 'Someone bricked this room shut in a hurry. The stones lie where they fell, and the air tastes of old secrets.' },
+    { name: 'The Forgotten Alcove', desc: 'A bare stone cell the house has tried to forget. Your footsteps are the first sound it has heard in a long time.' },
+  ];
 
   DF.keyItemDef = function (typeId) {
     const k = DF.keyType(typeId);
@@ -208,6 +222,7 @@
     { id: 'curio', weight: 14 },
     { id: 'trap', weight: 10 },
     { id: 'blessing', weight: 8 },
+    { id: 'crowbar', weight: 5 }, // a crowbar, to pry rubble aside once (see SECRET_ROOMS)
     { id: 'choice', weight: 34 }, // a decision with buttons (see CHOICE_EVENTS below): roughly 3 rooms in 10
   ];
 
@@ -221,6 +236,10 @@
     potion: [
       'Behind a velvet curtain you find a stoppered flask of ruby liquid: a [[Healing Draught]].',
       'A [[Healing Draught]] sits on a silver tray, as though left out for you.',
+    ],
+    crowbar: [
+      'Leaning in a corner, forgotten by some workman, is a heavy [[Crowbar]]. It might pry open what the house has sealed.',
+      'Under a dust sheet lies a [[Crowbar]], cold and solid. Rubble would not stop you with this.',
     ],
     curio: [
       'Half-hidden beneath a cushion you find a [[{item}]].',
@@ -414,6 +433,7 @@
     ],
     locked: 'The door is locked, with a {lock} lock. You need the {key}.',
     unlocked: 'The {key} turns. The lock gives way, and the key crumbles to dust.',
+    forced: 'You wedge the Crowbar into the rubble and heave. Stones crash aside and a passage opens; the crowbar bends past any use.',
     choice: [
       'Something here demands a decision. You cannot leave until you have made it.',
       'You hesitate at the door, but the choice before you will not wait. Decide first.',

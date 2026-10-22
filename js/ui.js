@@ -208,6 +208,7 @@
     async attempt(side) {
       const game = this.game;
       if (this.busy || game.status !== 'playing') return;
+      if (this.framesPlaying) return; // a hit or a heal is still playing: wait for it to finish
       this.closePop();
 
       const res = game.beginMove(side);
@@ -249,6 +250,14 @@
         this.refreshDoors(res.unlocked.door.id);
         await sleep(550);
       }
+      if (res.forced) {
+        snd('play', 'rubble');
+        this.notice(res.forced.msg);
+        vo('say', [res.forced.msg]);
+        this.renderInventory();
+        this.refreshDoors();
+        await sleep(700);
+      }
 
       // 1. walk to the next room
       this.setWalking(true);
@@ -260,7 +269,14 @@
 
       // 2. arrive: a new room gets a die roll and a reveal
       const r = game.arrive();
-      if (r.newRoom) {
+      if (r.newRoom && r.secret) {
+        $('#die').className = 'idle';
+        $('#die-text').textContent = 'No die is cast. This room was never meant to be found.';
+        this.revealCell(r.cell, true);
+        this.refreshDoors();
+        this.renderTurn(); // still costs one exploration point
+        await sleep(420);
+      } else if (r.newRoom) {
         await this.rollDie(r.roll);
         this.revealCell(r.cell, true);
         this.refreshDoors();
@@ -403,7 +419,7 @@
           el.dataset.state = door.state;
           el.className = `door ${door.state}${el.dataset.v ? ' v' : ''}`;
           const kt = door.keyType ? DF.keyType(door.keyType) : null;
-          el.innerHTML = Art.doorGlyph(door.state, kt ? kt.color : '#d4a63a');
+          el.innerHTML = door.cleared ? '' : Art.doorGlyph(door.state, kt ? kt.color : '#d4a63a'); // pried-open rubble: just a gap
           if (door.id === unlockId) {
             el.classList.add('unlocking');
             setTimeout(() => el.classList.remove('unlocking'), 650);
@@ -434,7 +450,7 @@
       const { x, y } = this.game.player;
       for (let s = 0; s < 4; s++) {
         const st = this.game.exitStatus(s);
-        if (st !== 'open' && st !== 'unlockable') continue;
+        if (st !== 'open' && st !== 'unlockable' && st !== 'breakable') continue;
         const nb = this.game.dungeon.neighbor(x, y, s);
         if (nb) this.cellEl(nb.x, nb.y).classList.add('go');
       }
@@ -528,6 +544,7 @@
       };
       fig.classList.add(cls);
       show();
+      this.framesPlaying = true;
       this.frameTimer = setInterval(() => {
         i++;
         if (i >= frames.length) this.stopFrames();
@@ -538,6 +555,7 @@
     /** Cut any hit / healing animation short. */
     stopFrames() {
       clearInterval(this.frameTimer);
+      this.framesPlaying = false;
       for (const box of ['#hurt-frames', '#heal-frames']) for (const f of $(box).children) f.classList.remove('on');
       $('#figure').classList.remove('hurt', 'healing');
     }

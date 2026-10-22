@@ -213,6 +213,15 @@
       tone(b, b.sfx, { t, f: 230, f2: 110, type: 'triangle', dur: 0.1, peak: 0.28 }); // audible on small speakers too
       noise(b, b.sfx, { t, type: 'lowpass', f: 380, dur: 0.1, peak: 0.25 });
     },
+    // rubble pried aside with the crowbar: a scrape of iron, then stones tumbling down
+    rubble(b, t) {
+      tone(b, b.sfx, { t, f: 820, f2: 520, type: 'sawtooth', dur: 0.18, peak: 0.07, lp: 1800 });
+      for (let i = 0; i < 9; i++) {
+        const tt = t + 0.16 + i * 0.07 + rand(0, 0.05);
+        noise(b, b.sfx, { t: tt, type: 'lowpass', f: rand(500, 1400), dur: rand(0.06, 0.14), peak: rand(0.18, 0.34) });
+        tone(b, b.sfx, { t: tt, f: rand(90, 160), f2: 50, dur: 0.12, peak: rand(0.2, 0.35) });
+      }
+    },
     locked(b, t) {
       tone(b, b.sfx, { t, f: 95, f2: 70, dur: 0.14, peak: 0.3 });
       for (let i = 0; i < 3; i++) {

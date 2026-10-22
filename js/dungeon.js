@@ -211,6 +211,19 @@
       return { cell, roll: cell.n, rolled, addedDoors: added };
     }
 
+    /** A room found behind rubble (pried open with the crowbar): a dead end, no die cast. It keeps only the doors it
+     *  already has (the cleared rubble, and any door an explored neighbour already made). */
+    revealSecret(x, y) {
+      const cell = this.cellAt(x, y);
+      cell.explored = true;
+      cell.secret = true;
+      this.refreshShape(cell);
+      const room = this.rng.pick(DF.SECRET_ROOMS);
+      cell.name = room.name;
+      cell.desc = room.desc;
+      return { cell, roll: null, rolled: null, addedDoors: [] };
+    }
+
     nameRoom(cell) {
       const rng = this.rng;
       cell.name = rng.pick(DF.ROOM_NAMES[cell.n]);
