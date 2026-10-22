@@ -159,7 +159,7 @@
     crimson: asset('assets/rooms/lock-crimson.png'),
     emerald: asset('assets/rooms/lock-emerald.png'),
     ivory: asset('assets/rooms/lock-ivory.png'),
-    // still to draw: violet
+    violet: asset('assets/rooms/lock-violet.png'),
   };
   Art.doorGlyph = function (state, color, keyType) {
     // a locked door with a drawn lock: the ordinary door pair, with the lock on it, centred on the wall
