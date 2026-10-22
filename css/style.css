@@ -173,6 +173,8 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 
 .cell { position: absolute; width: 80px; height: 80px; }
 .cell .art-tile { width: 80px; height: 80px; display: block; }
+.room-art { position: relative; }
+.room-art img, .room-art .room-overlay { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .cell.here::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: url('../assets/ui/highlighted-field.png') center / 100% 100% no-repeat; }
 .cell.go { cursor: pointer; }
 .cell.go::after {

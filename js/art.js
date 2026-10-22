@@ -71,7 +71,23 @@
     }
   };
 
+  /** Room shapes that have been drawn: assets/rooms/<shape>.png (160x160, made from the 640px drawing in assets/rooms/source/).
+   *  Drawn facing the base way (see the templates); the picture is turned by the room's `rot`. */
+  // the great doors at the foot of the entrance foyer (placeholder until drawn)
+  const GREAT_DOORS = `<rect x="33" y="88" width="34" height="12" fill="#2b1810" stroke="${GOLD}" stroke-width="1"/>
+         <line x1="50" y1="88" x2="50" y2="100" stroke="${GOLD}" stroke-width="1"/>
+         <circle cx="46" cy="94" r="1.6" fill="${GOLD}"/><circle cx="54" cy="94" r="1.6" fill="${GOLD}"/>`;
+  const greatDoors = () => `<svg class="room-overlay" viewBox="0 0 100 100" aria-hidden="true">${GREAT_DOORS}</svg>`;
+  Art.ROOM_IMAGES = {
+    dead_end: asset('assets/rooms/dead_end.png'),
+  };
   Art.roomTile = function (cell) {
+    const img = Art.ROOM_IMAGES[cell.shape];
+    if (img) {
+      // the wrapper takes the reveal animation; the picture inside carries the rotation
+      return `<div class="art-tile room-art"><img src="${img}" alt="" draggable="false" style="transform:rotate(${cell.rot * 90}deg)">${
+        cell.entrance ? greatDoors() : ''}</div>`;
+    }
     const e = cell.exits;
     const T = 9; // wall thickness
     const A = 35; // doorway runs from A to B along a wall
@@ -96,11 +112,7 @@
       .join('');
 
     // the great doors at the foot of the entrance foyer
-    const doors = cell.entrance
-      ? `<rect x="33" y="88" width="34" height="12" fill="#2b1810" stroke="${GOLD}" stroke-width="1"/>
-         <line x1="50" y1="88" x2="50" y2="100" stroke="${GOLD}" stroke-width="1"/>
-         <circle cx="46" cy="94" r="1.6" fill="${GOLD}"/><circle cx="54" cy="94" r="1.6" fill="${GOLD}"/>`
-      : '';
+    const doors = cell.entrance ? GREAT_DOORS : '';
 
     return `<svg class="art-tile" viewBox="0 0 100 100" aria-hidden="true">
       <rect width="100" height="100" fill="url(#floor${Math.max(1, cell.n)})"/>
