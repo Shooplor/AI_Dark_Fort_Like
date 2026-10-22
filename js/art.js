@@ -138,13 +138,17 @@
 
   /* ---------------------------------------------------------------- doors (drawn on the edge between rooms) */
 
-  /** Drawn doors (drawn horizontal, at the rooms' scale; the game turns them for side walls). Locked and blocked are
-   *  still placeholders. */
+  /** Drawn doors (drawn horizontal, wide end at the wall, at the rooms' scale; the game turns them for side walls and
+   *  shows each twice, one in each room's passage). Locked and blocked are still placeholders. */
   Art.DOOR_IMAGES = {
     open: asset('assets/rooms/door-open.png'),
   };
   Art.doorGlyph = function (state, color) {
-    if (Art.DOOR_IMAGES[state]) return `<img class="door-art" src="${Art.DOOR_IMAGES[state]}" alt="" draggable="false">`;
+    // a drawn door fills both rooms' passages: the same picture twice, back to back, meeting on the wall between them
+    if (Art.DOOR_IMAGES[state]) {
+      const src = Art.DOOR_IMAGES[state];
+      return `<span class="door-pair"><img class="door-half near" src="${src}" alt="" draggable="false"><img class="door-half far" src="${src}" alt="" draggable="false"></span>`;
+    }
     let inner;
     if (state === 'locked') {
       inner = `<rect x="5" y="2" width="30" height="20" rx="2" fill="#4b2e1c" stroke="${GOLD}" stroke-width="1.3"/>

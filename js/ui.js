@@ -7,6 +7,15 @@
 
   const CELL = 80; // a room on the map is 80px square...
   const PITCH = 84; // ...with a 4px gap between rooms
+  /** The two rooms a door joins, as [near, far] for its picture: the "near" half is the top one (for doors on a side
+   *  wall, turned a quarter clockwise, the right-hand one). */
+  const doorRooms = ({ x, y, side }) =>
+    [
+      [{ x, y: y - 1 }, { x, y }],
+      [{ x: x + 1, y }, { x, y }],
+      [{ x, y }, { x, y: y + 1 }],
+      [{ x, y }, { x: x - 1, y }],
+    ][side];
   // top-left corner of each of the six inventory slots (127px images), taken from the art mockup
   const SLOT_POS = [[10, 650], [142, 650], [273, 650], [28, 764], [159, 764], [290, 764]];
   const MOVE_MS = 650; // keep in sync with the #marker transition in style.css
@@ -387,15 +396,21 @@
           layer.appendChild(el);
           this.doorEls.set(door.id, el);
         }
-        if (el.dataset.state === door.state) continue;
-        el.dataset.state = door.state;
-        el.className = `door ${door.state}${el.dataset.v ? ' v' : ''}`;
-        const kt = door.keyType ? DF.keyType(door.keyType) : null;
-        el.innerHTML = Art.doorGlyph(door.state, kt ? kt.color : '#d4a63a');
-        if (door.id === unlockId) {
-          el.classList.add('unlocking');
-          setTimeout(() => el.classList.remove('unlocking'), 650);
+        if (el.dataset.state !== door.state) {
+          el.dataset.state = door.state;
+          el.className = `door ${door.state}${el.dataset.v ? ' v' : ''}`;
+          const kt = door.keyType ? DF.keyType(door.keyType) : null;
+          el.innerHTML = Art.doorGlyph(door.state, kt ? kt.color : '#d4a63a');
+          if (door.id === unlockId) {
+            el.classList.add('unlocking');
+            setTimeout(() => el.classList.remove('unlocking'), 650);
+          }
         }
+        // a drawn door shows one half in each room's passage: only in rooms that have been explored
+        const [near, far] = doorRooms(door);
+        const known = (p) => { const c = this.game.dungeon.cellAt(p.x, p.y); return !!(c && c.explored); };
+        el.classList.toggle('no-near', !known(near));
+        el.classList.toggle('no-far', !known(far));
       }
     }
 

@@ -190,8 +190,13 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 .door { position: absolute; width: 40px; height: 24px; margin: -12px 0 0 -20px; z-index: 2; }
 .door.v { transform: rotate(90deg); }
 .door svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .8)); }
-/* a drawn door: 26x14.5 on screen (drawn at the rooms' scale), centred on the wall between the two rooms */
-.door .door-art { position: absolute; left: 50%; top: 50%; width: 26.25px; height: 14.5px; transform: translate(-50%, -50%); display: block; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .7)); }
+/* a drawn door: the picture twice, back to back (26x14.5 each on screen, drawn at the rooms' scale), meeting in the middle
+   of the gap between the two rooms, so each half fills one room's passage up to its floor */
+.door .door-pair { position: absolute; left: 50%; top: 50%; width: 26.25px; height: 29px; transform: translate(-50%, -50%); display: block; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .6)); }
+.door .door-half { position: absolute; left: 0; width: 100%; height: 50%; display: block; }
+.door .door-half.near { top: 0; transform: scaleY(-1); } /* wide end down, at the wall */
+.door .door-half.far { top: 50%; }
+.door.no-near .door-half.near, .door.no-far .door-half.far { visibility: hidden; } /* not into rooms still unexplored */
 .door.locked svg { animation: lockedHint 2.4s ease-in-out infinite; }
 @keyframes lockedHint { 0%, 100% { filter: drop-shadow(0 1px 2px #000); } 50% { filter: drop-shadow(0 0 5px rgba(244, 221, 140, .8)); } }
 .door.unlocking svg { animation: unlock .6s ease-out forwards; }

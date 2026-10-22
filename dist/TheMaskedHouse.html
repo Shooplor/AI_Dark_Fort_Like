@@ -197,8 +197,13 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 .door { position: absolute; width: 40px; height: 24px; margin: -12px 0 0 -20px; z-index: 2; }
 .door.v { transform: rotate(90deg); }
 .door svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .8)); }
-/* a drawn door: 26x14.5 on screen (drawn at the rooms' scale), centred on the wall between the two rooms */
-.door .door-art { position: absolute; left: 50%; top: 50%; width: 26.25px; height: 14.5px; transform: translate(-50%, -50%); display: block; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .7)); }
+/* a drawn door: the picture twice, back to back (26x14.5 each on screen, drawn at the rooms' scale), meeting in the middle
+   of the gap between the two rooms, so each half fills one room's passage up to its floor */
+.door .door-pair { position: absolute; left: 50%; top: 50%; width: 26.25px; height: 29px; transform: translate(-50%, -50%); display: block; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .6)); }
+.door .door-half { position: absolute; left: 0; width: 100%; height: 50%; display: block; }
+.door .door-half.near { top: 0; transform: scaleY(-1); } /* wide end down, at the wall */
+.door .door-half.far { top: 50%; }
+.door.no-near .door-half.near, .door.no-far .door-half.far { visibility: hidden; } /* not into rooms still unexplored */
 .door.locked svg { animation: lockedHint 2.4s ease-in-out infinite; }
 @keyframes lockedHint { 0%, 100% { filter: drop-shadow(0 1px 2px #000); } 50% { filter: drop-shadow(0 0 5px rgba(244, 221, 140, .8)); } }
 .door.unlocking svg { animation: unlock .6s ease-out forwards; }
@@ -1736,13 +1741,17 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 
   /* ---------------------------------------------------------------- doors (drawn on the edge between rooms) */
 
-  /** Drawn doors (drawn horizontal, at the rooms' scale; the game turns them for side walls). Locked and blocked are
-   *  still placeholders. */
+  /** Drawn doors (drawn horizontal, wide end at the wall, at the rooms' scale; the game turns them for side walls and
+   *  shows each twice, one in each room's passage). Locked and blocked are still placeholders. */
   Art.DOOR_IMAGES = {
     open: asset('assets/rooms/door-open.png'),
   };
   Art.doorGlyph = function (state, color) {
-    if (Art.DOOR_IMAGES[state]) return `<img class="door-art" src="${Art.DOOR_IMAGES[state]}" alt="" draggable="false">`;
+    // a drawn door fills both rooms' passages: the same picture twice, back to back, meeting on the wall between them
+    if (Art.DOOR_IMAGES[state]) {
+      const src = Art.DOOR_IMAGES[state];
+      return `<span class="door-pair"><img class="door-half near" src="${src}" alt="" draggable="false"><img class="door-half far" src="${src}" alt="" draggable="false"></span>`;
+    }
     let inner;
     if (state === 'locked') {
       inner = `<rect x="5" y="2" width="30" height="20" rx="2" fill="#4b2e1c" stroke="${GOLD}" stroke-width="1.3"/>
@@ -2662,6 +2671,15 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 
   const CELL = 80; // a room on the map is 80px square...
   const PITCH = 84; // ...with a 4px gap between rooms
+  /** The two rooms a door joins, as [near, far] for its picture: the "near" half is the top one (for doors on a side
+   *  wall, turned a quarter clockwise, the right-hand one). */
+  const doorRooms = ({ x, y, side }) =>
+    [
+      [{ x, y: y - 1 }, { x, y }],
+      [{ x: x + 1, y }, { x, y }],
+      [{ x, y }, { x, y: y + 1 }],
+      [{ x, y }, { x: x - 1, y }],
+    ][side];
   // top-left corner of each of the six inventory slots (127px images), taken from the art mockup
   const SLOT_POS = [[10, 650], [142, 650], [273, 650], [28, 764], [159, 764], [290, 764]];
   const MOVE_MS = 650; // keep in sync with the #marker transition in style.css
@@ -3042,15 +3060,21 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
           layer.appendChild(el);
           this.doorEls.set(door.id, el);
         }
-        if (el.dataset.state === door.state) continue;
-        el.dataset.state = door.state;
-        el.className = `door ${door.state}${el.dataset.v ? ' v' : ''}`;
-        const kt = door.keyType ? DF.keyType(door.keyType) : null;
-        el.innerHTML = Art.doorGlyph(door.state, kt ? kt.color : '#d4a63a');
-        if (door.id === unlockId) {
-          el.classList.add('unlocking');
-          setTimeout(() => el.classList.remove('unlocking'), 650);
+        if (el.dataset.state !== door.state) {
+          el.dataset.state = door.state;
+          el.className = `door ${door.state}${el.dataset.v ? ' v' : ''}`;
+          const kt = door.keyType ? DF.keyType(door.keyType) : null;
+          el.innerHTML = Art.doorGlyph(door.state, kt ? kt.color : '#d4a63a');
+          if (door.id === unlockId) {
+            el.classList.add('unlocking');
+            setTimeout(() => el.classList.remove('unlocking'), 650);
+          }
         }
+        // a drawn door shows one half in each room's passage: only in rooms that have been explored
+        const [near, far] = doorRooms(door);
+        const known = (p) => { const c = this.game.dungeon.cellAt(p.x, p.y); return !!(c && c.explored); };
+        el.classList.toggle('no-near', !known(near));
+        el.classList.toggle('no-far', !known(far));
       }
     }
 
