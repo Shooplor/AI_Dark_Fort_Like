@@ -225,8 +225,8 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
   background: url('../assets/ui/right-panel.png') center / 100% 100% no-repeat;
 }
 
-#die-row { display: flex; align-items: center; gap: 16px; height: 84px; flex: none; padding-bottom: 10px; margin-bottom: 12px; border-bottom: 1px solid var(--line); }
-#die { width: 72px; height: 72px; flex: none; }
+#die-row { display: flex; align-items: center; gap: 16px; height: 108px; flex: none; padding-bottom: 10px; margin-bottom: 12px; border-bottom: 1px solid var(--line); }
+#die { width: 96px; height: 96px; flex: none; }
 #die svg { width: 100%; height: 100%; display: block; overflow: visible; }
 #die text { transition: opacity .08s; }
 #die.rolling text { opacity: 0; } /* no number while it tumbles */
@@ -239,8 +239,8 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 /* the 3D pyramid (js/die3d.js): four faces cut from one texture, turned in 3D; tumbling is done in script, the size
    pulse and the grow-on-landing here, matching the flat die */
 #die { position: relative; }
-#die .d3-scale { position: absolute; inset: 0; perspective: 260px; }
-#die .d3-body { position: absolute; left: 36px; top: 38px; transform-style: preserve-3d; }
+#die .d3-scale { position: absolute; inset: 0; perspective: 360px; }
+#die .d3-body { position: absolute; left: 50%; top: calc(50% + 3px); transform-style: preserve-3d; }
 #die .d3-face { position: absolute; left: 0; top: 0; transform-origin: 0 0; backface-visibility: hidden; background-repeat: no-repeat; background-size: 1088px 951px; }
 #die .d3-num { position: absolute; transform: translate(-50%, -50%); font-family: Cinzel, Georgia, serif; font-weight: 700; font-size: 230px; line-height: 1; color: #f4dd8c; -webkit-text-stroke: 26px #1a0a12; paint-order: stroke fill; transition: opacity .08s; }
 #die .d3-num.flip { transform: translate(-50%, -50%) rotate(180deg); }
@@ -250,8 +250,8 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 #die.rolling .d3-scale { animation: d3pulse .22s linear infinite; }
 #die.landed .d3-scale { animation: d3land .6s cubic-bezier(.2, .7, .3, 1); }
 #die.idle .d3-scale { opacity: .4; filter: grayscale(.7); }
-@keyframes d3pulse { 0%, 100% { transform: scale(.46); } 25%, 75% { transform: scale(.58); } 50% { transform: scale(.4); } }
-@keyframes d3land { 0% { transform: scale(.46); } 70% { transform: scale(1.07); } 100% { transform: none; } }
+@keyframes d3pulse { 0%, 100% { transform: scale(.8); } 25%, 75% { transform: scale(.88); } 50% { transform: scale(.75); } } /* only a little smaller while it tumbles */
+@keyframes d3land { 0% { transform: scale(.8); } 70% { transform: scale(1.05); } 100% { transform: none; } }
 #die-text { font-size: 19px; line-height: 1.15; color: var(--text); }
 
 #room-card { flex: 1; min-height: 0; overflow-y: auto; padding-right: 6px; }

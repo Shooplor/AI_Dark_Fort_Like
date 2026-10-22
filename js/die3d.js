@@ -84,7 +84,7 @@
   const css = (m, t) => `matrix3d(${m[0][0]},${m[1][0]},${m[2][0]},0,${m[0][1]},${m[1][1]},${m[2][1]},0,${m[0][2]},${m[1][2]},${m[2][2]},0,${t ? t.join(',') : '0,0,0'},1)`;
 
   /* ---------------------------------------------------------------- the model */
-  const EDGE = 60; // edge length on screen (px); the die box is 72px
+  const EDGE = 84; // edge length on screen (px); the die box is 96px
   // a regular tetrahedron centred on 0 (CSS axes: x right, y down, z towards the viewer)
   let V3 = { a: [1, 1, 1], b: [1, -1, -1], c: [-1, 1, -1], d: [-1, -1, 1] };
   const k = EDGE / (2 * Math.SQRT2);
@@ -173,7 +173,7 @@
     body.style.transform = css(m);
     for (const face of body.children) {
       const n = apply(m, MAPS[face.dataset.face].n);
-      const lit = 0.5 + 0.65 * Math.max(0, dot(n, LIGHT));
+      const lit = 0.62 + 0.5 * Math.max(0, dot(n, LIGHT)); // gentle: the painted texture has its own light
       face.style.filter = `brightness(${lit.toFixed(3)})`;
     }
   }
