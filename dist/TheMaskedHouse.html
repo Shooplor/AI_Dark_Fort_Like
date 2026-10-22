@@ -3098,7 +3098,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       this.refreshDoors();
       this.placeMarker(this.game.player, false);
       this.setHere();
-      this.setWalking(false);
+      this.stopWalking(); // a new game: straight to the still picture
       this.renderHp(0);
       this.renderInventory();
       this.renderTurn();
@@ -3360,21 +3360,45 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       }
     }
 
-    /** While walking, the three walk frames loop at 8 a second (the normal picture is hidden meanwhile). */
+    /** Walking: the three walk frames loop at 8 a second. Frame 1 is the same pose as the still picture, so the cycle
+     *  starts on frame 2 (moving at once) and, when the walk ends, carries on to frame 1 before the still picture comes
+     *  back: no jump. A new step while that is happening just keeps the cycle going from where it is. */
     setWalking(on) {
+      const w = (this.walk = this.walk || { frame: 0, timer: null, stopping: false });
       const fig = $('#figure');
-      clearInterval(this.walkTimer);
       const frames = $('#walk-frames').children;
-      for (const f of frames) f.classList.remove('on');
-      fig.classList.toggle('walking', on);
-      if (!on) return;
-      let i = 0;
-      frames[0].classList.add('on');
-      this.walkTimer = setInterval(() => {
-        frames[i].classList.remove('on');
-        i = (i + 1) % frames.length;
-        frames[i].classList.add('on');
-      }, 1000 / 8);
+      const show = (i) => {
+        for (let k = 0; k < frames.length; k++) frames[k].classList.toggle('on', k === i);
+      };
+      if (on) {
+        w.stopping = false;
+        fig.classList.add('walking');
+        if (w.timer) return; // already moving (or finishing a step): keep the rhythm
+        w.frame = 1;
+        show(w.frame);
+        w.timer = setInterval(() => {
+          w.frame = (w.frame + 1) % frames.length;
+          show(w.frame);
+          if (w.stopping && w.frame === 0) this.stopWalking(); // back on the still pose: hand over to the picture
+        }, 1000 / 8);
+        return;
+      }
+      if (!w.timer) return;
+      if (w.frame === 0) this.stopWalking();
+      else w.stopping = true; // finish the step first
+    }
+
+    /** End the walk at once (a hit, a heal or a new game cuts in). */
+    stopWalking() {
+      const w = this.walk;
+      if (w) {
+        clearInterval(w.timer);
+        w.timer = null;
+        w.stopping = false;
+        w.frame = 0;
+      }
+      for (const f of $('#walk-frames').children) f.classList.remove('on');
+      $('#figure').classList.remove('walking');
     }
 
     /* ---------------------------------------------------------------- left panel */
@@ -3416,7 +3440,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       const frames = $(`#${kind}-frames`).children;
       const fig = $('#figure');
       const cls = kind === 'hurt' ? 'hurt' : 'healing';
-      this.setWalking(false);
+      this.stopWalking();
       this.stopFrames();
       let i = 0;
       const show = () => {
