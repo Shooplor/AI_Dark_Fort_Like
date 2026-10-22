@@ -459,7 +459,13 @@
           el.innerHTML = door.cleared ? '' : Art.doorGlyph(door.state, kt ? kt.color : '#d4a63a', door.keyType); // pried-open rubble: just a gap
           if (door.id === unlockId) {
             el.classList.add('unlocking');
-            setTimeout(() => el.classList.remove('unlocking'), 650);
+            // the drawn lock that was on it pops off and fades
+            if (Art.LOCK_IMAGES[door.keyType]) el.insertAdjacentHTML('beforeend', `<img class="door-lock gone" src="${Art.LOCK_IMAGES[door.keyType]}" alt="" draggable="false">`);
+            setTimeout(() => {
+              el.classList.remove('unlocking');
+              const ghost = el.querySelector('.door-lock.gone');
+              if (ghost) ghost.remove();
+            }, 650);
           }
         }
         // a drawn door shows one half in each room's passage: only in rooms that have been explored

@@ -234,7 +234,13 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 /* a drawn lock (one per key colour) sits on the door pair, centred on the wall, always upright; 16x16 */
 .door .door-lock { position: absolute; left: 50%; top: 50%; width: 16px; height: 16px; transform: translate(-50%, -50%); display: block; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .8)); animation: lockedHint 2.4s ease-in-out infinite; }
 .door.v .door-lock { transform: translate(-50%, -50%) rotate(-90deg); }
-.door.unlocking .door-pair { animation: unlock .6s ease-out forwards; }
+.door.unlocking .door-pair { animation: unlockPair .6s ease-out forwards; } /* keeps the pair centred on the wall while it flashes */
+@keyframes unlockPair { 0% { transform: translate(-50%, -50%) scale(1); } 40% { transform: translate(-50%, -50%) scale(1.2); filter: brightness(1.9); } 100% { transform: translate(-50%, -50%) scale(1); } }
+/* the lock pops off and fades as the key turns */
+.door .door-lock.gone { animation: lockOff .6s ease-out forwards; }
+.door.v .door-lock.gone { animation-name: lockOffV; }
+@keyframes lockOff { 0% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -90%) scale(1.6); } }
+@keyframes lockOffV { 0% { opacity: 1; transform: translate(-50%, -50%) rotate(-90deg) scale(1); } 100% { opacity: 0; transform: translate(-10%, -50%) rotate(-90deg) scale(1.6); } }
 /* something found in the room you have just entered: it pops up over the room (the inventory gets it as usual) */
 .found-pop { position: absolute; z-index: 8; pointer-events: none; transform: translate(-50%, -50%); animation: foundPop 1.6s ease-out forwards; }
 .found-pop .icon { display: block; width: 72px; height: 72px; filter: drop-shadow(0 0 6px rgba(255, 214, 110, .9)) drop-shadow(0 3px 4px rgba(0, 0, 0, .8)); }
@@ -3492,7 +3498,13 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
           el.innerHTML = door.cleared ? '' : Art.doorGlyph(door.state, kt ? kt.color : '#d4a63a', door.keyType); // pried-open rubble: just a gap
           if (door.id === unlockId) {
             el.classList.add('unlocking');
-            setTimeout(() => el.classList.remove('unlocking'), 650);
+            // the drawn lock that was on it pops off and fades
+            if (Art.LOCK_IMAGES[door.keyType]) el.insertAdjacentHTML('beforeend', `<img class="door-lock gone" src="${Art.LOCK_IMAGES[door.keyType]}" alt="" draggable="false">`);
+            setTimeout(() => {
+              el.classList.remove('unlocking');
+              const ghost = el.querySelector('.door-lock.gone');
+              if (ghost) ghost.remove();
+            }, 650);
           }
         }
         // a drawn door shows one half in each room's passage: only in rooms that have been explored
