@@ -179,20 +179,22 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 /* the room you are in: a steady gold ring round its border... */
 .cell.here::after {
   content: ''; position: absolute; inset: -3px; z-index: 2; pointer-events: none; border-radius: 3px;
-  border: 2px solid rgba(255, 214, 110, .75); box-shadow: 0 0 8px rgba(255, 200, 90, .55), inset 0 0 6px rgba(255, 200, 90, .35);
+  border: 2px solid rgba(176, 126, 48, .8); box-shadow: 0 0 6px rgba(150, 100, 30, .45), inset 0 0 4px rgba(150, 100, 30, .3); /* a darker gold, so the spark shines on it */
 }
 /* ...and the spark (assets/ui/spark-strip.png: your 3 frames, from assets/ui/source/spark.psd) running round it, turning at
-   the corners, its frames flickering at 15 a second. Drawn 96x32, shown at 48x16; its bright head leads. */
+   the corners, its frames flickering at 15 a second. Drawn 96x32, shown at 66x22; its bright head leads and the end of its
+   tail fades away (the mask). */
 #spark { position: absolute; width: 80px; height: 80px; z-index: 6; pointer-events: none; }
 #spark[hidden] { display: none; }
 #spark .spark-sprite {
-  position: absolute; left: 0; top: 0; width: 48px; height: 16px;
-  background: url('../assets/ui/spark-strip.png') 0 0 / 144px 16px no-repeat;
+  position: absolute; left: 0; top: 0; width: 66px; height: 22px;
+  background: url('../assets/ui/spark-strip.png') 0 0 / 198px 22px no-repeat;
+  -webkit-mask-image: linear-gradient(to right, transparent 18%, rgba(0, 0, 0, .55) 42%, #000 62%); mask-image: linear-gradient(to right, transparent 18%, rgba(0, 0, 0, .55) 42%, #000 62%);
   offset-path: path('M -2 -2 L 82 -2 L 82 82 L -2 82 Z'); offset-rotate: auto; offset-anchor: 83% 50%;
   animation: sparkRun 2.2s linear infinite, sparkFrames .2s steps(3) infinite;
 }
 @keyframes sparkRun { from { offset-distance: 0%; } to { offset-distance: 100%; } }
-@keyframes sparkFrames { to { background-position: -144px 0; } }
+@keyframes sparkFrames { to { background-position: -198px 0; } }
 @media (prefers-reduced-motion: reduce) { #spark { display: none; } }
 .cell.go { cursor: pointer; }
 .cell.go::after {
