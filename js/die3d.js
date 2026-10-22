@@ -5,8 +5,8 @@
  * picture, so whatever is painted there is wrapped around the die. The rolled number is written over the face by code
  * (set NUMBERS_IN_TEXTURE to true if the numbers are painted into the texture instead).
  *
- * While rolling the die tumbles freely; when it lands it turns smoothly to show the rolled face, tilted a little so it
- * still reads as 3D. Faces get darker as they turn away from the light. */
+ * While rolling the die tumbles freely; when it lands it settles as a real d4 would, standing on a face with its point
+ * up, the rolled face towards the viewer. Faces get darker as they turn away from the light. */
 (function () {
   const DF = (globalThis.DF = globalThis.DF || {});
   const Die3D = (DF.Die3D = {});
@@ -116,18 +116,27 @@
   }
   Die3D._maps = MAPS;
 
-  /** The turn that brings face f to the front (towards the viewer), with its picture upright. */
-  function faceQ(f) {
-    const { n, V } = MAPS[f];
-    const up = norm(sub(mul(V, -1), mul(n, dot(mul(V, -1), n)))); // the picture's "up", in 3D
-    const e3 = n, e2 = up, e1 = cross(e2, e3);
-    const t1 = [-1, 0, 0], t2 = [0, -1, 0], t3 = [0, 0, 1];
-    // R = T * F^T (F columns e1 e2 e3, T columns t1 t2 t3)
-    const R = [0, 1, 2].map((i) => [0, 1, 2].map((j) => t1[i] * e1[j] + t2[i] * e2[j] + t3[i] * e3[j]));
+  /* How it comes to rest, as a real d4 would: standing on one face with its point straight up, the rolled face turned
+   towards the viewer, seen a little from above. For each face: which corner is its top when shown (the one its number
+   is read towards). Faces 2-4 point up in the texture; face 1 is upside down there, so it is shown turned round. */
+  const TOP = { 1: 'b', 2: 'd', 3: 'a', 4: 'c' };
+  const FLIPPED = { 1: true }; // its number is drawn upside down in texture terms, so it reads upright on screen
+  const faceWith = (corners) => Object.keys(NET).find((f) => corners.every((c) => NET[f].v.includes(c)));
+  function restQ(f) {
+    const top = TOP[f];
+    const bottom = faceWith(['a', 'b', 'c', 'd'].filter((c) => c !== top)); // the face it stands on
+    const nB = MAPS[bottom].n, nS = MAPS[f].n;
+    // the face it stands on points down; the rolled face points (as far as it can) towards the viewer
+    const ey = nB;
+    const ez = norm(sub(nS, mul(nB, dot(nS, nB))));
+    const ex = cross(ey, ez);
+    const tx = [1, 0, 0], ty = [0, 1, 0], tz = [0, 0, 1];
+    const R = [0, 1, 2].map((i) => [0, 1, 2].map((j) => tx[i] * ex[j] + ty[i] * ey[j] + tz[i] * ez[j]));
     return matQ(R);
   }
-  const TILT = qMul(qAxis([1, 0, 0], -0.42), qAxis([0, 1, 0], 0.32)); // a slight tilt so the resting die still looks 3D
-  const REST = { 1: qMul(TILT, faceQ(1)), 2: qMul(TILT, faceQ(2)), 3: qMul(TILT, faceQ(3)), 4: qMul(TILT, faceQ(4)) };
+  // seen from a little above (the top leans towards the viewer) and slightly from the side, so it still looks 3D
+  const VIEW = qMul(qAxis([1, 0, 0], -0.5), qAxis([0, 1, 0], 0.6));
+  const REST = { 1: qMul(VIEW, restQ(1)), 2: qMul(VIEW, restQ(2)), 3: qMul(VIEW, restQ(3)), 4: qMul(VIEW, restQ(4)) };
   Die3D._rest = REST;
 
   /* ---------------------------------------------------------------- building it on the page */
@@ -147,7 +156,7 @@
         const o = add(O, add(mul(U, bx), mul(V, by)));
         const pts = tri.map((p) => `${(p[0] - bx).toFixed(2)}px ${(p[1] - by).toFixed(2)}px`).join(',');
         const c = tri.reduce((s, p) => [s[0] + (p[0] - bx) / 3, s[1] + (p[1] - by) / 3], [0, 0]);
-        const num = Die3D.NUMBERS_IN_TEXTURE ? '' : `<span class="d3-num" style="left:${c[0]}px;top:${c[1]}px">${f}</span>`;
+        const num = Die3D.NUMBERS_IN_TEXTURE ? '' : `<span class="d3-num${FLIPPED[f] ? ' flip' : ''}" style="left:${c[0]}px;top:${c[1]}px">${f}</span>`;
         return `<div class="d3-face" data-face="${f}" style="width:${bw}px;height:${bh}px;background-image:url('${tex}');background-position:${-bx}px ${-by}px;clip-path:polygon(${pts});transform:matrix3d(${U[0]},${U[1]},${U[2]},0,${V[0]},${V[1]},${V[2]},0,${N[0]},${N[1]},${N[2]},0,${o[0]},${o[1]},${o[2]},1)">${num}</div>`;
       })
       .join('');

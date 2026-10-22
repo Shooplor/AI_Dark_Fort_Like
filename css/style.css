@@ -243,6 +243,7 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 #die .d3-body { position: absolute; left: 36px; top: 38px; transform-style: preserve-3d; }
 #die .d3-face { position: absolute; left: 0; top: 0; transform-origin: 0 0; backface-visibility: hidden; background-repeat: no-repeat; background-size: 1088px 951px; }
 #die .d3-num { position: absolute; transform: translate(-50%, -50%); font-family: Cinzel, Georgia, serif; font-weight: 700; font-size: 230px; line-height: 1; color: #f4dd8c; -webkit-text-stroke: 26px #1a0a12; paint-order: stroke fill; transition: opacity .08s; }
+#die .d3-num.flip { transform: translate(-50%, -50%) rotate(180deg); }
 #die .d3-nonum .d3-num { opacity: 0; }
 #die.rolling .d3-num { opacity: 0; }
 #die.landed .d3-num { transition: opacity .18s .05s; }
