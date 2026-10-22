@@ -73,7 +73,7 @@
     this.setRoadHp(this.run.hp);
     const gate = $('#gate');
     gate.className = 'shut ask';
-    $('#gate-dust').innerHTML = '';
+    document.querySelectorAll('.dust-layer').forEach((l) => (l.innerHTML = ''));
     $('#seed').textContent = 'Road ' + seed;
     const ng = $('#new-game');
     ng.classList.remove('confirm');
@@ -105,7 +105,7 @@
     snd('play', 'gate');
     gate.classList.add('open');
     this.quake(kind === 'quick' ? 'rumbleShort' : 'rumble');
-    setTimeout(() => this.gateDust(kind === 'quick' ? 0.45 : 1), kind === 'quick' ? 120 : 350); // as the doors part
+    this.gateDust(kind === 'quick' ? 0.45 : 1); // bursts from the seam the moment the doors move
     await sleep(kind === 'quick' ? 1500 : 2650);
     gate.classList.remove('shut', 'quick');
   };
@@ -141,38 +141,42 @@
     $('#stage').animate(frames, { duration: ms, easing: 'linear' });
   };
 
-  /** Dust from the seam where the doors meet: puffs drifting up and down, and grit falling. */
+  /** Dust from the seam where the doors meet. It bursts out at once along the seam, then splits: each puff clings to
+   *  the edge of the top or the bottom door (it sits in a layer that moves with that door), so the dust parts with the
+   *  doors, half going up and half going down. Grit crumbles off the top door's edge and falls. */
   P.gateDust = function (amount) {
-    const box = $('#gate-dust');
     if (reduced()) return;
-    const puffs = Math.round(46 * amount), grit = Math.round(30 * amount);
+    const top = $('.dust-layer.top'), bottom = $('.dust-layer.bottom');
+    const puffs = Math.round(52 * amount), grit = Math.round(30 * amount);
     for (let i = 0; i < puffs; i++) {
+      const up = i % 2 === 0;
       const el = document.createElement('div');
       el.className = 'gate-dust';
       const size = 18 + Math.random() * 46;
       el.style.width = el.style.height = size + 'px';
-      el.style.left = 60 + Math.random() * 596 - size / 2 + 'px';
-      el.style.top = SEAM - size / 2 + (Math.random() - 0.5) * 10 + 'px';
-      box.appendChild(el);
-      const dir = Math.random() < 0.5 ? -1 : 1;
-      const dx = (Math.random() - 0.5) * 70, dy = dir * (25 + Math.random() * 110);
+      el.style.left = 40 + Math.random() * 636 - size / 2 + 'px';
+      el.style.top = SEAM - size / 2 + (up ? -1 : 1) * Math.random() * 6 + 'px';
+      (up ? top : bottom).appendChild(el);
+      // a little drift away from the seam and sideways; the big movement comes from riding the door
+      const dx = (Math.random() - 0.5) * 60, dy = (up ? -1 : 1) * (4 + Math.random() * 30);
       el.animate([
-        { transform: 'translate(0,0) scale(.4)', opacity: 0 },
-        { transform: `translate(${dx * 0.3}px,${dy * 0.3}px) scale(1)`, opacity: 0.75, offset: 0.2 },
-        { transform: `translate(${dx}px,${dy}px) scale(${1.6 + Math.random()})`, opacity: 0 },
-      ], { duration: 1300 + Math.random() * 1300, delay: Math.random() * 500, easing: 'ease-out', fill: 'both' }).finished.then(() => el.remove());
+        { transform: 'translate(0,0) scale(.5)', opacity: 0 },
+        { transform: `translate(${dx * 0.2}px,${dy * 0.2}px) scale(1)`, opacity: 0.8, offset: 0.08 },
+        { transform: `translate(${dx * 0.6}px,${dy * 0.6}px) scale(1.4)`, opacity: 0.55, offset: 0.5 },
+        { transform: `translate(${dx}px,${dy}px) scale(${1.7 + Math.random() * 0.8})`, opacity: 0 },
+      ], { duration: 1600 + Math.random() * 1200, delay: Math.random() * 120, easing: 'ease-out', fill: 'both' }).finished.then(() => el.remove());
     }
     for (let i = 0; i < grit; i++) {
       const el = document.createElement('div');
       el.className = 'gate-grit';
-      el.style.left = 70 + Math.random() * 576 + 'px';
-      el.style.top = SEAM + 'px';
-      box.appendChild(el);
+      el.style.left = 50 + Math.random() * 616 + 'px';
+      el.style.top = SEAM - 2 + 'px';
+      top.appendChild(el);
       const dx = (Math.random() - 0.5) * 40, fall = 120 + Math.random() * 260;
       el.animate([
         { transform: 'translate(0,0)', opacity: 1 },
         { transform: `translate(${dx}px,${fall}px) rotate(${Math.random() * 360}deg)`, opacity: 0 },
-      ], { duration: 900 + Math.random() * 700, delay: Math.random() * 400, easing: 'cubic-bezier(.4,0,1,1)', fill: 'both' }).finished.then(() => el.remove());
+      ], { duration: 900 + Math.random() * 700, delay: 80 + Math.random() * 500, easing: 'cubic-bezier(.4,0,1,1)', fill: 'both' }).finished.then(() => el.remove());
     }
   };
 
@@ -180,9 +184,9 @@
   P.gateInstantOpen = function () {
     const gate = $('#gate');
     gate.className = 'open';
-    gate.querySelectorAll('.gate-door').forEach((d) => (d.style.transition = 'none'));
+    gate.querySelectorAll('.gate-door, .dust-layer').forEach((d) => (d.style.transition = 'none'));
     void gate.offsetWidth;
-    gate.querySelectorAll('.gate-door').forEach((d) => (d.style.transition = ''));
+    gate.querySelectorAll('.gate-door, .dust-layer').forEach((d) => (d.style.transition = ''));
   };
 
   /* ---------------------------------------------------------------- the map */
