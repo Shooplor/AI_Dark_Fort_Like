@@ -75,12 +75,19 @@
       $('#heal-frames').innerHTML = Art.healFrames();
       $('#marker').innerHTML = `<div class="token">${Art.playerToken()}</div>`;
       this.buildBoard();
+      this.preloadArt();
       this.bindInput();
       this.bindSound();
       this.bindVoice();
     }
 
     /* ---------------------------------------------------------------- setup */
+
+    /** Load (and decode) the pictures that appear mid-game, so a room never waits for its picture. */
+    preloadArt() {
+      const srcs = [...Object.values(Art.ROOM_IMAGES), ...Object.values(Art.DOOR_IMAGES), ...Object.values(Art.LOCK_IMAGES), Art.BARRED, DF.Art.asset('assets/rooms/secret.png')];
+      this.preloaded = srcs.map((src) => { const im = new Image(); im.src = src; if (im.decode) im.decode().catch(() => {}); return im; });
+    }
 
     buildBoard() {
       const cells = $('#cells');
@@ -273,6 +280,7 @@
         this.revealCell(r.cell, false); // already uncovered when the planks burst
         this.refreshDoors();
         this.renderTurn(); // still costs one exploration point
+        this.popFound(r.cell, r.outcome);
         await sleep(420);
       } else if (r.newRoom) {
         await this.rollDie(r.roll, r.cell);
@@ -280,6 +288,7 @@
         this.hideMapDie(); // the die fades as the room appears beneath it
         this.refreshDoors();
         this.renderTurn(); // the new room costs one exploration point
+        setTimeout(() => this.popFound(r.cell, r.outcome), 250); // then whatever was found pops up over the room
         await sleep(420);
       } else {
         $('#die-text').textContent = 'A room you know. The die stays still.';
@@ -331,9 +340,23 @@
       if (box) box.classList.add('pop');
       this.renderHp(res.hpAfter - res.hpBefore);
       this.renderInventory();
+      this.popFound(game.cell, res.outcome);
       this.renderChronicle();
       this.refreshHints();
       if (res.status !== 'playing') this.afterVoice(1600, 9000).then(() => this.showEnd(res.status));
+    }
+
+    /** Something found in this room pops up over it, small to large, then drifts up and fades (it goes into the
+     *  inventory as usual). With no room in the satchel, the words "Item on floor" pop up instead. */
+    popFound(cell, outcome) {
+      if (!outcome || !outcome.item) return;
+      const el = document.createElement('div');
+      el.className = 'found-pop' + (outcome.taken ? '' : ' floor') + (outcome.item.quest ? ' quest' : '');
+      el.style.left = cell.x * PITCH + CELL / 2 + 'px';
+      el.style.top = cell.y * PITCH + CELL / 2 + 'px';
+      el.innerHTML = outcome.taken ? `<span class="icon">${Art.itemIcon(outcome.item)}</span>` : '<span class="words">Item on floor</span>';
+      el.addEventListener('animationend', () => el.remove());
+      $('#board').appendChild(el);
     }
 
     /** The fate die tumbles over the room being explored, on the map, lands on the roll and stays a moment to be read. */
@@ -433,7 +456,7 @@
           el.dataset.state = door.state;
           el.className = `door ${door.state}${el.dataset.v ? ' v' : ''}`;
           const kt = door.keyType ? DF.keyType(door.keyType) : null;
-          el.innerHTML = door.cleared ? '' : Art.doorGlyph(door.state, kt ? kt.color : '#d4a63a'); // pried-open rubble: just a gap
+          el.innerHTML = door.cleared ? '' : Art.doorGlyph(door.state, kt ? kt.color : '#d4a63a', door.keyType); // pried-open rubble: just a gap
           if (door.id === unlockId) {
             el.classList.add('unlocking');
             setTimeout(() => el.classList.remove('unlocking'), 650);

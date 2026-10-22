@@ -151,7 +151,21 @@
   Art.DOOR_IMAGES = {
     open: asset('assets/rooms/door-open.png'),
   };
-  Art.doorGlyph = function (state, color) {
+  /** Drawn locks, one per key colour (assets/rooms/lock-<key>.png, 128x128, shown 16x16). Colours not drawn yet keep the
+   *  placeholder lock. */
+  Art.LOCK_IMAGES = {
+    brass: asset('assets/rooms/lock-brass.png'),
+    silver: asset('assets/rooms/lock-silver.png'),
+    crimson: asset('assets/rooms/lock-crimson.png'),
+    emerald: asset('assets/rooms/lock-emerald.png'),
+    ivory: asset('assets/rooms/lock-ivory.png'),
+    // still to draw: violet
+  };
+  Art.doorGlyph = function (state, color, keyType) {
+    // a locked door with a drawn lock: the ordinary door pair, with the lock on it, centred on the wall
+    if (state === 'locked' && Art.LOCK_IMAGES[keyType] && Art.DOOR_IMAGES.open) {
+      return Art.doorGlyph('open') + `<img class="door-lock" src="${Art.LOCK_IMAGES[keyType]}" alt="" draggable="false">`;
+    }
     // a drawn door fills both rooms' passages: the same picture twice, back to back, meeting on the wall between them
     if (Art.DOOR_IMAGES[state]) {
       const src = Art.DOOR_IMAGES[state];

@@ -171,7 +171,7 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 #board { position: relative; width: 500px; height: 836px; }
 #frame { position: absolute; left: 442px; top: -6px; width: 716px; height: 906px; z-index: 4; pointer-events: none; }
 
-.cell { position: absolute; width: 80px; height: 80px; }
+.cell { position: absolute; width: 80px; height: 80px; background: url('../assets/ui/room-field.png') center / 100% 100% no-repeat; } /* the unexplored look shows through while a room's art fades in: never a black gap */
 .cell .art-tile { width: 80px; height: 80px; display: block; }
 .room-art { position: relative; }
 .room-art img, .room-art .room-overlay { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
@@ -224,6 +224,24 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 .door.locked svg { animation: lockedHint 2.4s ease-in-out infinite; }
 @keyframes lockedHint { 0%, 100% { filter: drop-shadow(0 1px 2px #000); } 50% { filter: drop-shadow(0 0 5px rgba(244, 221, 140, .8)); } }
 .door.unlocking svg { animation: unlock .6s ease-out forwards; }
+/* a drawn lock (one per key colour) sits on the door pair, centred on the wall, always upright; 16x16 */
+.door .door-lock { position: absolute; left: 50%; top: 50%; width: 16px; height: 16px; transform: translate(-50%, -50%); display: block; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .8)); animation: lockedHint 2.4s ease-in-out infinite; }
+.door.v .door-lock { transform: translate(-50%, -50%) rotate(-90deg); }
+.door.unlocking .door-pair { animation: unlock .6s ease-out forwards; }
+/* something found in the room you have just entered: it pops up over the room (the inventory gets it as usual) */
+.found-pop { position: absolute; z-index: 8; pointer-events: none; transform: translate(-50%, -50%); animation: foundPop 1.6s ease-out forwards; }
+.found-pop .icon { display: block; width: 72px; height: 72px; filter: drop-shadow(0 0 6px rgba(255, 214, 110, .9)) drop-shadow(0 3px 4px rgba(0, 0, 0, .8)); }
+.found-pop.quest .icon { filter: drop-shadow(0 0 7px rgba(79, 227, 140, .95)) drop-shadow(0 3px 4px rgba(0, 0, 0, .8)); }
+.found-pop .icon svg, .found-pop .icon img { width: 100%; height: 100%; display: block; }
+.found-pop .words { display: block; white-space: nowrap; font-family: var(--display); font-weight: 700; font-size: 17px; letter-spacing: .06em; color: #f4dd8c; -webkit-text-stroke: 4px #1a0a12; paint-order: stroke fill; text-shadow: 0 2px 6px rgba(0, 0, 0, .8); }
+@keyframes foundPop {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(.15); }
+  18% { opacity: 1; transform: translate(-50%, -50%) scale(1.22); }
+  30% { transform: translate(-50%, -50%) scale(1); }
+  72% { opacity: 1; transform: translate(-50%, -58%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -78%) scale(.96); }
+}
+@media (prefers-reduced-motion: reduce) { .found-pop { animation-duration: 1.2s; } }
 @keyframes unlock { 0% { transform: scale(1); } 40% { transform: scale(1.35); filter: brightness(2.2); } 100% { transform: scale(1); } }
 
 /* the golden pendant: 100x100, centred on the room it marks */

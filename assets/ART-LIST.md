@@ -7,14 +7,14 @@ parts are the corners so I can stretch only the middle.
 
 ## Already done (real art in the game)
 
-Tapestry background, pillar frame, right-panel frame, all 15 item icons, all five room tiles, the hidden (rubble) room, the boarded-up room, the crowbar, the open door, character (idle, walk x3, hit x5, heal x4), heart and eye
+Tapestry background, pillar frame, right-panel frame, all 15 item icons, all five room tiles, the hidden (rubble) room, the boarded-up room, the crowbar, five of the six door locks, the open door, character (idle, walk x3, hit x5, heal x4), heart and eye
 counters, inventory slot, unexplored-room field, current-room highlight, player pendant, the 3D fate die's texture, mouse cursor.
 
 ## 1. The map
 
 | Piece | Shown at | File size | Notes |
 | --- | --- | --- | --- |
-| Locks for locked doors, one per key colour (guide: `assets/rooms/templates/lock-placement-guide.png`) | 16x16, centred on the wall, over your door | 128x128 (or draw at 512x512) | Files `lock-brass.png`, `lock-silver.png`, `lock-crimson.png`, `lock-violet.png`, `lock-emerald.png`, `lock-ivory.png`; stays upright on every wall. |
+| Violet lock (the other five are in; guide: `assets/rooms/templates/lock-placement-guide.png`) | 16x16, centred on the wall, over your door | 128x128, like the other locks | File `lock-violet.png`; match the violet key. |
 
 ## 2. Pop-ups (shapes)
 

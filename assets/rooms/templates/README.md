@@ -19,5 +19,5 @@ between the two rooms. Only the lock needs drawing, once per key colour.
   larger to draw on; it is scaled down.
 - Keep the lock inside the red circle, centred on the cross. Transparent background.
 - The lock stays upright on every wall (the door turns, the lock does not). `lock-placement-guide.png` shows how it sits.
-- Six files, named by key: `lock-brass.png`, `lock-silver.png`, `lock-crimson.png`, `lock-violet.png`, `lock-emerald.png`,
+- Five locks are in (brass, silver, crimson, emerald, ivory); violet is still to draw. Six files, named by key: `lock-brass.png`, `lock-silver.png`, `lock-crimson.png`, `lock-violet.png`, `lock-emerald.png`,
   `lock-ivory.png`. Match each to your key drawing's colour.
