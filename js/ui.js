@@ -187,9 +187,7 @@
       this.notice('');
       $('#overlay').hidden = true;
       $('#seed').textContent = 'Seed ' + this.game.seed;
-      this.lastDie = null;
-      Art.setDie($('#die'), null);
-      $('#die').className = '';
+      this.hideMapDie(true);
       $('#die-text').textContent = 'Step through a door to cast it.';
       const ng = $('#new-game');
       ng.classList.remove('confirm');
@@ -271,20 +269,19 @@
       // 2. arrive: a new room gets a die roll and a reveal
       const r = game.arrive();
       if (r.newRoom && r.secret) {
-        $('#die').className = 'idle';
         $('#die-text').textContent = 'No die is cast. This room was never meant to be found.';
         this.revealCell(r.cell, false); // already uncovered when the planks burst
         this.refreshDoors();
         this.renderTurn(); // still costs one exploration point
         await sleep(420);
       } else if (r.newRoom) {
-        await this.rollDie(r.roll);
+        await this.rollDie(r.roll, r.cell);
         this.revealCell(r.cell, true);
+        this.hideMapDie(); // the die fades as the room appears beneath it
         this.refreshDoors();
         this.renderTurn(); // the new room costs one exploration point
         await sleep(420);
       } else {
-        $('#die').className = 'idle';
         $('#die-text').textContent = 'A room you know. The die stays still.';
       }
       this.setHere();
@@ -339,19 +336,35 @@
       if (res.status !== 'playing') this.afterVoice(1600, 9000).then(() => this.showEnd(res.status));
     }
 
-    async rollDie(value) {
-      const die = $('#die');
-      die.className = 'rolling';
-      if (DF.Die3D && DF.Die3D.active && die.querySelector('.d3-body')) DF.Die3D.spin();
+    /** The fate die tumbles over the room being explored, on the map, lands on the roll and stays a moment to be read. */
+    async rollDie(value, cell) {
+      const D3 = DF.Die3D;
+      const die = $('#map-die');
+      clearTimeout(this.mapDieTimer);
+      die.style.left = cell.x * PITCH + CELL / 2 - 48 + 'px';
+      die.style.top = cell.y * PITCH + CELL / 2 - 54 + 'px';
+      die.hidden = false;
+      die.className = 'die3d rolling';
+      if (!die.querySelector('.d3-body')) D3.build(die);
+      D3.setNumbers(true);
+      D3.spin();
       $('#die-text').textContent = 'The die falls…';
       snd('play', 'diceRattle');
       await sleep(DIE_MS);
       snd('play', 'dieLand');
-      Art.setDie(die, value);
-      this.lastDie = value;
-      die.className = 'landed';
+      D3.show(value, true);
+      die.className = 'die3d landed';
       $('#die-text').textContent = DIE_TEXT[value];
-      await sleep(380);
+      await sleep(950);
+    }
+
+    /** Fade the map die away (at once, for a new game). */
+    hideMapDie(now) {
+      const die = $('#map-die');
+      clearTimeout(this.mapDieTimer);
+      if (now) { die.hidden = true; die.className = 'die3d'; return; }
+      die.classList.add('gone');
+      this.mapDieTimer = setTimeout(() => { die.hidden = true; die.className = 'die3d'; }, 380);
     }
 
     /* ---------------------------------------------------------------- board */
@@ -439,11 +452,7 @@
 
     /** An unexplored room every door of which is rubble: it can only be pried open (with a crowbar). */
     isBarred(p) {
-      const d = this.game.dungeon;
-      const c = d.cellAt(p.x, p.y);
-      if (!c || c.explored) return false;
-      const doors = [0, 1, 2, 3].map((s) => d.doorAt(p.x, p.y, s)).filter(Boolean);
-      return doors.length > 0 && doors.every((door) => door.state === 'blocked');
+      return this.game.dungeon.isBarred(this.game.dungeon.cellAt(p.x, p.y));
     }
 
     /** Unexplored rooms: boarded up (planks over the whole tile) or the plain dark field. */
@@ -908,19 +917,6 @@
     }
 
     bindSound() {
-      // the fate die: 3D pyramid or the flat picture (lives on the pause screen next to the sound controls)
-      const dieBtn = $('#die-style');
-      const D3 = DF.Die3D;
-      if (D3) {
-        const label = () => { dieBtn.textContent = D3.active ? 'Die: 3D' : 'Die: flat'; };
-        label();
-        dieBtn.addEventListener('click', () => {
-          D3.setActive(!D3.active);
-          label();
-          snd('play', 'click');
-          Art.setDie($('#die'), this.lastDie || null);
-        });
-      } else dieBtn.hidden = true;
       const S = DF.Sound;
       if (!S) return;
       const music = $('#vol-music');

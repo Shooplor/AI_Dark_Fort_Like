@@ -41,7 +41,7 @@ Add `?seed=1234` to the URL to replay a specific house. The seed is shown under 
   Reach 20/20 and you are discovered, and the run ends. Walking back through rooms you have already explored is
   free.
 - **Moving** is one room at a time, and only through a door that exists on that wall.
-- **Entering a new room casts the fate die (d4)**: the roll is the number of doors the room has, counting
+- **Entering a new room casts the fate die (d4)**, a 3D pyramid that tumbles over that room on the map: the roll is the number of doors the room has, counting
   the one you came through. 1 = dead end, 2 = passage (straight or bending), 3 = junction, 4 = crossroads.
   Rooms always agree with their neighbours: a door never opens onto a wall.
 - **Doors** can be open, **locked** (coloured lock, needs the matching key) or **blocked** (rubble; a

@@ -13,13 +13,6 @@
   const asset = (p) => (DF.Art && DF.Art.asset ? DF.Art.asset(p) : p);
   const textureUrl = () => asset('assets/ui/die-texture.png'); // written out in full so the single-file build packs it
   Die3D.NUMBERS_IN_TEXTURE = false;
-  // on unless the player chose the flat die on the pause screen (remembered)
-  Die3D.active = true;
-  try { Die3D.active = localStorage.getItem('masked-house-die') !== 'flat'; } catch (e) { /* use the default */ }
-  Die3D.setActive = (on) => {
-    Die3D.active = !!on;
-    try { localStorage.setItem('masked-house-die', on ? '3d' : 'flat'); } catch (e) { /* ignore */ }
-  };
 
   /* ---------------------------------------------------------------- the unfolded die (texture pixels) */
   // One big triangle, side 1024, with a 32px margin: 1088 x 951. Its corners all fold up to the tip of the pyramid; the

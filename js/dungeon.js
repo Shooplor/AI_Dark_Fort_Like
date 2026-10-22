@@ -76,13 +76,21 @@
       return !a.explored || !b.explored;
     }
     /** How many sides of the unexplored room beyond (x, y, side) still lead to unexplored, door-less ground. */
+    /** A boarded-up room: unexplored, and every door into it is rubble. It can only be entered by prying the rubble
+     *  aside (the crowbar), so no other room may ever open a door into it. */
+    isBarred(cell) {
+      if (!cell || cell.explored) return false;
+      const doors = [0, 1, 2, 3].map((s) => this.doorAt(cell.x, cell.y, s)).filter(Boolean);
+      return doors.length > 0 && doors.every((d) => d.state === 'blocked');
+    }
+
     freeSides(x, y, side) {
       const u = this.neighbor(x, y, side);
       if (!u) return 0;
       let n = 0;
       for (let s = 0; s < 4; s++) {
         const nb = this.neighbor(u.x, u.y, s);
-        if (nb && !nb.explored && !this.doorAt(u.x, u.y, s)) n++;
+        if (nb && !nb.explored && !this.doorAt(u.x, u.y, s) && !this.isBarred(nb)) n++;
       }
       return n;
     }
@@ -176,7 +184,7 @@
         if (this.doorAt(x, y, s)) fixed.push(s);
         else {
           const nb = this.neighbor(x, y, s);
-          if (nb && !nb.explored) free.push(s);
+          if (nb && !nb.explored && !this.isBarred(nb)) free.push(s); // a boarded-up room gets no new doors
         }
       }
       const target = Math.min(Math.max(rolled, fixed.length), fixed.length + free.length);
