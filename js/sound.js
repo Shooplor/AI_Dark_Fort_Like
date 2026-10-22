@@ -213,6 +213,24 @@
       tone(b, b.sfx, { t, f: 230, f2: 110, type: 'triangle', dur: 0.1, peak: 0.28 }); // audible on small speakers too
       noise(b, b.sfx, { t, type: 'lowpass', f: 380, dur: 0.1, peak: 0.25 });
     },
+    // the great doors grinding open after a long time shut: a deep rumble, stone-on-wood scraping, creaks, a settling thud
+    gate(b, t) {
+      noise(b, b.sfx, { t, type: 'lowpass', f: 140, f2: 90, a: 0.25, dur: 2.7, peak: 0.55 });
+      tone(b, b.sfx, { t, f: 46, f2: 38, a: 0.3, dur: 2.6, peak: 0.45 });
+      for (let i = 0; i < 16; i++) {
+        const tt = t + 0.15 + i * 0.14 + rand(0, 0.06);
+        noise(b, b.sfx, { t: tt, type: 'bandpass', f: rand(380, 900), q: 1.4, dur: rand(0.12, 0.25), peak: rand(0.08, 0.18) });
+      }
+      [0.35, 1.1, 1.9].forEach((d) => tone(b, b.sfx, { t: t + d, f: rand(180, 260), f2: rand(120, 160), type: 'sawtooth', a: 0.05, dur: 0.45, peak: 0.05, lp: 900 }));
+      tone(b, b.sfx, { t: t + 2.55, f: 70, f2: 34, dur: 0.6, peak: 0.6 });
+      noise(b, b.sfx, { t: t + 2.55, type: 'lowpass', f: 600, f2: 120, dur: 0.4, peak: 0.3 });
+    },
+    // the doors slamming shut: a quick slide and a heavy thud
+    gateShut(b, t) {
+      noise(b, b.sfx, { t, type: 'lowpass', f: 300, f2: 120, a: 0.05, dur: 0.5, peak: 0.35 });
+      tone(b, b.sfx, { t: t + 0.5, f: 90, f2: 30, dur: 0.6, peak: 0.85 });
+      noise(b, b.sfx, { t: t + 0.5, type: 'lowpass', f: 900, f2: 150, dur: 0.35, peak: 0.45 });
+    },
     // rubble pried aside with the crowbar: a scrape of iron, then stones tumbling down
     rubble(b, t) {
       tone(b, b.sfx, { t, f: 820, f2: 520, type: 'sawtooth', dur: 0.18, peak: 0.07, lp: 1800 });

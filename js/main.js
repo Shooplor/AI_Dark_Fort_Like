@@ -1,4 +1,5 @@
-/* Boot: fit the 16:9 stage to the window, then start a game (optionally with ?seed=1234). */
+/* Boot: fit the 16:9 stage to the window, then start a run on the road (optionally ?seed=1234; ?house goes straight
+ * into a house, for testing). */
 (function () {
   const DF = globalThis.DF;
 
@@ -16,6 +17,12 @@
   ['pointerdown', 'keydown'].forEach((type) => window.addEventListener(type, () => DF.Sound && DF.Sound.unlock(), true));
 
   const ui = new DF.UI();
-  ui.newGame(seed);
+  if (new URLSearchParams(location.search).has('house')) {
+    // developer shortcut (and the automated checks): straight into a house, doors already open
+    ui.newGame(seed);
+    ui.gateInstantOpen();
+  } else {
+    ui.newRun(seed); // the great doors, shut: "Embark" opens them onto the road
+  }
   DF.ui = ui; // handy in the browser console while developing
 })();

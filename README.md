@@ -4,8 +4,8 @@ A browser dungeon crawler in the spirit of the tabletop game *Dark Fort*, set in
 masquerade house. You are a masked, cloaked figure exploring room by room; every playthrough builds a
 different house.
 
-This is a playable prototype. The screen uses the real artwork in `assets/ui/`; room tiles, doors, the fate die
-and item icons are still placeholder SVG until they are drawn.
+This is a playable prototype. Most of the screen uses real artwork; what is still drawn by code is listed in
+`assets/ART-LIST.md`.
 
 ## Play
 
@@ -25,15 +25,31 @@ it also works offline.
 
 ### Sharing the game with friends
 
-`dist/TheMaskedHouse.html` is the whole game in **one file** (pictures and fonts packed inside, 4.5 MB). Send that
+`dist/TheMaskedHouse.html` is the whole game in **one file** (pictures, music and fonts packed inside, about 12 MB). Send that
 single file; friends double-click it and it opens in their browser, with no folder, install or internet needed.
 It is rebuilt with `node tools/build.js` after every change (the file in the repo is always the current build).
 
 **Quick testing link:** the game is also published as a private page (see the link Claude gives in chat). `node tools/make-artifact.js <folder>` prepares the files for it; Claude republishes after each change.
 
-Add `?seed=1234` to the URL to replay a specific house. The seed is shown under the map.
+Add `?seed=1234` to the URL to replay a specific road. The seed is shown under the map. Add `?house=1` (for example
+`index.html?house=1&seed=5`) to skip the road and go straight into a single house, as before; the tests use this.
 
-## The rules so far
+## The road
+
+- **The gate:** the game opens on two great doors meeting in the middle of the frame. Only the figure and health are
+  shown. **Embark** (at the seam) slides them apart, top and bottom, with a heavy grinding sound and dust.
+- **The travel map** behind them (like Slay the Spire or GrimKeep): 6 rows of points between the start and one final
+  point at the top, three starting points, lines that never cross. You walk up one row at a time, to a point joined
+  to the one you stand on. Each road is built from the seed (`js/route.js`, `DF.ROUTE_CONFIG`).
+- **Points:** a **masked house** is a whole game of the kind described below. A **campfire**, a **hooded stranger**
+  and a **game of chance** are placeholders for now ("nothing more to do here yet"). The **House of the Rite** at
+  the top is the last house.
+- **Entering a house:** the doors slam shut, the house is set behind them and they open again. Find its evidence and
+  the doors shut and reopen on the map. **Health and the satchel carry over**; evidence and keys stay in their house.
+  Winning the last house ends the run: "The rite is exposed". **Dying (or being discovered, or getting stuck) in any
+  house ends the whole run**; Begin anew starts a fresh road at the gate.
+
+## The rules so far (inside a house)
 
 - **The map** is 56 unexplored rooms in an oval (6 columns by 10 rows, with the four corners cut off by the
   frame). You start in the entrance foyer, the second room of the bottom row (it does not cost a point).
@@ -88,6 +104,8 @@ js/art.js         where every picture is produced: real art + remaining placehol
 js/die3d.js       the fate die as a 3D pyramid, wrapped in one painted texture
 js/sound.js       sound effects and music, synthesised live (real files can replace any of it)
 js/voice.js       reads the on-screen text aloud with the browser's built-in voice (a stand-in for a voice actor)
+js/route.js       the road: the travel map's points and lines            (pure logic, no DOM)
+js/road-ui.js     the gate doors, the travel map on screen, going in and out of houses
 js/ui.js          rendering and turn animation (walk -> die -> reveal -> text)
 js/main.js        boot, window scaling, ?seed=
 tools/build.js    packs the game into the single file dist/TheMaskedHouse.html

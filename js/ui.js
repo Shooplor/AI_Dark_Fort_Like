@@ -149,8 +149,8 @@
 
       const ng = $('#new-game');
       ng.addEventListener('click', () => {
-        if (ng.classList.contains('confirm') || this.game.status !== 'playing' || this.game.turn === 0) {
-          this.newGame();
+        if (ng.classList.contains('confirm') || !this.game || this.mode !== 'house' || this.game.status !== 'playing' || this.game.turn === 0) {
+          this.startOver();
         } else {
           ng.classList.add('confirm');
           ng.textContent = 'Sure?';
@@ -160,17 +160,20 @@
           }, 3000);
         }
       });
-      $('#overlay-new').addEventListener('click', () => this.newGame());
+      $('#overlay-new').addEventListener('click', () => this.startOver());
+      $('#embark').addEventListener('click', () => this.embark());
       $('#pause-resume').addEventListener('click', () => this.resume());
-      $('#pause-new').addEventListener('click', () => this.newGame());
+      $('#pause-new').addEventListener('click', () => this.startOver());
       $('#chronicle-toggle').addEventListener('click', () => this.toggleChronicle());
       $('#chronicle-close').addEventListener('click', () => this.toggleChronicle(false));
       $('#overlay-look').addEventListener('click', () => ($('#overlay').hidden = true));
     }
 
-    newGame(seed) {
+    /** Start a house. On the road, `opts` carries health and the satchel in from the last house (see js/road-ui.js). */
+    newGame(seed, opts) {
       seed = seed === undefined ? (Math.random() * 4294967296) >>> 0 : seed;
-      this.game = new DF.Game(seed);
+      this.game = new DF.Game(seed, opts || {});
+      this.setMode('house');
       this.busy = false;
       this.prevUids = new Set();
       this.resume();
@@ -212,6 +215,7 @@
 
     async attempt(side) {
       const game = this.game;
+      if (this.mode !== 'house' || !game) return; // moving only happens inside a house
       if (this.busy || game.status !== 'playing') return;
       if (this.framesPlaying) return; // a hit or a heal is still playing: wait for it to finish
       this.closePop();
@@ -326,6 +330,7 @@
     /** Press a choice button in the current room (the 1st, 2nd, ... option). */
     choose(index) {
       const game = this.game;
+      if (this.mode !== 'house' || !game) return;
       if (this.busy || game.status !== 'playing' || !game.pendingChoice) return;
       const res = game.choose(index);
       if (!res.ok) return;
@@ -846,6 +851,7 @@
     }
 
     showEnd(status) {
+      if (status === 'won' && this.run && this.mode === 'house') return this.houseWon(); // on the road: back to the map
       for (const id of ['#danger-eye', '#danger-hp']) $(id).classList.remove('on'); // the run is over: no more warnings
       for (const id of ['#stat-health', '#stat-turns']) $(id).classList.remove('uneasy');
       const title = $('#overlay-title');
@@ -988,7 +994,7 @@
     /** Show or hide the chronicle (hidden by default; it opens over the room text). */
     toggleChronicle(show) {
       const wrap = $('#chronicle-wrap');
-      const open = show === undefined ? wrap.hidden : show;
+      const open = (show === undefined ? wrap.hidden : show) && this.mode === 'house'; // the chronicle belongs to a house
       if (open !== !wrap.hidden) snd('play', 'click');
       wrap.hidden = !open;
       $('#chronicle-toggle').classList.toggle('on', open);

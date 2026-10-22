@@ -22,7 +22,8 @@
       this.dungeon = new DF.Dungeon(CONFIG.cols, CONFIG.rows, this.rng, CONFIG.layout);
 
       this.maxHp = CONFIG.maxHp;
-      this.hp = CONFIG.maxHp;
+      // on the road, health and the satchel carry over from house to house (opts.hp, opts.items)
+      this.hp = opts.hp === undefined ? CONFIG.maxHp : Math.max(1, Math.min(CONFIG.maxHp, opts.hp));
       this.slots = new Array(CONFIG.slots).fill(null);
       this.turn = 0; // moves made so far (walking back through explored rooms counts here...)
       this.explored = 0; // ...but only exploring a NEW room spends one of the limited exploration points
@@ -37,6 +38,7 @@
       const evidence = opts.questItems !== false;
       this.questTotal = evidence ? DF.QUEST_ITEMS.length : Infinity;
       this.questQueue = evidence ? this.rng.shuffle(DF.QUEST_ITEMS) : []; // the evidence still hidden in the house, in the order it turns up
+      if (opts.items) opts.items.slice(0, CONFIG.slots).forEach((it, i) => { if (it) this.slots[i] = this.makeItem(it); });
     }
 
     get cell() {

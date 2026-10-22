@@ -8,13 +8,31 @@ parts are the corners so I can stretch only the middle.
 ## Already done (real art in the game)
 
 Tapestry background, pillar frame, right-panel frame, all 15 item icons, all five room tiles, the hidden (rubble) room, the boarded-up room, the crowbar, all six door locks, the open door, character (idle, walk x3, hit x5, heal x4), heart and eye
-counters, inventory slot, unexplored-room field, current-room highlight, player pendant, the 3D fate die's texture, mouse cursor.
+counters, inventory slot, unexplored-room field, current-room highlight, player pendant, the great gate doors, the 3D fate die's texture, mouse cursor.
 
 ## 1. The map
 
 All done: rooms, hidden and boarded-up rooms, doors, all six locks.
 
-## 2. Pop-ups (shapes)
+## 2. The road (travel map)
+
+Drawn by code now as simple line icons in the centre area (about 500x836 on screen). Sizes are on-screen size,
+so draw at double.
+
+| Piece | Size on screen | Notes |
+| --- | --- | --- |
+| Masked house point | 50x50 | The playable point. Round or any shape; a transparent edge is fine. |
+| Campfire point | 50x50 | Coming later. |
+| Hooded stranger point | 50x50 | Coming later. |
+| Game of chance point | 50x50 | Coming later. |
+| House of the Rite (final point) | 68x68 | The last house, at the top. |
+| Point states | | Now done by code: a gold pulsing ring for "you can go here", dimmed for visited. Own art optional. |
+| Map background | 500x836 | Optional: a parchment / dark road texture behind the points, fits inside the pillar frame. |
+| Road lines | | Drawn by code (dashed for paths you can take, gold for the path walked). A stamp or texture is optional. |
+| Start of the road | about 40x40 | Where you stand before the first step (bottom centre). |
+| Embark button | about 200x50 | At the seam of the doors. Normal and hover. |
+
+## 3. Pop-ups (shapes)
 
 | Piece | Now | Notes |
 | --- | --- | --- |
@@ -23,7 +41,7 @@ All done: rooms, hidden and boarded-up rooms, doors, all six locks.
 | End-of-run card | 620x357 | One card for "victory", "you have fallen", "discovered" and "nowhere left to go". A separate victory version is optional (it has a green edge now). |
 | Chronicle drawer | the right panel's inner area, plain dark box | Optional: its own backing. |
 
-## 3. Buttons and small interface pieces (all drawn by code now)
+## 4. Buttons and small interface pieces (all drawn by code now)
 
 | Piece | Size now | Notes |
 | --- | --- | --- |
@@ -35,7 +53,7 @@ All done: rooms, hidden and boarded-up rooms, doors, all six locks.
 | Red error message ("The door will not open") | text only | Optional. |
 | Sliders and dropdown on the pause card | small | Optional. |
 
-## 4. Optional extras
+## 5. Optional extras
 
 | Piece | Notes |
 | --- | --- |

@@ -48,6 +48,18 @@
           <div id="map-die" class="die3d" aria-label="Fate die" hidden></div>
         </div>
       </div>
+      <!-- the road: the travel map between houses (js/route.js, js/road-ui.js) -->
+      <div id="route-wrap" hidden>
+        <svg id="route-lines" width="500" height="836" aria-hidden="true"></svg>
+        <div id="route-nodes"></div>
+      </div>
+      <!-- the great doors over the centre: shut at the start (Embark), they slide apart top and bottom -->
+      <div id="gate" class="shut">
+        <img class="gate-door top" src="assets/ui/gate-door.png" alt="" draggable="false">
+        <img class="gate-door bottom" src="assets/ui/gate-door.png" alt="" draggable="false">
+        <div id="gate-dust"></div>
+        <button id="embark" type="button">Embark</button>
+      </div>
       <img id="frame" src="assets/ui/center-pillars.png" alt="" draggable="false">
 
       <!-- RIGHT: the fate die, the current room, the chronicle -->
@@ -125,11 +137,13 @@
   <script src="js/data.js"></script>
   <script src="js/dungeon.js"></script>
   <script src="js/game.js"></script>
+  <script src="js/route.js"></script>
   <script src="js/art.js"></script>
   <script src="js/die3d.js"></script>
   <script src="js/sound.js"></script>
   <script src="js/voice.js"></script>
   <script src="js/ui.js"></script>
+  <script src="js/road-ui.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

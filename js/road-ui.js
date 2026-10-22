@@ -1,0 +1,318 @@
+/* The road on screen: the great doors in the centre, the travel map behind them, and going in and out of houses.
+ *
+ * Screens (a class on #stage): mode-gate (doors shut, "Embark"), mode-route (the travel map), mode-house (a house: the
+ * game itself, js/ui.js). The inventory and the eye only exist inside a house; health carries over from house to house,
+ * and so does the satchel, except evidence and keys, which belong to their house.
+ *
+ * Adds methods to DF.UI (js/ui.js). */
+(function () {
+  const DF = globalThis.DF;
+  const $ = (sel) => document.querySelector(sel);
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const snd = (method, ...args) => {
+    try { if (DF.Sound && DF.Sound[method]) DF.Sound[method](...args); } catch (e) { /* sound is optional */ }
+  };
+  const vo = (method, ...args) => {
+    try { if (DF.Voice && DF.Voice[method]) DF.Voice[method](...args); } catch (e) { /* voice is optional */ }
+  };
+  const reduced = () => globalThis.matchMedia && globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const P = DF.UI.prototype;
+
+  /* where the points sit on the map (the 500 x 836 area inside the frame) */
+  const X = (node) => 62 + node.lane * 125 + node.jitter[0] * 12;
+  const Y = (node) => 718 - node.row * 108 + node.jitter[1] * 8;
+  const START = [250, 806];
+  const SEAM = 453; // where the two doors meet (in the doors' own box)
+
+  /* placeholder icons, to be replaced by drawn ones */
+  const ICONS = {
+    mansion: '<svg viewBox="0 0 32 32"><path d="M4 15 L16 5 L28 15 V28 H4Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M12 28 V20 Q16 16 20 20 V28" fill="currentColor" opacity=".7"/><circle cx="10" cy="17" r="1.6" fill="currentColor"/><circle cx="22" cy="17" r="1.6" fill="currentColor"/></svg>',
+    rest: '<svg viewBox="0 0 32 32"><path d="M16 4 C20 10 24 12 22 19 C21 23 18 25 16 25 C12 25 9 22 10 17 C11 13 14 12 13 8 C15 10 15 12 16 13 C17 10 17 7 16 4Z" fill="currentColor"/><path d="M6 28 L26 23 M6 23 L26 28" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+    stranger: '<svg viewBox="0 0 32 32"><path d="M16 3 C11 3 9 8 9 12 C9 15 7 18 6 29 H26 C25 18 23 15 23 12 C23 8 21 3 16 3Z" fill="currentColor"/><path d="M12 13 Q16 9 20 13 Q19 18 16 18 Q13 18 12 13Z" fill="#140c10"/></svg>',
+    gamble: '<svg viewBox="0 0 32 32"><rect x="4" y="9" width="13" height="13" rx="2.5" transform="rotate(-12 10 15)" fill="none" stroke="currentColor" stroke-width="2.2"/><rect x="15" y="12" width="13" height="13" rx="2.5" transform="rotate(10 21 18)" fill="currentColor"/><circle cx="10.5" cy="15.5" r="1.5" fill="currentColor"/><circle cx="19" cy="16" r="1.4" fill="#140c10"/><circle cx="23" cy="20.5" r="1.4" fill="#140c10"/></svg>',
+    final: '<svg viewBox="0 0 32 32"><path d="M5 11 C5 6 10 4 16 4 C22 4 27 6 27 11 C27 20 21 27 16 29 C11 27 5 20 5 11Z" fill="none" stroke="currentColor" stroke-width="2.4"/><ellipse cx="11.5" cy="13" rx="3" ry="1.8" fill="currentColor"/><ellipse cx="20.5" cy="13" rx="3" ry="1.8" fill="currentColor"/><path d="M13 21 Q16 23 19 21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  };
+
+  /* ---------------------------------------------------------------- screens */
+
+  P.setMode = function (mode) {
+    const st = $('#stage');
+    st.classList.remove('mode-gate', 'mode-route', 'mode-house');
+    st.classList.add('mode-' + mode);
+    this.mode = mode;
+    $('#route-wrap').hidden = mode === 'house';
+  };
+
+  /** Health in the corner while on the road (inside a house the game itself shows it). */
+  P.setRoadHp = function (hp) {
+    $('#hp-now').textContent = hp;
+    $('#hp-max').textContent = DF.CONFIG.maxHp;
+    const low = hp > 0 && hp <= 3;
+    $('#danger-hp').classList.toggle('on', low);
+    $('#stat-health').classList.toggle('uneasy', low);
+    $('#danger-eye').classList.remove('on');
+    $('#stat-turns').classList.remove('uneasy');
+  };
+
+  /** Start a new run: a fresh road, full health, an empty satchel, the doors shut. */
+  P.newRun = function (seed) {
+    seed = seed === undefined ? (Math.random() * 4294967296) >>> 0 : seed >>> 0;
+    this.run = { route: new DF.Route(seed), hp: DF.CONFIG.maxHp, items: [], node: null, houses: 0 };
+    this.game = null;
+    this.busy = false;
+    this.gateBusy = false;
+    vo('stop');
+    snd('setTension', 0);
+    if (this.paused) this.resume();
+    $('#overlay').hidden = true;
+    $('#chronicle-wrap').hidden = true;
+    $('#chronicle-toggle').classList.remove('on');
+    if (this.closePop) this.closePop();
+    this.notice('');
+    this.setMode('gate');
+    this.setRoadHp(this.run.hp);
+    const gate = $('#gate');
+    gate.className = 'shut ask';
+    $('#gate-dust').innerHTML = '';
+    $('#seed').textContent = 'Road ' + seed;
+    const ng = $('#new-game');
+    ng.classList.remove('confirm');
+    ng.textContent = 'New game';
+    this.renderRoute();
+    this.renderRoadCard();
+  };
+
+  /** "Embark": the great doors grind open onto the road. */
+  P.embark = async function () {
+    if (this.mode !== 'gate' || this.gateBusy) return;
+    this.gateBusy = true;
+    snd('play', 'click');
+    await this.openGate('slow');
+    this.setMode('route');
+    this.gateBusy = false;
+    this.renderRoute();
+    this.renderRoadCard();
+  };
+
+  /* ---------------------------------------------------------------- the doors */
+
+  /** Open the doors: 'slow' (heavy, long shut: grinding sound, lots of dust) or 'quick' (back from a house). */
+  P.openGate = async function (kind) {
+    const gate = $('#gate');
+    gate.classList.remove('ask', 'fast', 'quick');
+    if (kind === 'quick') gate.classList.add('quick');
+    void gate.offsetWidth;
+    snd('play', 'gate');
+    gate.classList.add('open');
+    setTimeout(() => this.gateDust(kind === 'quick' ? 0.45 : 1), kind === 'quick' ? 120 : 350); // as the doors part
+    await sleep(kind === 'quick' ? 1500 : 2650);
+    gate.classList.remove('shut', 'quick');
+  };
+
+  /** Slam the doors shut (fast), with a puff of dust where they meet. */
+  P.closeGate = async function () {
+    const gate = $('#gate');
+    gate.classList.add('shut', 'fast');
+    gate.classList.remove('open', 'quick');
+    snd('play', 'gateShut');
+    await sleep(560);
+    this.gateDust(0.35);
+    await sleep(250);
+    gate.classList.remove('fast');
+  };
+
+  /** Dust from the seam where the doors meet: puffs drifting up and down, and grit falling. */
+  P.gateDust = function (amount) {
+    const box = $('#gate-dust');
+    if (reduced()) return;
+    const puffs = Math.round(46 * amount), grit = Math.round(30 * amount);
+    for (let i = 0; i < puffs; i++) {
+      const el = document.createElement('div');
+      el.className = 'gate-dust';
+      const size = 18 + Math.random() * 46;
+      el.style.width = el.style.height = size + 'px';
+      el.style.left = 60 + Math.random() * 596 - size / 2 + 'px';
+      el.style.top = SEAM - size / 2 + (Math.random() - 0.5) * 10 + 'px';
+      box.appendChild(el);
+      const dir = Math.random() < 0.5 ? -1 : 1;
+      const dx = (Math.random() - 0.5) * 70, dy = dir * (25 + Math.random() * 110);
+      el.animate([
+        { transform: 'translate(0,0) scale(.4)', opacity: 0 },
+        { transform: `translate(${dx * 0.3}px,${dy * 0.3}px) scale(1)`, opacity: 0.75, offset: 0.2 },
+        { transform: `translate(${dx}px,${dy}px) scale(${1.6 + Math.random()})`, opacity: 0 },
+      ], { duration: 1300 + Math.random() * 1300, delay: Math.random() * 500, easing: 'ease-out', fill: 'both' }).finished.then(() => el.remove());
+    }
+    for (let i = 0; i < grit; i++) {
+      const el = document.createElement('div');
+      el.className = 'gate-grit';
+      el.style.left = 70 + Math.random() * 576 + 'px';
+      el.style.top = SEAM + 'px';
+      box.appendChild(el);
+      const dx = (Math.random() - 0.5) * 40, fall = 120 + Math.random() * 260;
+      el.animate([
+        { transform: 'translate(0,0)', opacity: 1 },
+        { transform: `translate(${dx}px,${fall}px) rotate(${Math.random() * 360}deg)`, opacity: 0 },
+      ], { duration: 900 + Math.random() * 700, delay: Math.random() * 400, easing: 'cubic-bezier(.4,0,1,1)', fill: 'both' }).finished.then(() => el.remove());
+    }
+  };
+
+  /** For the tests and the developer shortcut (?house): the doors simply open. */
+  P.gateInstantOpen = function () {
+    const gate = $('#gate');
+    gate.className = 'open';
+    gate.querySelectorAll('.gate-door').forEach((d) => (d.style.transition = 'none'));
+    void gate.offsetWidth;
+    gate.querySelectorAll('.gate-door').forEach((d) => (d.style.transition = ''));
+  };
+
+  /* ---------------------------------------------------------------- the map */
+
+  P.renderRoute = function () {
+    const run = this.run;
+    if (!run) return;
+    const R = run.route;
+    const svg = $('#route-lines');
+    const canMove = this.mode === 'route' && !this.gateBusy;
+    const choices = new Set(R.choices().map((n) => n.id));
+    // a faint web of old streets behind the road (the same for the same road)
+    const rng = DF.makeRng(R.seed ^ 0x77aa11);
+    let streets = '';
+    for (let i = 0; i < 26; i++) {
+      let x = rng.next() * 500, y = rng.next() * 836;
+      let d = `M${x.toFixed(0)} ${y.toFixed(0)}`;
+      for (let k = 0; k < 3; k++) { x += (rng.next() - 0.5) * 220; y += (rng.next() - 0.5) * 220; d += ` L${x.toFixed(0)} ${y.toFixed(0)}`; }
+      streets += `<path class="route-street" d="${d}"/>`;
+    }
+    const pos = (id) => (id === null ? START : [X(R.nodes[id]), Y(R.nodes[id])]);
+    const walked = new Set();
+    let prev = null;
+    for (const id of R.trail) { walked.add(prev + '>' + id); prev = id; }
+    let lines = '';
+    const line = (a, b) => {
+      const [x1, y1] = pos(a), [x2, y2] = pos(b);
+      const cls = walked.has(a + '>' + b) ? 'walked' : canMove && a === R.at && choices.has(b) ? 'open' : '';
+      lines += `<line class="route-line ${cls}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+    };
+    for (const n of R.rows[0]) line(null, n.id);
+    for (const n of R.nodes) for (const id of n.next) line(n.id, id);
+    svg.innerHTML = streets + lines;
+
+    const box = $('#route-nodes');
+    box.innerHTML = `<div class="route-start" style="left:${START[0]}px;top:${START[1]}px"></div>`;
+    for (const n of R.nodes) {
+      const el = document.createElement('div');
+      el.className = `route-node ${n.type}` + (R.done.has(n.id) ? ' done' : '') + (canMove && choices.has(n.id) ? ' can' : '');
+      el.style.left = X(n) + 'px';
+      el.style.top = Y(n) + 'px';
+      el.dataset.id = n.id;
+      el.innerHTML = ICONS[n.type] || ICONS.mansion;
+      el.addEventListener('mouseenter', () => this.renderRoadCard(n));
+      el.addEventListener('mouseleave', () => this.renderRoadCard());
+      el.addEventListener('click', () => this.travel(n.id));
+      box.appendChild(el);
+    }
+    const [mx, my] = pos(R.at);
+    let marker = $('#route-marker');
+    if (!marker) {
+      marker = document.createElement('div');
+      marker.id = 'route-marker';
+      marker.innerHTML = `<img src="${DF.Art.asset('assets/ui/player-symbol.png')}" alt="" draggable="false">`;
+    }
+    box.appendChild(marker);
+    marker.style.left = mx + 'px';
+    marker.style.top = my + 'px';
+  };
+
+  /** The right-hand panel while on the road: where you are, or the point under the mouse. */
+  P.renderRoadCard = function (hover, note) {
+    const run = this.run;
+    if (!run) return;
+    const R = run.route;
+    const esc = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    let title, body, extra = '';
+    if (this.mode === 'gate') {
+      title = 'The Masked House';
+      body = 'The great doors are shut. Beyond them lies the road, and every house along it hides a secret.';
+      extra = 'Press Embark to set out.';
+    } else if (hover) {
+      const t = DF.ROUTE_TEXT[hover.type] || DF.ROUTE_TEXT.mansion;
+      title = t.name;
+      body = t.text;
+      extra = R.done.has(hover.id) ? 'You have been here.' : R.canGo(hover.id) ? 'Click to go there.' : 'Not reachable from here yet.';
+    } else {
+      title = 'The Road';
+      body = note || 'Choose your path. Each house on the road holds its own evidence; your wounds and your satchel travel with you.';
+      extra = run.houses ? `Houses left behind: ${run.houses}.` : '';
+    }
+    $('#room-card').innerHTML = `<h2>${esc(title)}</h2><p class="room-desc">${esc(body)}</p>${extra ? `<p class="room-event quiet">${esc(extra)}</p>` : ''}`;
+  };
+
+  /** Walk to a point on the road. A house is entered: the doors shut, the house is set behind them, they open. */
+  P.travel = async function (id) {
+    if (this.mode !== 'route' || this.gateBusy) return;
+    const R = this.run.route;
+    const node = R.go(id);
+    if (!node) return;
+    this.gateBusy = true;
+    snd('play', 'step');
+    this.renderRoute();
+    await sleep(750);
+    if (node.type === 'mansion' || node.type === 'final') {
+      await this.enterHouse(node);
+    } else {
+      R.done.add(node.id);
+      this.gateBusy = false;
+      this.renderRoute();
+      this.renderRoadCard(null, `${DF.ROUTE_TEXT[node.type].name}: nothing more to do here yet. The road goes on.`);
+    }
+  };
+
+  P.enterHouse = async function (node) {
+    this.gateBusy = true;
+    this.renderRoute();
+    await this.closeGate();
+    this.run.node = node;
+    this.newGame(this.run.route.houseSeed(node), { hp: this.run.hp, items: this.run.items });
+    await this.openGate('quick');
+    this.gateBusy = false;
+  };
+
+  /** All the evidence of a house is found: back to the road (or, at the last house, the end of the road). */
+  P.houseWon = async function () {
+    const run = this.run, g = this.game, node = run.node;
+    run.hp = g.hp;
+    run.items = g.slots.map((it) => (it && !it.quest && !it.keyType ? it : null)); // evidence and keys stay in their house
+    run.houses++;
+    if (node) run.route.done.add(node.id);
+    if (node && node.type === 'final') return this.showRunWon();
+    this.gateBusy = true;
+    await sleep(1100); // let the last find be seen
+    await this.closeGate();
+    snd('setTension', 0);
+    vo('stop');
+    this.setMode('route');
+    this.setRoadHp(run.hp);
+    this.notice('');
+    this.renderRoute();
+    this.renderRoadCard(null, 'You slip out of the house with the evidence. The road goes on.');
+    await this.openGate('quick');
+    this.gateBusy = false;
+    this.renderRoute();
+  };
+
+  P.showRunWon = function () {
+    $('#overlay-title').textContent = 'The rite is exposed';
+    $('#overlay-text').textContent = 'From house to house you followed the evidence to its source. The masks will fall, and the rite will not be held again.';
+    $('#overlay').classList.add('won');
+    vo('say', [{ text: 'The rite is exposed.', gap: 700 }, $('#overlay-text').textContent], { interrupt: true });
+    snd('stopMusic', 3);
+    snd('play', 'win');
+    $('#overlay').hidden = false;
+  };
+
+  /** "New game" anywhere: a new run on the road (or, in the developer shortcut, a new house). */
+  P.startOver = function () {
+    if (this.run) this.newRun();
+    else this.newGame();
+  };
+})();
