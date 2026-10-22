@@ -165,12 +165,7 @@
         <circle cx="20" cy="12" r="6.8" fill="${color}" stroke="#241608" stroke-width="1.5"/>
         <circle cx="20" cy="10.6" r="1.9" fill="#1a0f06"/><rect x="19.1" y="10.6" width="1.8" height="5" fill="#1a0f06"/>`;
     } else if (state === 'blocked') {
-      inner = `<rect x="5" y="2" width="30" height="20" fill="#150e0e"/>
-        <polygon points="5,22 11,13 19,16 26,10 35,22" fill="#5d4c45"/>
-        <polygon points="9,22 15,17 21,22" fill="#3b2f2b"/><polygon points="24,22 29,15 35,22" fill="#47392f"/>
-        <rect x="2" y="9.5" width="36" height="4.2" rx="1" fill="#7c502b" transform="rotate(-17 20 12)"/>
-        <rect x="2" y="10.5" width="36" height="4.2" rx="1" fill="#654120" transform="rotate(17 20 12)"/>
-        <circle cx="9" cy="14.6" r="1" fill="#c9b27a"/><circle cx="31" cy="14.6" r="1" fill="#c9b27a"/>`;
+      return ''; // rubble: no picture on the doorway; the room behind it shows the boarded-up (planks) tile
     } else {
       inner = `<ellipse cx="20" cy="12" rx="15" ry="11" fill="url(#doorGlow)"/>
         <rect x="3.5" y="1.5" width="5" height="21" rx="1.6" fill="url(#goldGrad)" stroke="#4a330c" stroke-width=".6"/>

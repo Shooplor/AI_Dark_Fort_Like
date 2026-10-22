@@ -14,7 +14,7 @@ counters, inventory slot, unexplored-room field, current-room highlight, player 
 
 | Piece | Shown at | File size | Notes |
 | --- | --- | --- | --- |
-| Doors: locked; rubble only where it sits between two explored rooms (a boarded-up room shows your planks tile instead) | about 26x14 on the wall between two rooms | same as the open door: 210x116, drawn at the rooms' 640 scale | Drawn horizontal, the game rotates. Locked needs 6 colours (brass, silver, crimson, violet, emerald, ivory), or one lock plus a colour I tint. |
+| Locks for locked doors, one per key colour (guide: `assets/rooms/templates/lock-placement-guide.png`) | about 26x14 on the wall between two rooms | same as the open door: 210x116, drawn at the rooms' 640 scale | Drawn horizontal, the game rotates. Locked needs 6 colours (brass, silver, crimson, violet, emerald, ivory), or one lock plus a colour I tint. |
 
 ## 2. Pop-ups (shapes)
 

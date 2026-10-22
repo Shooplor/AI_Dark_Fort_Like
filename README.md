@@ -44,8 +44,8 @@ Add `?seed=1234` to the URL to replay a specific house. The seed is shown under 
 - **Entering a new room casts the fate die (d4)**, a 3D pyramid that tumbles over that room on the map: the roll is the number of doors the room has, counting
   the one you came through. 1 = dead end, 2 = passage (straight or bending), 3 = junction, 4 = crossroads.
   Rooms always agree with their neighbours: a door never opens onto a wall.
-- **Doors** can be open, **locked** (coloured lock, needs the matching key) or **blocked** (rubble; a
-  permanent wall for now). Keys are found in other rooms, and are used up when they turn, so backtracking
+- **Doors** can be open, **locked** (coloured lock, needs the matching key) or **blocked** by rubble. Rubble only ever
+  seals off a fresh room, which is then shown boarded up (planks over the tile) and can only be entered with a crowbar. Keys are found in other rooms, and are used up when they turn, so backtracking
   is part of the game (and free, see above).
 - **Crowbar:** now and then a room holds a crowbar. Walking into rubble while carrying one pries it aside (the crowbar is
   used up). If the room behind it has never been explored and the rubble was its only way in, it is a **hidden room**:

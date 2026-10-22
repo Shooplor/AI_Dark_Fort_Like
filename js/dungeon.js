@@ -102,7 +102,12 @@
 
     /* ---------- building ---------- */
     addDoor(x, y, side, forceOpen = false) {
-      const { state, keyType } = this.rollDoorState(forceOpen);
+      // Rubble only ever seals off a fresh room (unexplored, no doors yet): that room becomes boarded up (barred), and a
+      // barred room gets no other door. So every rubble doorway leads into a barred room, shown with the planks tile.
+      const nb = this.neighbor(x, y, side);
+      const rubbleOk = !!nb && !nb.explored && [0, 1, 2, 3].every((s) => !this.doorAt(nb.x, nb.y, s));
+      let { state, keyType } = this.rollDoorState(forceOpen);
+      if (state === 'blocked' && !rubbleOk) state = 'open';
       const door = { id: this.nextDoorId++, x, y, side, state, keyType };
       this.doors.set(this.doorKey(x, y, side), door);
       if (state === 'locked') this.owedKeys.push({ keyType, doorId: door.id, placed: false });
