@@ -8,7 +8,7 @@ parts are the corners so I can stretch only the middle.
 ## Already done (real art in the game)
 
 Tapestry background, pillar frame, right-panel frame, all 15 item icons, all five room tiles, the hidden (rubble) room, the boarded-up room, the crowbar, all six door locks, the open door, character (idle, walk x3, hit x5, heal x4), heart and eye
-counters, inventory slot, unexplored-room field, current-room highlight, player pendant, the great gate doors, the 3D fate die's texture, mouse cursor.
+counters, inventory slot, unexplored-room field, current-room highlight, player pendant, the great gate doors, the road's point icons (all but the stranger), the map background, the 3D fate die's texture, mouse cursor.
 
 ## 1. The map
 
@@ -21,11 +21,11 @@ Drawn by code now as simple line icons in the centre area (about 500x836 on scre
 
 | Piece | Size | Notes |
 | --- | --- | --- |
-| Masked house point | file 100x100 (50x50 on screen) | The playable point. Draw the whole point: badge and picture. |
-| Campfire point | file 100x100 | Coming later. |
-| Hooded stranger point | file 100x100 | Coming later. |
-| Game of chance point | file 100x100 | Coming later. |
-| House of the Rite (final point) | file 136x136 (68x68 on screen) | The last house, at the top. |
+| Masked house point (done) | file 100x100 (50x50 on screen) | The playable point. |
+| Campfire point (done) | file 100x100 | |
+| Hooded stranger point | file 100x100 | **Still to draw** (a round placeholder now). Add it as a new group in `assets/ui/source/map-icons.psd`. |
+| Game of chance point (done) | file 100x100 | |
+| House of the Rite (final point) (done) | file 100x100 now (68x68 on screen); 136x136 would be sharper | The mask coin. |
 | Start of the road | file 40x40 | The small spot at the bottom centre where you stand before the first step. |
 | Point states | | Now done by code: a gold pulsing ring for "you can go here", dimmed for visited. Own art optional. |
 | Map background (done) | file 1432x1812 | A quiet texture behind the points, filling the opening of the carved frame. Template: `assets/ui/templates/route-background-template.png` (same canvas as the doors). |

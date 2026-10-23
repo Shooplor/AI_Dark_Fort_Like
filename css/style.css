@@ -454,6 +454,14 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 .route-node.done { border-color: #a8812e; color: #c9a85c; filter: saturate(.7) brightness(.85); }
 .route-node.can { border-color: var(--gold-light); color: var(--gold-light); cursor: pointer; animation: routePulse 1.6s ease-in-out infinite; }
 .route-node.can:hover { transform: scale(1.12); box-shadow: 0 0 18px rgba(244, 221, 140, .7); }
+/* points with drawn icons (gold coins): no drawn ring; the states are a glow and a dimming instead.
+   Points you cannot reach yet are dimmed a little, so the ones you can go to stand out. */
+.route-node.art { background: none; border: none; box-shadow: none; filter: brightness(.62) saturate(.55); transition: transform .2s, filter .2s; }
+.route-node.art img { width: 100%; height: 100%; display: block; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .75)); }
+.route-node.art.done { filter: brightness(.45) saturate(.15); }
+.route-node.art.can { filter: none; animation: routeArtPulse 1.6s ease-in-out infinite; }
+.route-node.art.can:hover { transform: scale(1.14); box-shadow: none; }
+@keyframes routeArtPulse { 50% { filter: drop-shadow(0 0 10px rgba(255, 214, 110, .85)) brightness(1.12); } }
 @keyframes routePulse { 50% { box-shadow: 0 0 16px rgba(244, 221, 140, .55), 0 3px 8px rgba(0, 0, 0, .8); } }
 .route-start { position: absolute; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: #5a4850; border: 2px solid #2a1d23; }
 #route-marker { position: absolute; width: 64px; height: 64px; margin: -40px 0 0 -32px; z-index: 3; pointer-events: none; transition: left 1.1s ease-in-out, top 1.1s ease-in-out; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, .8)); }

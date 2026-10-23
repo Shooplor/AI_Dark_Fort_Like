@@ -33,6 +33,14 @@
     final: '<svg viewBox="0 0 32 32"><path d="M5 11 C5 6 10 4 16 4 C22 4 27 6 27 11 C27 20 21 27 16 29 C11 27 5 20 5 11Z" fill="none" stroke="currentColor" stroke-width="2.4"/><ellipse cx="11.5" cy="13" rx="3" ry="1.8" fill="currentColor"/><ellipse cx="20.5" cy="13" rx="3" ry="1.8" fill="currentColor"/><path d="M13 21 Q16 23 19 21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
   };
 
+  /* the drawn icons (assets/ui/route/, from assets/ui/source/map-icons.psd); a type without one keeps its placeholder */
+  const ART = {
+    mansion: DF.Art.asset('assets/ui/route/route-mansion.png'),
+    rest: DF.Art.asset('assets/ui/route/route-rest.png'),
+    gamble: DF.Art.asset('assets/ui/route/route-gamble.png'),
+    final: DF.Art.asset('assets/ui/route/route-final.png'),
+  };
+
   /* ---------------------------------------------------------------- screens */
 
   P.setMode = function (mode) {
@@ -228,7 +236,10 @@
       el.style.left = X(n) + 'px';
       el.style.top = Y(n) + 'px';
       el.dataset.id = n.id;
-      el.innerHTML = ICONS[n.type] || ICONS.mansion;
+      if (ART[n.type]) {
+        el.classList.add('art');
+        el.innerHTML = `<img src="${ART[n.type]}" alt="" draggable="false">`;
+      } else el.innerHTML = ICONS[n.type] || ICONS.mansion;
       el.addEventListener('mouseenter', () => this.renderRoadCard(n));
       el.addEventListener('mouseleave', () => this.renderRoadCard());
       el.addEventListener('click', () => this.travel(n.id));
