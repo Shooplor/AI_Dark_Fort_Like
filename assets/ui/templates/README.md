@@ -11,3 +11,10 @@ one big triangle made of four faces.
 - The circles are where the game writes the rolled number, the way up shown. Face 1 (the middle) is shown turned round
   when it is rolled, so paint its part upside down, like its number in the template. To paint the numbers yourself instead,
   set `NUMBERS_IN_TEXTURE` to true at the top of js/die3d.js.
+
+## route-background-template.png (the travel map's background)
+
+1432x1812, the same canvas as the gate door art. The light shape is what shows through the carved frame; the
+dark corners are hidden behind the wood, so paint a little past the edge of the light shape (or fill the whole
+canvas) and nothing will show a hard edge. The map's points and lines sit in the middle, about 1000x1672 of it,
+so keep the texture quiet there. Save as `assets/ui/route-background.png`.
