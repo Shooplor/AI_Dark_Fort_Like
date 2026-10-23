@@ -57,9 +57,10 @@ Placeholders drawn by code or quickly painted now. Sizes are file sizes (2x), tr
 | Enemy heart | (none) | Your heart, mirrored and desaturated by code. Draw its own if you like, 97x97. |
 | Card front: High, Middle, Low | 200x276 | Shown at 100x138. The name and "Attack/Guard" are live text now; draw empty fronts with the line's picture, or tell me where text should go. The enemy's cards use a red-tinted version (optional separate art). |
 | Card back | 200x276 | Used for the enemy's face-down card and the deck pile. |
-| Card slot (done, in the fight background) | 140x206 in the art | Played cards shrink to 70% to sit in them. A "closed" look for the bound line is drawn by code (stripes); own art optional. |
+| Card slot (done, in the fight background) | 140x206 in the art | Played cards shrink to 70% to sit in them. The bound line will be shown by the drawn arms. |
 | Line symbols (done, in the fight background) | | The arrow diamonds; the bound line's diamond glows (code). |
 | Bind clash | about 200x200 | Optional: a spark/flash sprite where blades meet (a strip of frames works too). |
+| Bind arms (planned) | see the notes in chat / README | Two arms with swords crossing over the bound panel: the player's from the left, the enemy's from the right. Drawn in parts (upper arm, forearm, hand with sword) on separate layers, animated by code. |
 | "AMBUSH!" / "En garde" lettering | about 1000x200 each | Optional; the display font is used now. |
 | Fight background (done) | 1432x1812 | `assets/ui/fight-background.png`. If the panels move, tell me and I re-measure the slots. |
 

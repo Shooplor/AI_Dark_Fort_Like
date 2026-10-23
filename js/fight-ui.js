@@ -140,7 +140,7 @@
     if (!box.children.length) {
       box.innerHTML = DF.LINES.map(
         (line) =>
-          `<div class="frow" data-line="${line}"><div class="frow-gem"></div><div class="fslot player"></div>` +
+          `<div class="frow" data-line="${line}"><div class="fslot player"></div>` +
           `<div class="frow-label">${LINE_ICON[line]}<span>${NAME[line]}</span></div><div class="fslot enemy"></div></div>`
       ).join('');
     }

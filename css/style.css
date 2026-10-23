@@ -517,11 +517,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 /* Everything is placed on the fight background (assets/ui/fight-background.png, 1432x1812, shown at half size over
    the frame's opening). #fight-wrap sits 108px right and 38px below the art's top-left corner, so a point (x, y) in
    the art is at (x/2 - 108, y/2 - 38) here. */
-#fight-prompt { position: absolute; left: 0; right: 0; top: 614px; text-align: center; pointer-events: none; z-index: 1; }
-#fight-prompt .main { font-family: var(--display); font-weight: 700; font-size: 22px; letter-spacing: .06em; color: var(--gold-light); text-shadow: 0 2px 6px #000, 0 0 3px #000; }
-#fight-prompt .sub { margin-top: 2px; font-style: italic; font-size: 16px; color: var(--text); text-shadow: 0 2px 5px #000, 0 0 3px #000; padding: 0 40px; }
-#fight-prompt.enter .main, #fight-prompt.enter .sub { animation: fadeUp .45s ease-out both; }
-#fight-prompt.enter .sub { animation-delay: .08s; }
+#fight-prompt { display: none; } /* no words in the fight: it is told by the cards, the clash and (later) drawn arms */
 
 /* the three panels of the art; each row box covers one panel */
 #fight-rows { position: absolute; left: 0; top: 0; width: 500px; height: 620px; }
@@ -531,11 +527,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 .fslot { position: absolute; top: 25px; width: 70px; height: 103px; border-radius: 3px; transition: box-shadow .2s; }
 .fslot.player { left: 36.5px; } .fslot.enemy { left: 465.5px; }
 .frow-label { display: none; } /* the art has the arrows */
-.frow-gem { position: absolute; left: 260px; top: -24px; width: 50px; height: 50px; border-radius: 50%; pointer-events: none; opacity: 0; transition: opacity .3s; }
-.frow.closed::after { content: ''; position: absolute; left: 14px; right: 18px; top: 18px; bottom: 22px; pointer-events: none; border-radius: 4px;
-  background: repeating-linear-gradient(45deg, rgba(0, 0, 0, .42) 0 7px, rgba(30, 8, 14, .3) 7px 14px); }
-.frow.bound .frow-gem { opacity: 1; background: radial-gradient(circle, rgba(255, 214, 110, .55), rgba(255, 214, 110, 0) 68%); animation: boundPulse 1.4s ease-in-out infinite; }
-@keyframes boundPulse { 50% { transform: scale(1.25); } }
+/* the bound line is shown by the clash itself for now; drawn arms with crossed swords will show it later */
 .frow.open-line .fslot.player { box-shadow: 0 0 0 2px rgba(240, 200, 112, .7), 0 0 16px rgba(240, 200, 112, .45); }
 
 /* a card: two faces in 3D, flipped by turning .fcard-inner */
