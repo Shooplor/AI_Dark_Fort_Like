@@ -549,7 +549,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 .fcard .back::after { content: ''; position: absolute; inset: 7px; border: 1px solid rgba(201, 160, 72, .45); border-radius: 5px; }
 
 /* the hand: fanned along the bottom; a card lifts and leans towards the mouse */
-#fight-hand { position: absolute; left: 0; top: 668px; width: 500px; height: 200px; }
+#fight-hand { position: absolute; left: 0; top: 688px; width: 500px; height: 200px; }
 #fight-hand .fcard { transition: transform .32s cubic-bezier(.2, .8, .3, 1), filter .2s, opacity .2s; cursor: pointer;
   transform: translate(var(--x), var(--y)) rotate(var(--r)); }
 #fight-hand .fcard .fcard-inner { transition: transform .5s cubic-bezier(.3, .7, .3, 1); }
@@ -558,7 +558,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 #fight-hand .fcard.lift .fcard-inner { transform: rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg)); transition: transform .08s; }
 #fight-hand .fcard.closed { filter: grayscale(.7) brightness(.55); cursor: not-allowed; }
 #fight-wrap.locked #fight-hand .fcard { cursor: default; }
-#fight-deck { position: absolute; left: 10px; top: 690px; width: 46px; height: 64px; border-radius: 7px; border: 2px solid #8e3a4c;
+#fight-deck { position: absolute; left: 10px; top: 712px; width: 46px; height: 64px; border-radius: 7px; border: 2px solid #8e3a4c;
   background: repeating-linear-gradient(45deg, #2a0f18 0 6px, #3a1521 6px 12px); box-shadow: 3px 3px 0 #160a10, 6px 6px 0 #0e060a, 0 8px 16px rgba(0, 0, 0, .6); }
 #fight-deck-n { position: absolute; left: 0; right: 0; bottom: -26px; text-align: center; font-family: var(--display); font-size: 15px; color: #8c7550; }
 
