@@ -32,7 +32,7 @@
   const LINE_ICON = { high: blade(-26), mid: blade(0), low: blade(26) };
 
   const HAND_TOP = 618; // #fight-hand's top inside #fight-wrap
-  const DECK = { x: -2, y: 700 }; // where new cards come from (the deck pile)
+  const DECK = { x: 10, y: 690 }; // where new cards come from (the deck pile)
 
   /** The stage is scaled to fit the window: screen pixels -> stage pixels. */
   const stageScale = () => $('#stage').getBoundingClientRect().width / 1600 || 1;
@@ -73,15 +73,16 @@
     enemy.className = '';
     $('#enemy-img').src = ENEMY_ART[fight.enemy.id] || ENEMY_ART.duellist;
     $('#enemy-name').textContent = fight.enemy.name;
+    $('#enemy-tell').textContent = fight.enemy.tell;
     this.renderEnemyHp(0);
     this.renderFightRows();
     this.renderReadiness();
-    this.fightPrompt(fight.ambush ? 'They strike from the shadows!' : null, fight.enemy.tell);
+    this.fightPrompt(fight.ambush ? 'They strike from the shadows!' : null, fight.ambush ? ' ' : null);
     await sleep(1000);
     await this.openGate('quick');
     word.classList.remove('show');
     await this.dealCards();
-    this.fightPrompt(null, fight.enemy.tell);
+    this.fightPrompt();
     this.fightBusy = false;
     $('#fight-wrap').classList.remove('locked');
     this.renderHand();
@@ -139,7 +140,7 @@
     if (!box.children.length) {
       box.innerHTML = DF.LINES.map(
         (line) =>
-          `<div class="frow" data-line="${line}"><div class="fslot player"></div>` +
+          `<div class="frow" data-line="${line}"><div class="frow-gem"></div><div class="fslot player"></div>` +
           `<div class="frow-label">${LINE_ICON[line]}<span>${NAME[line]}</span></div><div class="fslot enemy"></div></div>`
       ).join('');
     }
@@ -176,12 +177,12 @@
     if (!f) return;
     const role = (this.handRole || f.role) === 'attack' ? 'Attack' : 'Guard'; // during an exchange: the role just played
     const n = f.hand.length;
-    const spacing = n > 4 ? 88 : 104;
+    const spacing = n > 4 ? 84 : 98;
     f.hand.forEach((card, i) => {
       const el = this.handEls.get(card.uid);
       if (!el) return;
       const k = i - (n - 1) / 2;
-      el.style.setProperty('--x', 200 + k * spacing + 'px');
+      el.style.setProperty('--x', 214 + k * spacing + 'px'); // a little right of centre: the deck sits at the left
       el.style.setProperty('--y', Math.abs(k) * Math.abs(k) * 6 + 'px');
       el.style.setProperty('--r', k * 5 + 'deg');
       el.style.zIndex = i + 1;
@@ -300,8 +301,12 @@
     parent.appendChild(el);
     el.style.transform = 'none';
     const b = el.getBoundingClientRect();
-    const dx = (a.left - b.left) / s, dy = (a.top - b.top) / s;
-    return el.animate([{ transform: `translate(${dx}px, ${dy}px) ${from || ''}` }, { transform: 'none' }], {
+    // centres, since a card changes size on the way (it shrinks into a slot); the start is scaled to match
+    const end = parseFloat(getComputedStyle(el).scale) || 1;
+    const start = (end * a.width) / b.width;
+    const dx = (a.left + a.width / 2 - (b.left + b.width / 2)) / s / start;
+    const dy = (a.top + a.height / 2 - (b.top + b.height / 2)) / s / start;
+    return el.animate([{ transform: `translate(${dx}px, ${dy}px) ${from || ''}`, scale: start }, { transform: 'none', scale: end }], {
       duration: reduced() ? 1 : ms,
       easing: 'cubic-bezier(.2,.8,.3,1)',
     }).finished;
@@ -387,8 +392,8 @@
     for (let i = 0; i < 16; i++) {
       const sp = document.createElement('div');
       sp.className = 'clash-spark';
-      sp.style.left = '248px';
-      sp.style.top = '70px';
+      sp.style.left = '284px';
+      sp.style.top = '76px';
       row.appendChild(sp);
       const a = Math.random() * Math.PI * 2, d = 40 + Math.random() * 70;
       sp.animate([
