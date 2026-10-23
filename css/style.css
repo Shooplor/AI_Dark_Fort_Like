@@ -442,9 +442,11 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 #route-wrap { position: absolute; left: 550px; top: 32px; width: 500px; height: 836px; z-index: 2; }
 #route-wrap[hidden] { display: none; }
 #route-lines { position: absolute; inset: 0; overflow: visible; }
-.route-line { stroke: #4a3a40; stroke-width: 4; stroke-linecap: round; }
-.route-line.open { stroke: rgba(212, 166, 58, .55); stroke-dasharray: 2 9; animation: routeDash 1.2s linear infinite; }
-.route-line.walked { stroke: #d4a63a; stroke-width: 5; }
+.route-edge { stroke: #4e3a43; stroke-width: 16; stroke-linecap: round; }
+.route-road { stroke: #0d070a; stroke-width: 11; stroke-linecap: round; }
+.route-line { stroke-linecap: round; }
+.route-line.open { stroke: rgba(232, 186, 78, .8); stroke-width: 3; stroke-dasharray: 2 9; animation: routeDash 1.2s linear infinite; }
+.route-line.walked { stroke: #d4a63a; stroke-width: 4; }
 @keyframes routeDash { to { stroke-dashoffset: -22; } }
 .route-node { position: absolute; width: 50px; height: 50px; margin: -25px 0 0 -25px; border-radius: 50%; display: grid; place-items: center;
   background: radial-gradient(#2a1d23, #140c10); border: 3px solid #5a4850; box-shadow: 0 3px 8px rgba(0, 0, 0, .8); color: #8c7a80; pointer-events: auto; cursor: default; }

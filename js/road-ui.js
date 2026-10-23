@@ -37,6 +37,7 @@
   const ART = {
     mansion: DF.Art.asset('assets/ui/route/route-mansion.png'),
     rest: DF.Art.asset('assets/ui/route/route-rest.png'),
+    stranger: DF.Art.asset('assets/ui/route/route-stranger.png'),
     gamble: DF.Art.asset('assets/ui/route/route-gamble.png'),
     final: DF.Art.asset('assets/ui/route/route-final.png'),
   };
@@ -218,15 +219,20 @@
     const walked = new Set();
     let prev = null;
     for (const id of R.trail) { walked.add(prev + '>' + id); prev = id; }
-    let lines = '';
+    let lines = '', edges = '', insides = '';
     const line = (a, b) => {
       const [x1, y1] = pos(a), [x2, y2] = pos(b);
       const cls = walked.has(a + '>' + b) ? 'walked' : canMove && a === R.at && choices.has(b) ? 'open' : '';
-      lines += `<line class="route-line ${cls}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+      const at = `x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"`;
+      // each road is a wide band (a lighter edge, a dark inside) with the walked line or the dashes in its middle;
+      // edges, insides and centre lines go in separate layers, so roads meeting at a point join cleanly
+      edges += `<line class="route-edge" ${at}/>`;
+      insides += `<line class="route-road" ${at}/>`;
+      if (cls) lines += `<line class="route-line ${cls}" ${at}/>`;
     };
     for (const n of R.rows[0]) line(null, n.id);
     for (const n of R.nodes) for (const id of n.next) line(n.id, id);
-    svg.innerHTML = lines;
+    svg.innerHTML = edges + insides + lines;
 
     const box = $('#route-nodes');
     box.innerHTML = `<div class="route-start" style="left:${START[0]}px;top:${START[1]}px"></div>`;
