@@ -21,15 +21,15 @@ so draw at double.
 
 | Piece | Size on screen | Notes |
 | --- | --- | --- |
-| Masked house point | 50x50 | The playable point. Round or any shape; a transparent edge is fine. |
-| Campfire point | 50x50 | Coming later. |
-| Hooded stranger point | 50x50 | Coming later. |
-| Game of chance point | 50x50 | Coming later. |
-| House of the Rite (final point) | 68x68 | The last house, at the top. |
+| Masked house point | file 100x100 (50x50 on screen) | The playable point. Draw the whole point: badge and picture. |
+| Campfire point | file 100x100 | Coming later. |
+| Hooded stranger point | file 100x100 | Coming later. |
+| Game of chance point | file 100x100 | Coming later. |
+| House of the Rite (final point) | file 136x136 (68x68 on screen) | The last house, at the top. |
+| Start of the road | file 40x40 | The small spot at the bottom centre where you stand before the first step. |
 | Point states | | Now done by code: a gold pulsing ring for "you can go here", dimmed for visited. Own art optional. |
 | Map background (done) | file 1432x1812 | A quiet texture behind the points, filling the opening of the carved frame. Template: `assets/ui/templates/route-background-template.png` (same canvas as the doors). |
 | Road lines | | Drawn by code (dashed for paths you can take, gold for the path walked). A stamp or texture is optional. |
-| Start of the road | about 40x40 | Where you stand before the first step (bottom centre). |
 | Embark button | about 200x50 | At the seam of the doors. Normal and hover. |
 
 ### Door dust (particles)
