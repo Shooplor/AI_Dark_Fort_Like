@@ -16,10 +16,10 @@ All done: rooms, hidden and boarded-up rooms, doors, all six locks.
 
 ## 2. The road (travel map)
 
-Drawn by code now as simple line icons in the centre area (about 500x836 on screen). Sizes are on-screen size,
-so draw at double.
+Drawn by code now as simple line icons in the centre area (about 500x836 on screen). Sizes are file sizes
+(already at 2x), transparent PNGs.
 
-| Piece | Size on screen | Notes |
+| Piece | Size | Notes |
 | --- | --- | --- |
 | Masked house point | file 100x100 (50x50 on screen) | The playable point. Draw the whole point: badge and picture. |
 | Campfire point | file 100x100 | Coming later. |
