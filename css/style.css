@@ -424,6 +424,9 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 /* the map's background (assets/ui/route-background.png): fills the frame's opening, cut to it by the gate's outline */
 #route-bg { z-index: 1; background: url('../assets/ui/route-background.png') center / 100% 100% no-repeat; }
 #stage.mode-house #route-bg { display: none; }
+/* a soft shadow around the inside of the frame's opening, darkest against the carved wood (under the map's points) */
+#route-bg::after { content: ''; position: absolute; left: 55px; right: 54px; top: 0; bottom: 0; border-radius: 170px / 120px;
+  box-shadow: inset 0 0 70px 26px rgba(4, 2, 4, .82), 0 0 0 120px rgba(4, 2, 4, .82); }
 #route-wrap { position: absolute; left: 550px; top: 32px; width: 500px; height: 836px; z-index: 2; }
 #route-wrap[hidden] { display: none; }
 #route-lines { position: absolute; inset: 0; overflow: visible; }
