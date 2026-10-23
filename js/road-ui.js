@@ -37,10 +37,18 @@
 
   P.setMode = function (mode) {
     const st = $('#stage');
-    st.classList.remove('mode-gate', 'mode-route', 'mode-house');
+    st.classList.remove('mode-gate', 'mode-route', 'mode-house', 'mode-fight');
     st.classList.add('mode-' + mode);
     this.mode = mode;
-    $('#route-wrap').hidden = mode === 'house';
+    $('#route-wrap').hidden = mode === 'house' || mode === 'fight';
+    $('#fight-wrap').hidden = mode !== 'fight';
+    $('#enemy').hidden = mode !== 'fight';
+    if (mode !== 'fight') {
+      $('#fight-hand').innerHTML = '';
+      $('#fight-rows').innerHTML = '';
+      this.handEls = new Map();
+      this.fightBusy = false;
+    }
   };
 
   /** Health in the corner while on the road (inside a house the game itself shows it). */

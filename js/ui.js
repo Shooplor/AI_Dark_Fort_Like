@@ -137,7 +137,10 @@
             return;
           }
           const digit = /^[1-9]$/.test(ev.key) ? +ev.key : +((/^Digit([1-9])$/.exec(ev.code) || [])[1] || 0);
-          if (digit) this.choose(digit - 1);
+          if (digit) {
+            if (this.mode === 'fight') this.fightKey(digit - 1);
+            else this.choose(digit - 1);
+          }
         },
         true
       );
@@ -308,10 +311,15 @@
         notes: [],
       };
       this.renderRoom(true);
-      this.speakRoom(r);
+      if (!r.fight) this.speakRoom(r);
       this.renderHp(r.hpAfter - r.hpBefore);
       this.renderInventory();
       this.renderChronicle();
+      if (r.fight) {
+        await sleep(r.newRoom ? 700 : 250); // a moment to see the room, then steel is drawn (js/fight-ui.js)
+        await this.startFight(r.fight);
+        return;
+      }
       if (r.status !== 'playing') {
         await this.afterVoice(1400, 9000); // let the last room's text be read before the end screen
         this.showEnd(r.status);
@@ -832,6 +840,7 @@
       $('#danger-eye').classList.toggle('on', nearEnd);
       $('#stat-turns').classList.toggle('uneasy', nearEnd);
       snd('setTension', this.game.explored / this.game.maxExplorations); // the music grows uneasy as discovery nears
+      this.renderReadiness();
     }
 
     /** Shake the message from side to side, like a head saying no, so a repeated mistake cannot miss it. */
@@ -858,7 +867,10 @@
       const text = $('#overlay-text');
       if (status === 'dead') {
         title.textContent = 'You have fallen';
-        text.textContent = 'The house keeps what it takes. Your golden mask is hung upon the wall, beside all the others.';
+        text.textContent =
+          this.game && this.game.diedInFight
+            ? 'A masked blade found you. Your golden mask is hung upon the wall, beside all the others.'
+            : 'The house keeps what it takes. Your golden mask is hung upon the wall, beside all the others.';
       } else if (status === 'won') {
         title.textContent = 'The mystery is revealed';
         text.textContent = 'With the flute, the scroll and the camera, you now have enough evidence to reveal the existence of this cult. Its secret gathering will not stay secret for long.';

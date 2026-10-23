@@ -231,6 +231,55 @@
       tone(b, b.sfx, { t: t + 0.5, f: 90, f2: 30, dur: 0.6, peak: 0.85 });
       noise(b, b.sfx, { t: t + 0.5, type: 'lowpass', f: 900, f2: 150, dur: 0.35, peak: 0.45 });
     },
+    /* ---- fencing (js/fight-ui.js) ---- */
+    // AMBUSH: a low stab of brass over a drum hit
+    ambush(b, t) {
+      tone(b, b.sfx, { t, f: 70, f2: 40, dur: 0.5, peak: 0.8 });
+      noise(b, b.sfx, { t, type: 'lowpass', f: 900, f2: 200, dur: 0.3, peak: 0.4 });
+      [110, 116.5, 164.8].forEach((f) => tone(b, b.sfx, { t: t + 0.04, f, type: 'sawtooth', a: 0.02, dur: 0.9, peak: 0.09, lp: 1400, lp2: 300 }));
+    },
+    // En garde: a blade drawn from its scabbard
+    enGarde(b, t) {
+      noise(b, b.sfx, { t, type: 'bandpass', f: 2500, f2: 6500, q: 3, a: 0.05, dur: 0.45, peak: 0.25 });
+      [1870, 2730, 4120].forEach((f, i) => tone(b, b.sfx, { t: t + 0.4, f, dur: 0.9 - i * 0.2, peak: 0.06 }));
+    },
+    cardDraw(b, t) {
+      noise(b, b.sfx, { t, type: 'highpass', f: 2600, a: 0.01, dur: 0.11, peak: 0.22 });
+    },
+    cardHover(b, t) {
+      noise(b, b.sfx, { t, type: 'bandpass', f: 3800, q: 2, dur: 0.05, peak: 0.07 });
+    },
+    // a card slapped down on the table
+    cardPlay(b, t) {
+      noise(b, b.sfx, { t, type: 'lowpass', f: 1800, dur: 0.09, peak: 0.45 });
+      tone(b, b.sfx, { t, f: 160, f2: 90, dur: 0.1, peak: 0.3 });
+    },
+    cardFlip(b, t) {
+      noise(b, b.sfx, { t, type: 'bandpass', f: 1500, f2: 4200, q: 1.2, a: 0.02, dur: 0.16, peak: 0.25 });
+    },
+    // steel on steel: inharmonic ringing partials over a sharp click
+    clash(b, t) {
+      noise(b, b.sfx, { t, type: 'highpass', f: 3000, dur: 0.06, peak: 0.5 });
+      [1240, 1987, 2741, 3527, 4410].forEach((f, i) => tone(b, b.sfx, { t, f: f * rand(0.98, 1.02), dur: 1.2 - i * 0.16, peak: 0.11 - i * 0.012 }));
+    },
+    // a blade cutting the air
+    swish(b, t) {
+      noise(b, b.sfx, { t, type: 'bandpass', f: 900, f2: 3800, q: 2.5, a: 0.06, dur: 0.22, peak: 0.35 });
+    },
+    // the enemy is hit: a thud and a grunt
+    enemyHurt(b, t) {
+      tone(b, b.sfx, { t, f: 120, f2: 60, dur: 0.22, peak: 0.6 });
+      noise(b, b.sfx, { t, type: 'lowpass', f: 700, dur: 0.15, peak: 0.4 });
+      tone(b, b.sfx, { t: t + 0.03, f: 190, f2: 120, type: 'sawtooth', a: 0.02, dur: 0.25, peak: 0.08, lp: 700 });
+    },
+    // the enemy falls: a blade clattering to the floor, then a falling chord
+    enemyDown(b, t) {
+      [0, 0.12, 0.2, 0.33].forEach((d) => {
+        noise(b, b.sfx, { t: t + d, type: 'highpass', f: 2600, dur: 0.05, peak: 0.25 });
+        tone(b, b.sfx, { t: t + d, f: rand(1700, 2600), dur: 0.35, peak: 0.05 });
+      });
+      [261.6, 311.1, 392].forEach((f) => tone(b, b.sfx, { t: t + 0.4, f, type: 'triangle', a: 0.05, dur: 1.4, peak: 0.08 }));
+    },
     // rubble pried aside with the crowbar: a scrape of iron, then stones tumbling down
     rubble(b, t) {
       tone(b, b.sfx, { t, f: 820, f2: 520, type: 'sawtooth', dur: 0.18, peak: 0.07, lp: 1800 });

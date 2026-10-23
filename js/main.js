@@ -17,10 +17,13 @@
   ['pointerdown', 'keydown'].forEach((type) => window.addEventListener(type, () => DF.Sound && DF.Sound.unlock(), true));
 
   const ui = new DF.UI();
-  if (new URLSearchParams(location.search).has('house')) {
+  const params = new URLSearchParams(location.search);
+  if (params.get('fights') === '0') DF.COMBAT.enabled = false; // the automated checks of the house turn fights off
+  if (params.has('house')) {
     // developer shortcut (and the automated checks): straight into a house, doors already open
     ui.newGame(seed);
     ui.gateInstantOpen();
+    if (params.has('duel')) ui.devFight(Number(params.get('duel')) || 0); // ?house&duel=10: a fight at once, at readiness 10
   } else {
     ui.newRun(seed); // the great doors, shut: "Embark" opens them onto the road
   }

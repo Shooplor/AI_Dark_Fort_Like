@@ -4,7 +4,8 @@
  */
 const assert = require('assert');
 const path = require('path');
-for (const f of ['rng', 'data', 'dungeon', 'game']) require(path.join(__dirname, '..', 'js', f + '.js'));
+for (const f of ['rng', 'data', 'dungeon', 'combat', 'game']) require(path.join(__dirname, '..', 'js', f + '.js'));
+globalThis.DF.COMBAT.enabled = false; // these checks walk the house; fights have their own checks in tests/combat.js
 const DF = globalThis.DF;
 
 let passed = 0;

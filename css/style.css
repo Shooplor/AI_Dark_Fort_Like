@@ -75,6 +75,14 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 .nums .dash { font-weight: 500; font-size: 41px; margin: 0 -3px; color: #4a373c; }
 .nums .small { font-weight: 700; font-size: 30px; color: #795861; }
 #hp-nums { left: 81px; top: 39px; }
+/* combat readiness (js/combat.js): a second row, under the heart */
+#ready-icon { left: 24px; top: 100px; width: 48.5px; height: 48.5px; }
+#ready-nums { left: 81px; top: 104px; }
+#ready-nums .big { color: #c9a048; }
+#ready-nums .big, #ready-nums .dash, #ready-nums .small { font-size: 30px; }
+#ready-nums .big { font-size: 34px; }
+#stat-ready .hud-tip { left: 18px; top: 158px; }
+#stat-ready:hover .hud-tip { opacity: 1; transform: none; transition-delay: .12s; }
 #hp-nums .big { color: #d55a7d; }
 #eye-nums { left: 281px; top: 39px; }
 #eye-nums .big { color: #6d99c2; }
@@ -418,8 +426,12 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 .gate-grit { position: absolute; width: 3px; height: 3px; border-radius: 1px; background: #8d7a68; pointer-events: none; }
 
 /* screens: the doors (before embarking), the road, a house. The inventory and the eye only exist inside a house. */
-#stage:not(.mode-house) #inventory, #stage:not(.mode-house) #stat-turns, #stage:not(.mode-house) #item-pop,
-#stage:not(.mode-house) #danger-eye, #stage:not(.mode-house) #die-row, #stage:not(.mode-house) #chronicle-toggle { visibility: hidden; }
+#stage:not(.mode-house) #inventory, #stage:not(.mode-house) #item-pop,
+#stage:not(.mode-house) #die-row, #stage:not(.mode-house) #chronicle-toggle { visibility: hidden; }
+/* the eye and combat readiness: in a house, and during a fight there */
+#stage:not(.mode-house):not(.mode-fight) #stat-turns, #stage:not(.mode-house):not(.mode-fight) #stat-ready,
+#stage:not(.mode-house):not(.mode-fight) #danger-eye { visibility: hidden; }
+#stage.mode-fight #right { visibility: hidden; }
 #stage:not(.mode-house) #board-wrap { visibility: hidden; }
 /* the map's background (assets/ui/route-background.png): fills the frame's opening, cut to it by the gate's outline */
 #route-bg { z-index: 1; background: url('../assets/ui/route-background.png') center / 100% 100% no-repeat; }
@@ -484,3 +496,98 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 .voice-row select { max-width: 270px; padding: 6px 8px; font-family: var(--display); font-size: 11px; letter-spacing: .05em; color: var(--gold-light); background: #1a0c13; border: 1px solid var(--gold-dim); border-radius: 3px; cursor: pointer; }
 .voice-row select:hover:not(:disabled) { border-color: var(--gold); }
 .voice-row :disabled { opacity: .4; cursor: not-allowed; }
+
+
+/* ------------------------------------------------------------------ FENCING (js/fight-ui.js)
+   The fight happens in the frame's opening (same box as the road). Cards are 100x138 on screen; all placeholders. */
+#fight-wrap { position: absolute; left: 550px; top: 32px; width: 500px; height: 836px; z-index: 2; perspective: 1400px; }
+#fight-wrap[hidden] { display: none; }
+#fight-prompt { position: absolute; left: 0; right: 0; top: 18px; text-align: center; pointer-events: none; }
+#fight-prompt .main { font-family: var(--display); font-weight: 700; font-size: 25px; letter-spacing: .06em; color: var(--gold-light); text-shadow: 0 2px 8px #000; }
+#fight-prompt .sub { margin-top: 6px; font-style: italic; font-size: 19px; color: var(--text); text-shadow: 0 2px 6px #000; padding: 0 30px; }
+#fight-prompt.enter .main, #fight-prompt.enter .sub { animation: fadeUp .45s ease-out both; }
+#fight-prompt.enter .sub { animation-delay: .08s; }
+
+#fight-rows { position: absolute; left: 0; top: 112px; width: 500px; height: 474px; }
+.frow { position: absolute; left: 0; width: 500px; height: 150px; }
+.frow[data-line="high"] { top: 0; } .frow[data-line="mid"] { top: 160px; } .frow[data-line="low"] { top: 320px; }
+.fslot { position: absolute; top: 6px; width: 100px; height: 138px; border-radius: 9px; border: 2px dashed rgba(201, 160, 72, .28); background: rgba(10, 5, 8, .35); }
+.fslot.player { left: 58px; } .fslot.enemy { right: 58px; }
+.frow-label { position: absolute; left: 175px; width: 150px; top: 46px; text-align: center; pointer-events: none; }
+.frow-label svg { display: block; margin: 0 auto 2px; width: 44px; height: 30px; color: #8c7550; }
+.frow-label span { font-family: var(--display); font-size: 15px; letter-spacing: .18em; text-transform: uppercase; color: #8c7550; }
+.frow.closed .fslot { border-color: rgba(120, 60, 70, .3); background: repeating-linear-gradient(45deg, rgba(60, 20, 28, .35) 0 6px, rgba(10, 5, 8, .35) 6px 12px); }
+.frow.closed .frow-label { opacity: .45; }
+.frow.bound .frow-label svg, .frow.bound .frow-label span { color: #f0c870; }
+.frow.bound .frow-label { animation: boundPulse 1.4s ease-in-out infinite; }
+@keyframes boundPulse { 50% { filter: drop-shadow(0 0 8px rgba(240, 200, 112, .8)); } }
+.frow.open-line .fslot.player { border-color: rgba(240, 200, 112, .55); }
+
+/* a card: two faces in 3D, flipped by turning .fcard-inner */
+.fcard { position: absolute; width: 100px; height: 138px; transform-style: preserve-3d; }
+.fcard-inner { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .5s cubic-bezier(.3, .7, .3, 1); }
+.fcard.down .fcard-inner { transform: rotateY(180deg); }
+.fcard .face { position: absolute; inset: 0; border-radius: 9px; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, .6); }
+.fcard .front { display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 9px 4px 8px;
+  background: linear-gradient(170deg, #4a1d2b, #22101a 70%); border: 2px solid #b48a3c; color: #f0dfb4; }
+.fcard .front.enemy { background: linear-gradient(170deg, #3a2130, #160b12 70%); border-color: #8e3a4c; }
+.fcard .front .t { font-family: var(--display); font-weight: 700; font-size: 17px; letter-spacing: .08em; }
+.fcard .front svg { width: 64px; height: 44px; color: #e8c27a; }
+.fcard .front.enemy svg { color: #e07a8a; transform: scaleX(-1); } /* the enemy's blade points at you */
+.fslot .fcard { left: -2px; top: -2px; }
+.fcard .front .role { font-family: var(--display); font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: #c9a87a; }
+.fcard .back { transform: rotateY(180deg); border: 2px solid #8e3a4c;
+  background: radial-gradient(circle at 50% 50%, #5a1e2e 0 18px, transparent 19px), repeating-linear-gradient(45deg, #2a0f18 0 7px, #3a1521 7px 14px); }
+.fcard .back::after { content: ''; position: absolute; inset: 7px; border: 1px solid rgba(201, 160, 72, .45); border-radius: 5px; }
+
+/* the hand: fanned along the bottom; a card lifts and leans towards the mouse */
+#fight-hand { position: absolute; left: 0; top: 618px; width: 500px; height: 200px; }
+#fight-hand .fcard { transition: transform .32s cubic-bezier(.2, .8, .3, 1), filter .2s, opacity .2s; cursor: pointer;
+  transform: translate(var(--x), var(--y)) rotate(var(--r)); }
+#fight-hand .fcard .fcard-inner { transition: transform .5s cubic-bezier(.3, .7, .3, 1); }
+#fight-hand .fcard.lift { z-index: 5; transform: translate(var(--x), calc(var(--y) - 34px)) rotate(0deg) scale(1.12); }
+#fight-hand .fcard.lift .face { box-shadow: 0 16px 30px rgba(0, 0, 0, .7), 0 0 18px rgba(240, 200, 112, .45); }
+#fight-hand .fcard.lift .fcard-inner { transform: rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg)); transition: transform .08s; }
+#fight-hand .fcard.closed { filter: grayscale(.7) brightness(.55); cursor: not-allowed; }
+#fight-wrap.locked #fight-hand .fcard { cursor: default; }
+#fight-deck { position: absolute; left: -2px; top: 700px; width: 64px; height: 88px; border-radius: 7px; border: 2px solid #8e3a4c;
+  background: repeating-linear-gradient(45deg, #2a0f18 0 6px, #3a1521 6px 12px); box-shadow: 3px 3px 0 #160a10, 6px 6px 0 #0e060a, 0 8px 16px rgba(0, 0, 0, .6); }
+#fight-deck-n { position: absolute; left: 0; right: 0; bottom: -26px; text-align: center; font-family: var(--display); font-size: 15px; color: #8c7550; }
+
+/* the clash of a bind, and a hit */
+.clash { position: absolute; left: 200px; top: 25px; width: 100px; height: 100px; pointer-events: none;
+  background: radial-gradient(circle, #fff7d6 0 8%, rgba(255, 210, 120, .9) 18%, rgba(255, 160, 60, 0) 60%); animation: clash .55s ease-out forwards; }
+@keyframes clash { 0% { transform: scale(.2); opacity: 1; } 60% { opacity: 1; } 100% { transform: scale(2.2); opacity: 0; } }
+.clash-spark { position: absolute; width: 3px; height: 12px; border-radius: 2px; background: #ffe39a; pointer-events: none; }
+
+/* the enemy, mirroring the player on the right (assets/ui/enemy-*.png, 1000x1770 shown at half size) */
+#enemy { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+#enemy[hidden] { display: none; }
+#enemy-img { position: absolute; left: 1145px; top: 69px; width: 500px; height: 885px; animation: enemyIn .7s cubic-bezier(.2, .8, .3, 1) both; }
+@keyframes enemyIn { from { opacity: 0; transform: translateX(90px); } }
+#enemy.hit #enemy-img { animation: enemyHit .45s ease-out; }
+@keyframes enemyHit { 20% { transform: translateX(18px); filter: brightness(1.6) sepia(1) hue-rotate(-40deg) saturate(5); } 100% { transform: none; filter: none; } }
+#enemy.down #enemy-img { transition: opacity 1.2s, transform 1.2s; opacity: .15; transform: translate(40px, 40px) rotate(4deg); }
+#enemy-floaters { position: absolute; left: 1150px; top: 0; width: 450px; height: 400px; z-index: 3; }
+#enemy-hud { position: absolute; right: 0; top: 0; width: 500px; height: 140px; z-index: 2; }
+/* the enemy's heart: the player's, mirrored and with less colour */
+#enemy-hp-icon { position: absolute; right: 24px; top: 37px; width: 48.5px; height: 48.5px; transform: scaleX(-1); filter: saturate(.3) brightness(.85); }
+#enemy-hp-nums { right: 81px; left: auto; top: 39px; }
+#enemy-hp-nums .big { color: #a8808c; }
+#enemy-hp-icon.pulse-hurt { animation: enemyHeartHurt .55s ease-out; }
+@keyframes enemyHeartHurt { 30% { transform: scaleX(-1) scale(.72); } }
+#enemy-name { position: absolute; right: 24px; top: 94px; font-style: italic; font-size: 19px; color: #a8808c; text-shadow: 0 2px 6px #000; }
+
+/* the word on the shut doors: AMBUSH! or En garde */
+#gate-word { position: absolute; left: 0; right: 0; top: 453px; transform: translateY(-50%); z-index: 3; text-align: center; pointer-events: none;
+  font-family: var(--display); font-weight: 700; font-size: 74px; letter-spacing: .22em; color: #e8c27a; opacity: 0;
+  text-shadow: 0 0 2px #000, 0 4px 0 #1a0c10, 0 0 30px rgba(0, 0, 0, .9); }
+#gate-word.ambush { color: #e8505f; }
+#gate-word.show { animation: gateWord 1.3s cubic-bezier(.2, .9, .3, 1) both; }
+@keyframes gateWord { 0% { opacity: 0; transform: translateY(-50%) scale(1.8); } 25% { opacity: 1; transform: translateY(-50%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-50%) scale(.96); } }
+
+@media (prefers-reduced-motion: reduce) {
+  #fight-hand .fcard.lift .fcard-inner { transform: none; }
+  #enemy.hit #enemy-img { animation: none; }
+}

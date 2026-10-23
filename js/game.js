@@ -31,6 +31,12 @@
       this.status = 'playing'; // playing | won | dead | caught (out of exploration points) | stuck
       this.log = []; // chronicle entries { turn, name, summary }
       this.nextUid = 1;
+      // fencing (js/combat.js): readiness rises as you explore; it is the chance to strike first when a fight breaks out
+      this.readiness = 0;
+      this.fight = null; // the fight going on, if any: nothing else happens until it is over
+      this.fightsWon = 0;
+      this.fightRng = DF.makeRng(this.seed ^ 0x2f6b1c3d); // fights never reshuffle the house
+      this.fightsOn = opts.fights !== undefined ? opts.fights : DF.COMBAT ? DF.COMBAT.enabled : false;
 
       this.player = { x: CONFIG.start.x, y: CONFIG.start.y };
       this.dungeon.buildStart(this.player.x, this.player.y);
@@ -69,6 +75,7 @@
 
     beginMove(side) {
       if (this.status !== 'playing') return { ok: false, reason: 'over', msg: '' };
+      if (this.fight) return { ok: false, reason: 'fight', msg: DF.FIGHT_TEXT.blocked };
       // A room with an undecided choice holds the player until a button is pressed. This comes before the
       // door checks, so a key is never spent on a move that is refused.
       if (this.pendingChoice) return { ok: false, reason: 'choice', msg: this.fluff.pick(DF.MOVE_TEXT.choice) };
@@ -118,8 +125,10 @@
       const cell = this.cell;
       let result;
 
-      if (!cell.explored) {
+      const isNew = !cell.explored;
+      if (isNew) {
         this.explored++; // a new room costs one exploration point
+        this.readiness = Math.min(DF.COMBAT ? DF.COMBAT.readinessMax : 20, this.readiness + 1);
         const hpBefore = this.hp;
         const info = cell.hidden ? d.revealSecret(cell.x, cell.y) : d.reveal(cell.x, cell.y, this.heldKeyTypes());
         const outcome = this.resolveEvent(cell, info);
@@ -136,8 +145,70 @@
       else if (this.hp <= 0) this.status = 'dead';
       else if (this.explored >= this.maxExplorations) this.status = 'caught';
       else if (d.analyze(cell.x, cell.y, this.heldKeyTypes()).frontier === 0) this.status = 'stuck';
+      if (this.status === 'playing') result.fight = this.maybeFight(isNew);
       result.status = this.status;
       return result;
+    }
+
+    /* ---------- fights (js/combat.js) ---------- */
+    /** Roll for a fight on arriving in a room: rare at first, more likely as the house is explored, less likely in a
+     *  room you know. Returns the fight, or null. */
+    maybeFight(isNew) {
+      if (!this.fightsOn || this.cell.entrance) return null;
+      const C = DF.COMBAT.chance;
+      const t = Math.min(1, Math.max(0, (this.explored - 1) / Math.max(1, this.maxExplorations - 1)));
+      let p = C.first + (C.last - C.first) * t;
+      if (!isNew) p *= C.backtrack;
+      if (!this.fightRng.chance(p)) return null;
+      return this.beginFight();
+    }
+
+    /** A fight starts here and now (also used by the ?duel testing shortcut). */
+    beginFight() {
+      this.fight = new DF.Fight(this.fightRng, { hp: this.hp, readiness: this.readiness, enemy: this.fightRng.pick(DF.ENEMIES) });
+      return this.fight;
+    }
+
+    /** Play a fencing card. When the fight ends: won, a reward is found (sometimes a key still owed, otherwise a
+     *  draught or a curio); lost, the run is over. */
+    fightPlay(uid) {
+      const f = this.fight;
+      if (!f || this.status !== 'playing') return { ok: false };
+      const r = f.play(uid);
+      if (!r.ok) return r;
+      const hpBefore = this.hp;
+      this.hp = f.playerHp;
+      r.hpBefore = hpBefore;
+      r.hpAfter = this.hp;
+      if (f.status === 'lost') {
+        this.status = 'dead';
+        this.diedInFight = true;
+        this.log.push({ turn: this.explored, name: this.cell.name, summary: `Fell to ${f.enemy.name.replace(/^The /, 'the ')}` });
+      } else if (f.status === 'won') {
+        this.fight = null;
+        this.fightsWon++;
+        this.readiness = Math.min(DF.COMBAT.readinessMax, this.readiness + DF.COMBAT.readinessAfterWin);
+        r.reward = this.fightReward(f);
+        this.log.push({ turn: this.explored, name: this.cell.name, summary: `Fought off ${f.enemy.name.replace(/^The /, 'the ')}` });
+        if (this.questCount() >= this.questTotal) this.status = 'won';
+      }
+      r.gameStatus = this.status;
+      return r;
+    }
+
+    fightReward(f) {
+      const rng = this.fightRng;
+      const cell = this.cell;
+      const flee = rng.pick(DF.FIGHT_TEXT.won);
+      const pending = this.dungeon.pendingKeys();
+      if (pending.length && rng.chance(0.3)) {
+        const owed = rng.pick(pending);
+        owed.placed = true;
+        const item = this.makeItem(DF.keyItemDef(owed.keyType));
+        return this.grantItem(cell, item, 'key', `${flee} Something falls from its sleeve: a [[${item.name}]].`);
+      }
+      const item = this.makeItem(rng.chance(0.5) ? DF.ITEM_DEFS.potion : rng.pick(DF.CURIOS));
+      return this.grantItem(cell, item, 'item', `${flee} It leaves something behind: [[${item.name}]].`);
     }
 
     /* ---------- room events ---------- */
@@ -264,7 +335,7 @@
     choose(index) {
       const cell = this.cell;
       const p = this.pendingChoice;
-      if (this.status !== 'playing' || !p) return { ok: false };
+      if (this.status !== 'playing' || !p || this.fight) return { ok: false };
       const def = DF.CHOICE_EVENTS.find((e) => e.id === p.eventId);
       const choice = def.choices[index];
       if (!choice) return { ok: false };
@@ -300,7 +371,7 @@
     /* ---------- items (free actions) ---------- */
     useItem(slot) {
       const item = this.slots[slot];
-      if (this.status !== 'playing' || !item) return { ok: false, msg: '' };
+      if (this.status !== 'playing' || !item || this.fight) return { ok: false, msg: '' };
       if (item.id === 'potion') {
         if (this.hp >= this.maxHp) return { ok: false, msg: 'You are unhurt; the draught can wait.' };
         const n = Math.min(CONFIG.potionHeal, this.maxHp - this.hp);
@@ -313,7 +384,7 @@
 
     dropItem(slot) {
       const item = this.slots[slot];
-      if (this.status !== 'playing' || !item) return { ok: false, msg: '' };
+      if (this.status !== 'playing' || !item || this.fight) return { ok: false, msg: '' };
       if (item.quest) return { ok: false, msg: 'You cannot part with the evidence.' };
       this.slots[slot] = null;
       this.cell.floor.push(item);
@@ -323,7 +394,7 @@
     takeFloor(index) {
       const cell = this.cell;
       const item = cell.floor[index];
-      if (this.status !== 'playing' || !item) return { ok: false, msg: '' };
+      if (this.status !== 'playing' || !item || this.fight) return { ok: false, msg: '' };
       const slot = this.freeSlot();
       if (slot < 0) return { ok: false, msg: 'Your satchel is full. Drop something first.' };
       cell.floor.splice(index, 1);

@@ -4,7 +4,7 @@
  *
  * Exits non-zero if any invariant breaks (inconsistent doors, orphaned keys, false "stuck" states...). */
 const path = require('path');
-for (const f of ['rng', 'data', 'dungeon', 'game']) require(path.join(__dirname, '..', 'js', f + '.js'));
+for (const f of ['rng', 'data', 'dungeon', 'combat', 'game']) require(path.join(__dirname, '..', 'js', f + '.js'));
 const DF = globalThis.DF;
 
 const fail = (seed, msg) => {
@@ -108,7 +108,11 @@ function housekeeping(g) {
   if (potion >= 0 && g.hp <= 5) g.useItem(potion);
   // pick up keys from the floor (dropping a curio to make room if needed), plus any potions
   for (let guard = 0; guard < 20; guard++) {
-    const idx = g.cell.floor.findIndex((i) => i.keyType || i.id === 'potion');
+    const want = () => {
+      const k = g.cell.floor.findIndex((i) => i.keyType); // keys first: they can be the only way on
+      return k >= 0 ? k : g.cell.floor.findIndex((i) => i.id === 'potion');
+    };
+    const idx = want();
     if (idx < 0) break;
     if (g.freeSlot() < 0) {
       // only make room for keys; prefer shedding curios over potions
@@ -124,7 +128,7 @@ function housekeeping(g) {
       continue;
     }
     // dropping above appended to the floor, so look the key up again
-    g.takeFloor(g.cell.floor.findIndex((i) => i.keyType || i.id === 'potion'));
+    g.takeFloor(want());
   }
 }
 
@@ -134,10 +138,28 @@ function playBot(seed, opts = {}) {
   const g = new DF.Game(seed, {
     maxExplorations: opts.maxExplorations === undefined ? Infinity : opts.maxExplorations,
     questItems: opts.questItems === true, // off for the generator test, so games run until the whole house is explored
+    fights: opts.fights === true, // off for the generator test (a lost fight would end it early); balance.js turns them on
   });
   let steps = 0;
   const stats = { rooms: 1, locks: 0, unlocked: 0, blocked: 0, shapes: {} };
+  stats.fights = 0;
+  stats.fightDamage = 0;
   while (g.status === 'playing' && steps++ < maxSteps) {
+    // a fight: play cards until it is over (the bot plays a random open card)
+    if (g.fight) {
+      stats.fights++;
+      const hp0 = g.hp;
+      for (let guard = 0; g.fight && g.status === 'playing' && guard < 200; guard++) {
+        const open = g.fight.hand.filter((c) => g.fight.playable(c));
+        if (!open.length) fail(seed, 'a fight hand with nothing to play');
+        const r = g.fightPlay(open[(g.seed + guard) % open.length].uid);
+        if (!r.ok) fail(seed, 'a playable card was refused');
+      }
+      if (g.fight && g.status === 'playing') fail(seed, 'a fight that never ends');
+      stats.fightDamage += hp0 - g.hp;
+      checkInvariants(g, seed);
+      if (g.status !== 'playing') break;
+    }
     housekeeping(g);
     if (g.status !== 'playing') break; // a choice may have been fatal
 

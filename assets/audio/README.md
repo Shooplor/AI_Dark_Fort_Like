@@ -14,6 +14,16 @@ Short effects should be trimmed tight (no silence at the start). Music should lo
 | `locked` | trying a locked door without its key | ~0.3 s |
 | `unlock` | a key opens a door | ~0.4 s |
 | `rubble` | the crowbar pries rubble aside | ~0.9 s |
+| `ambush` | the doors slam on an ambush | ~1 s |
+| `enGarde` | a blade drawn, when you are ready for the fight | ~1.3 s |
+| `cardDraw` | a card dealt into your hand | ~0.1 s |
+| `cardHover` | a card lifted under the mouse | ~0.05 s |
+| `cardPlay` | a card slapped down in its slot | ~0.1 s |
+| `cardFlip` | the enemy's card turned over | ~0.15 s |
+| `clash` | blades binding, steel on steel | ~1.2 s |
+| `swish` | a blade cutting the air (an attack landing) | ~0.2 s |
+| `enemyHurt` | the enemy is hit | ~0.3 s |
+| `enemyDown` | the enemy falls and its blade clatters away | ~1.8 s |
 | `gate` | the great doors grinding open (Embark, and when a house opens) | ~3 s |
 | `gateShut` | the great doors slamming shut | ~1 s |
 | `diceRattle` | the fate die tumbling | ~0.6 s |

@@ -46,7 +46,24 @@ fade to transparent work best. Sizes are the file sizes (already at 2x).
 | Dust puff, large | 128x128 | 1-2 variants | Used sparingly, for the big first burst. |
 | Grit / stone chip | 8x8, 12x12, 16x16 | one of each | Hard-edged little crumbs of stone that fall with a spin. |
 
-## 3. Pop-ups (shapes)
+## 3. Fencing (fights)
+
+Placeholders drawn by code or quickly painted now. Sizes are file sizes (2x), transparent PNGs.
+
+| Piece | File size | Notes |
+| --- | --- | --- |
+| Enemy: the Masked Duellist | 1000x1770 | Same canvas as your character, facing left (towards the centre), cut off at the bottom the same way. Replaces `assets/ui/enemy-duellist.png`. Optional extra frames later: hit, falling. |
+| Combat readiness icon | 97x97 | Like the heart and eye counters. Now two crossed rapiers (`assets/ui/readiness-counter.png`). |
+| Enemy heart | (none) | Your heart, mirrored and desaturated by code. Draw its own if you like, 97x97. |
+| Card front: High, Middle, Low | 200x276 | Shown at 100x138. The name and "Attack/Guard" are live text now; draw empty fronts with the line's picture, or tell me where text should go. The enemy's cards use a red-tinted version (optional separate art). |
+| Card back | 200x276 | Used for the enemy's face-down card and the deck pile. |
+| Card slot | 200x276 | The empty place a card is played into (three per side). Optional "closed" version for the bound line. |
+| Line symbols (High, Middle, Low) | 88x60 | The small markers between the slots. |
+| Bind clash | about 200x200 | Optional: a spark/flash sprite where blades meet (a strip of frames works too). |
+| "AMBUSH!" / "En garde" lettering | about 1000x200 each | Optional; the display font is used now. |
+| Fight background | 1432x1812 | Optional; the travel map background is used now. Same canvas and template as the map's. |
+
+## 4. Pop-ups (shapes)
 
 | Piece | Now | Notes |
 | --- | --- | --- |
@@ -55,7 +72,7 @@ fade to transparent work best. Sizes are the file sizes (already at 2x).
 | End-of-run card | 620x357 | One card for "victory", "you have fallen", "discovered" and "nowhere left to go". A separate victory version is optional (it has a green edge now). |
 | Chronicle drawer | the right panel's inner area, plain dark box | Optional: its own backing. |
 
-## 4. Buttons and small interface pieces (all drawn by code now)
+## 5. Buttons and small interface pieces (all drawn by code now)
 
 | Piece | Size now | Notes |
 | --- | --- | --- |
@@ -67,7 +84,7 @@ fade to transparent work best. Sizes are the file sizes (already at 2x).
 | Red error message ("The door will not open") | text only | Optional. |
 | Sliders and dropdown on the pause card | small | Optional. |
 
-## 5. Optional extras
+## 6. Optional extras
 
 | Piece | Notes |
 | --- | --- |

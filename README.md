@@ -49,6 +49,28 @@ Add `?seed=1234` to the URL to replay a specific road. The seed is shown under t
   Winning the last house ends the run: "The rite is exposed". **Dying (or being discovered, or getting stuck) in any
   house ends the whole run**; Begin anew starts a fresh road at the gate.
 
+## Fencing
+
+- **Combat readiness** (crossed swords, under the heart) rises by 1 with every new room explored (and by 2 after a
+  fight you win), up to 20. When a fight breaks out it is the chance that **you strike first**: 5% per point.
+- **When:** sometimes, on arriving in a room: rarely at first (2% in the first new rooms), more often as the house is
+  explored (14% by the 20th); walking back through a room you know has about a third of that chance.
+- **AMBUSH!** (the enemy strikes first, and you start with 3 cards) or **En garde** (you do) is shown on the doors as
+  they slam shut; they open on the fight. The enemy takes the place of the text panel, its heart mirroring yours.
+- **Cards:** your deck is 9 cards, three each of **High**, **Middle** and **Low**; you hold 4 (drawn back up after each
+  exchange). A card is an attack or a guard, depending on whose turn it is.
+- **An exchange:** the attacker plays a line, the defender a guard; both are shown at once. Guard on another line: a
+  **hit** (2 damage), and the one who was hit attacks next. Guard on the same line: the blades **bind** there and the
+  defender counters at once, but only on the two other lines (the bound line is closed for both), so guarding the
+  counter is a 1-in-2 guess. A guarded counter binds again.
+- **The Masked Duellist** (4 health) has habits: he guards high and counters low out of a bind more often than not.
+  His hint is shown when the fight begins.
+- **Win:** he drops something: sometimes a key still needed in the house, otherwise a draught or a curio.
+  **Lose:** the run is over. There is no fleeing.
+- Testing shortcuts: `index.html?house=1&duel=0` starts a fight at once (`duel=20` for full readiness);
+  `&fights=0` switches fights off. `node tests/combat.js` checks the rules; `node tests/balance.js` reports how often
+  fights happen and what they cost (`--nofights` to compare).
+
 ## The rules so far (inside a house)
 
 - **The map** is 56 unexplored rooms in an oval (6 columns by 10 rows, with the four corners cut off by the
@@ -105,6 +127,8 @@ js/die3d.js       the fate die as a 3D pyramid, wrapped in one painted texture
 js/sound.js       sound effects and music, synthesised live (real files can replace any of it)
 js/voice.js       reads the on-screen text aloud with the browser's built-in voice (a stand-in for a voice actor)
 js/route.js       the road: the travel map's points and lines            (pure logic, no DOM)
+js/combat.js      fencing: readiness, the deck, exchanges, binds, enemy habits       (pure logic, no DOM)
+js/fight-ui.js    the fight on screen: AMBUSH on the doors, cards, slots, the enemy
 js/road-ui.js     the gate doors, the travel map on screen, going in and out of houses
 js/ui.js          rendering and turn animation (walk -> die -> reveal -> text)
 js/main.js        boot, window scaling, ?seed=
