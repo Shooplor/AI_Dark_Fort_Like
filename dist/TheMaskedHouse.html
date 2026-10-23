@@ -67,31 +67,28 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 /* hovering the heart or the eye (icon or numbers) shows a one-line hint just below it */
 #hud img, #hud .nums { pointer-events: auto; }
 .hud-tip {
-  position: absolute; top: 96px; padding: 8px 14px; white-space: nowrap; z-index: 7;
+  position: absolute; top: 88px; padding: 8px 14px; white-space: nowrap; z-index: 7;
   font-size: 19px; font-style: italic; color: var(--text); pointer-events: none;
   background: rgba(14, 7, 11, .95); border: 1px solid var(--gold-dim); border-radius: 4px; box-shadow: 0 6px 22px rgba(0, 0, 0, .75);
   opacity: 0; transform: translateY(-4px); transition: opacity .18s ease-out, transform .18s ease-out;
 }
-#stat-health .hud-tip { left: 18px; }
-#stat-turns .hud-tip { left: 186px; }
-#stat-health:hover .hud-tip, #stat-turns:hover .hud-tip { opacity: 1; transform: none; transition-delay: .12s; }
-#hp-icon { left: 24px; top: 37px; width: 48.5px; height: 48.5px; }
-#eye-icon { left: 192px; top: 38px; width: 86px; height: 46.5px; }
+/* the three counters sit in one row: health, the eye (discovery), combat readiness */
+#stat-health .hud-tip { left: 14px; }
+#stat-turns .hud-tip { left: 130px; }
+#stat-ready .hud-tip { left: auto; right: 1168px; } /* ends before the carved frame */
+#stat-health:hover .hud-tip, #stat-turns:hover .hud-tip, #stat-ready:hover .hud-tip { opacity: 1; transform: none; transition-delay: .12s; }
+#hp-icon { left: 18px; top: 41px; width: 36px; height: 36px; }
+#eye-icon { left: 136px; top: 42px; width: 62px; height: 33.5px; }
+#ready-icon { left: 294px; top: 41px; width: 36px; height: 36px; }
 .nums { position: absolute; display: flex; align-items: baseline; font-family: var(--display); line-height: 1; white-space: nowrap; }
-.nums .big { font-weight: 700; font-size: 41px; }
-.nums .dash { font-weight: 500; font-size: 41px; margin: 0 -3px; color: #4a373c; }
-.nums .small { font-weight: 700; font-size: 30px; color: #795861; }
-#hp-nums { left: 81px; top: 39px; }
-/* combat readiness (js/combat.js): a second row, under the heart */
-#ready-icon { left: 24px; top: 100px; width: 48.5px; height: 48.5px; }
-#ready-nums { left: 81px; top: 104px; }
+.nums .big { font-weight: 700; font-size: 29px; }
+.nums .dash { font-weight: 500; font-size: 29px; margin: 0 -2px; color: #4a373c; }
+.nums .small { font-weight: 700; font-size: 21px; color: #795861; }
+#hp-nums { left: 58px; top: 43px; }
+#ready-nums { left: 334px; top: 43px; }
 #ready-nums .big { color: #c9a048; }
-#ready-nums .big, #ready-nums .dash, #ready-nums .small { font-size: 30px; }
-#ready-nums .big { font-size: 34px; }
-#stat-ready .hud-tip { left: 18px; top: 158px; }
-#stat-ready:hover .hud-tip { opacity: 1; transform: none; transition-delay: .12s; }
 #hp-nums .big { color: #d55a7d; }
-#eye-nums { left: 281px; top: 39px; }
+#eye-nums { left: 202px; top: 43px; }
 #eye-nums .big { color: #6d99c2; }
 .nums.tick { animation: numTick .8s; }
 .nums.dmg { animation: numHurt .7s; }
@@ -589,12 +586,12 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 #enemy-floaters { position: absolute; left: 1150px; top: 0; width: 450px; height: 400px; z-index: 3; }
 #enemy-hud { position: absolute; right: 0; top: 0; width: 500px; height: 140px; z-index: 2; }
 /* the enemy's heart: the player's, mirrored and with less colour */
-#enemy-hp-icon { position: absolute; right: 24px; top: 37px; width: 48.5px; height: 48.5px; transform: scaleX(-1); filter: saturate(.3) brightness(.85); }
-#enemy-hp-nums { right: 81px; left: auto; top: 39px; }
+#enemy-hp-icon { position: absolute; right: 18px; top: 41px; width: 36px; height: 36px; transform: scaleX(-1); filter: saturate(.3) brightness(.85); }
+#enemy-hp-nums { right: 58px; left: auto; top: 43px; }
 #enemy-hp-nums .big { color: #a8808c; }
 #enemy-hp-icon.pulse-hurt { animation: enemyHeartHurt .55s ease-out; }
 @keyframes enemyHeartHurt { 30% { transform: scaleX(-1) scale(.72); } }
-#enemy-name { position: absolute; right: 24px; top: 94px; font-style: italic; font-size: 19px; color: #a8808c; text-shadow: 0 2px 6px #000; }
+#enemy-name { position: absolute; right: 18px; top: 86px; font-style: italic; font-size: 19px; color: #a8808c; text-shadow: 0 2px 6px #000; }
 
 /* the word on the shut doors: AMBUSH! or En garde */
 #gate-word { position: absolute; left: 0; right: 0; top: 453px; transform: translateY(-50%); z-index: 3; text-align: center; pointer-events: none;
@@ -656,7 +653,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
         <div id="stat-ready">
           <img id="ready-icon" src="data:image/png;base64,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" alt="Combat readiness" draggable="false">
           <div class="nums" id="ready-nums"><span class="big" id="ready-now">0</span><span class="dash">/</span><span class="small" id="ready-max">20</span></div>
-          <div class="hud-tip" role="tooltip">Combat readiness: the higher, the likelier you strike first.</div>
+          <div class="hud-tip" role="tooltip">The readier you are, the likelier you strike first.</div>
         </div>
       </div>
 

@@ -60,31 +60,28 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 /* hovering the heart or the eye (icon or numbers) shows a one-line hint just below it */
 #hud img, #hud .nums { pointer-events: auto; }
 .hud-tip {
-  position: absolute; top: 96px; padding: 8px 14px; white-space: nowrap; z-index: 7;
+  position: absolute; top: 88px; padding: 8px 14px; white-space: nowrap; z-index: 7;
   font-size: 19px; font-style: italic; color: var(--text); pointer-events: none;
   background: rgba(14, 7, 11, .95); border: 1px solid var(--gold-dim); border-radius: 4px; box-shadow: 0 6px 22px rgba(0, 0, 0, .75);
   opacity: 0; transform: translateY(-4px); transition: opacity .18s ease-out, transform .18s ease-out;
 }
-#stat-health .hud-tip { left: 18px; }
-#stat-turns .hud-tip { left: 186px; }
-#stat-health:hover .hud-tip, #stat-turns:hover .hud-tip { opacity: 1; transform: none; transition-delay: .12s; }
-#hp-icon { left: 24px; top: 37px; width: 48.5px; height: 48.5px; }
-#eye-icon { left: 192px; top: 38px; width: 86px; height: 46.5px; }
+/* the three counters sit in one row: health, the eye (discovery), combat readiness */
+#stat-health .hud-tip { left: 14px; }
+#stat-turns .hud-tip { left: 130px; }
+#stat-ready .hud-tip { left: auto; right: 1168px; } /* ends before the carved frame */
+#stat-health:hover .hud-tip, #stat-turns:hover .hud-tip, #stat-ready:hover .hud-tip { opacity: 1; transform: none; transition-delay: .12s; }
+#hp-icon { left: 18px; top: 41px; width: 36px; height: 36px; }
+#eye-icon { left: 136px; top: 42px; width: 62px; height: 33.5px; }
+#ready-icon { left: 294px; top: 41px; width: 36px; height: 36px; }
 .nums { position: absolute; display: flex; align-items: baseline; font-family: var(--display); line-height: 1; white-space: nowrap; }
-.nums .big { font-weight: 700; font-size: 41px; }
-.nums .dash { font-weight: 500; font-size: 41px; margin: 0 -3px; color: #4a373c; }
-.nums .small { font-weight: 700; font-size: 30px; color: #795861; }
-#hp-nums { left: 81px; top: 39px; }
-/* combat readiness (js/combat.js): a second row, under the heart */
-#ready-icon { left: 24px; top: 100px; width: 48.5px; height: 48.5px; }
-#ready-nums { left: 81px; top: 104px; }
+.nums .big { font-weight: 700; font-size: 29px; }
+.nums .dash { font-weight: 500; font-size: 29px; margin: 0 -2px; color: #4a373c; }
+.nums .small { font-weight: 700; font-size: 21px; color: #795861; }
+#hp-nums { left: 58px; top: 43px; }
+#ready-nums { left: 334px; top: 43px; }
 #ready-nums .big { color: #c9a048; }
-#ready-nums .big, #ready-nums .dash, #ready-nums .small { font-size: 30px; }
-#ready-nums .big { font-size: 34px; }
-#stat-ready .hud-tip { left: 18px; top: 158px; }
-#stat-ready:hover .hud-tip { opacity: 1; transform: none; transition-delay: .12s; }
 #hp-nums .big { color: #d55a7d; }
-#eye-nums { left: 281px; top: 39px; }
+#eye-nums { left: 202px; top: 43px; }
 #eye-nums .big { color: #6d99c2; }
 .nums.tick { animation: numTick .8s; }
 .nums.dmg { animation: numHurt .7s; }
@@ -582,12 +579,12 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 #enemy-floaters { position: absolute; left: 1150px; top: 0; width: 450px; height: 400px; z-index: 3; }
 #enemy-hud { position: absolute; right: 0; top: 0; width: 500px; height: 140px; z-index: 2; }
 /* the enemy's heart: the player's, mirrored and with less colour */
-#enemy-hp-icon { position: absolute; right: 24px; top: 37px; width: 48.5px; height: 48.5px; transform: scaleX(-1); filter: saturate(.3) brightness(.85); }
-#enemy-hp-nums { right: 81px; left: auto; top: 39px; }
+#enemy-hp-icon { position: absolute; right: 18px; top: 41px; width: 36px; height: 36px; transform: scaleX(-1); filter: saturate(.3) brightness(.85); }
+#enemy-hp-nums { right: 58px; left: auto; top: 43px; }
 #enemy-hp-nums .big { color: #a8808c; }
 #enemy-hp-icon.pulse-hurt { animation: enemyHeartHurt .55s ease-out; }
 @keyframes enemyHeartHurt { 30% { transform: scaleX(-1) scale(.72); } }
-#enemy-name { position: absolute; right: 24px; top: 94px; font-style: italic; font-size: 19px; color: #a8808c; text-shadow: 0 2px 6px #000; }
+#enemy-name { position: absolute; right: 18px; top: 86px; font-style: italic; font-size: 19px; color: #a8808c; text-shadow: 0 2px 6px #000; }
 
 /* the word on the shut doors: AMBUSH! or En garde */
 #gate-word { position: absolute; left: 0; right: 0; top: 453px; transform: translateY(-50%); z-index: 3; text-align: center; pointer-events: none;

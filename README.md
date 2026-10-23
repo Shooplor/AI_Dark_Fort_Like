@@ -51,7 +51,7 @@ Add `?seed=1234` to the URL to replay a specific road. The seed is shown under t
 
 ## Fencing
 
-- **Combat readiness** (crossed swords, under the heart) rises by 1 with every new room explored (and by 2 after a
+- **Combat readiness** (crossed swords, beside the eye) rises by 1 with every new room explored (and by 2 after a
   fight you win), up to 20. When a fight breaks out it is the chance that **you strike first**: 5% per point.
 - **When:** sometimes, on arriving in a room: rarely at first (2% in the first new rooms), more often as the house is
   explored (14% by the 20th); walking back through a room you know has about a third of that chance.
