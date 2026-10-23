@@ -87,6 +87,10 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 #hp-nums { left: 58px; top: 43px; }
 #ready-nums { left: 334px; top: 43px; }
 #ready-nums .big { color: #c9a048; }
+/* entering a house: the eye, then readiness, rise a little and fade in (js/road-ui.js setMode) */
+#stat-turns.arrive > img, #stat-turns.arrive > .nums, #stat-ready.arrive > img, #stat-ready.arrive > .nums { animation: hudArrive .75s cubic-bezier(.2, .8, .3, 1) both; }
+#stat-ready.arrive > img, #stat-ready.arrive > .nums { animation-delay: .14s; }
+@keyframes hudArrive { from { opacity: 0; translate: 0 16px; } to { opacity: 1; translate: 0 0; } }
 #hp-nums .big { color: #d55a7d; }
 #eye-nums { left: 202px; top: 43px; }
 #eye-nums .big { color: #6d99c2; }
@@ -4735,9 +4739,21 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 
   P.setMode = function (mode) {
     const st = $('#stage');
+    const prev = this.mode;
     st.classList.remove('mode-gate', 'mode-route', 'mode-house', 'mode-fight');
     st.classList.add('mode-' + mode);
     this.mode = mode;
+    // entering a house from the road: the eye and readiness rise into place and fade in (not after a fight: they stayed)
+    if (mode === 'house' && prev !== 'house' && prev !== 'fight') {
+      for (const id of ['#stat-turns', '#stat-ready']) {
+        const el = $(id);
+        el.classList.remove('arrive');
+        void el.offsetWidth;
+        el.classList.add('arrive');
+      }
+      clearTimeout(this.arriveTimer); // done: let the counters' own pulses (a point spent) play again
+      this.arriveTimer = setTimeout(() => ['#stat-turns', '#stat-ready'].forEach((id) => $(id).classList.remove('arrive')), 1000);
+    }
     $('#route-wrap').hidden = mode === 'house' || mode === 'fight';
     $('#fight-wrap').hidden = mode !== 'fight';
     $('#enemy').hidden = mode !== 'fight';
