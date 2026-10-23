@@ -17,4 +17,4 @@ one big triangle made of four faces.
 1432x1812, the same canvas as the gate door art. The light shape is what shows through the carved frame; the
 dark corners are hidden behind the wood, so paint a little past the edge of the light shape (or fill the whole
 canvas) and nothing will show a hard edge. The map's points and lines sit in the middle, about 1000x1672 of it,
-so keep the texture quiet there. Save as `assets/ui/route-background.png`.
+so keep the texture quiet there. Saved as `assets/ui/route-background.png` (in the game now).

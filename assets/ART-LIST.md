@@ -27,7 +27,7 @@ so draw at double.
 | Game of chance point | 50x50 | Coming later. |
 | House of the Rite (final point) | 68x68 | The last house, at the top. |
 | Point states | | Now done by code: a gold pulsing ring for "you can go here", dimmed for visited. Own art optional. |
-| Map background | file 1432x1812 | A quiet texture behind the points, filling the opening of the carved frame. Template: `assets/ui/templates/route-background-template.png` (same canvas as the doors). |
+| Map background (done) | file 1432x1812 | A quiet texture behind the points, filling the opening of the carved frame. Template: `assets/ui/templates/route-background-template.png` (same canvas as the doors). |
 | Road lines | | Drawn by code (dashed for paths you can take, gold for the path walked). A stamp or texture is optional. |
 | Start of the road | about 40x40 | Where you stand before the first step (bottom centre). |
 | Embark button | about 200x50 | At the seam of the doors. Normal and hover. |
