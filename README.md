@@ -66,7 +66,8 @@ Add `?seed=1234` to the URL to replay a specific road. The seed is shown under t
 - **Adrenaline:** every bind fills one gem on both sides (each side has its own five). Every card has an adrenaline
   cost, shown in its corner: the basic High, Middle and Low cost 0; special cards (to come) will need gems, spent when
   played. A card you cannot pay for yet says "Needs N".
-- **Who attacks** stands a little larger, with a faint glow on their side (purple: you, crimson: the enemy).
+- **Who attacks** stands a little larger, with a faint glow on their side (purple: you, crimson: the enemy); the other
+  steps back, a little smaller.
 - **The Masked Duellist** (4 health) has habits: he guards high and counters low out of a bind more often than not.
   His hint is shown when the fight begins.
 - **Win:** he drops something: sometimes a key still needed in the house, otherwise a draught or a curio.

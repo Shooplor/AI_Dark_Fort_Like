@@ -606,6 +606,8 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 #figure, #stage .anim-frames, #enemy-body { transition: scale .6s cubic-bezier(.2, .8, .3, 1); }
 #figure { transform-origin: 45px 831px; } #stage .anim-frames { transform-origin: 5px 801px; } #enemy-body { transform-origin: 455px 831px; }
 #stage.mode-fight.atk-player #figure, #stage.mode-fight.atk-player .anim-frames, #stage.mode-fight.atk-enemy #enemy-body { scale: 1.05; }
+/* ...and the one who is not attacking steps back: smaller, so the difference is plain */
+#stage.mode-fight.atk-enemy #figure, #stage.mode-fight.atk-enemy .anim-frames, #stage.mode-fight.atk-player #enemy-body { scale: .92; }
 #atk-glow { position: absolute; inset: 0; z-index: 0; pointer-events: none; display: none; }
 #stage.mode-fight #atk-glow { display: block; }
 #atk-glow .g { position: absolute; top: 0; bottom: 0; width: 560px; opacity: 0; transition: opacity .7s; }
