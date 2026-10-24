@@ -350,15 +350,17 @@
     const attacker = r.role === 'attack' ? mine : theirs;
     const dir = r.role === 'attack' ? 1 : -1;
     if (r.outcome === 'bind') {
+      const meet = DF.Arms3D ? DF.Arms3D.bind(r.line) : Promise.resolve(); // the arms swing in; the blades meet...
       mine.animate([{ transform: 'none' }, { transform: 'translateX(26px)' }, { transform: 'translateX(14px)' }], { duration: 300, fill: 'forwards' });
       theirs.animate([{ transform: 'none' }, { transform: 'translateX(-26px)' }, { transform: 'translateX(-14px)' }], { duration: 300, fill: 'forwards' });
-      await sleep(150);
+      await Promise.race([meet, sleep(700)]); // ...and the sparks fly
       this.clash(rows[r.line]);
       snd('play', 'clash');
       this.quake && this.quake('slam');
       this.fightPrompt(`Bind, ${lower(r.line)}!`, r.role === 'attack' ? 'Steel on steel. They will counter.' : 'Steel on steel. Your counter!');
       await sleep(900);
     } else {
+      if (DF.Arms3D) DF.Arms3D.release(); // a hit breaks any bind
       snd('play', 'swish');
       await attacker.animate([{ transform: 'none' }, { transform: `translateX(${dir * 70}px) scale(1.08)` }, { transform: 'none' }], {
         duration: reduced() ? 1 : 340,
@@ -407,6 +409,7 @@
 
   P.fightWon = async function (r) {
     const g = this.game;
+    if (DF.Arms3D) DF.Arms3D.release();
     snd('play', 'enemyDown');
     $('#enemy').classList.add('down');
     this.fightPrompt('Victory', r.reward ? r.reward.text.replace(/\[\[|\]\]/g, '').split('. ')[0] + '.' : '');
@@ -428,6 +431,7 @@
   };
 
   P.fightLost = async function () {
+    if (DF.Arms3D) DF.Arms3D.release();
     this.fightPrompt('You have fallen', '');
     await sleep(1400);
     this.showEnd('dead');

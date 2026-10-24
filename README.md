@@ -128,6 +128,8 @@ js/sound.js       sound effects and music, synthesised live (real files can repl
 js/voice.js       reads the on-screen text aloud with the browser's built-in voice (a stand-in for a voice actor)
 js/route.js       the road: the travel map's points and lines            (pure logic, no DOM)
 js/combat.js      fencing: readiness, the deck, exchanges, binds, enemy habits       (pure logic, no DOM)
+js/arms3d.js      (test) the bind in 3D: low-poly arms and swords crossing over the bound panel (three.js)
+js/vendor/        three.min.js 0.149 (MIT licence, three-LICENSE.txt): the 3D library, kept here so the game works offline
 js/fight-ui.js    the fight on screen: AMBUSH on the doors, cards, slots, the enemy
 js/road-ui.js     the gate doors, the travel map on screen, going in and out of houses
 js/ui.js          rendering and turn animation (walk -> die -> reveal -> text)

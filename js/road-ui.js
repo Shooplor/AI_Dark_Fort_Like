@@ -65,6 +65,7 @@
     $('#fight-wrap').hidden = mode !== 'fight';
     $('#enemy').hidden = mode !== 'fight';
     if (mode !== 'fight') {
+      if (DF.Arms3D) DF.Arms3D.release(true);
       $('#fight-hand').innerHTML = '';
       $('#fight-rows').innerHTML = '';
       this.handEls = new Map();
