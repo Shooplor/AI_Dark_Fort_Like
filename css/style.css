@@ -562,27 +562,28 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 .fcard .back.enemy { filter: hue-rotate(148deg) saturate(1.5) brightness(.95) drop-shadow(0 5px 8px rgba(0, 0, 0, .55)); } /* the enemy's face-down card: crimson */
 
 /* the hand: fanned along the bottom; a card lifts and leans towards the mouse */
-#fight-hand { position: absolute; left: 0; top: 688px; width: 500px; height: 200px; }
+#fight-hand { position: absolute; left: 0; top: 708px; width: 500px; height: 200px; }
 #fight-hand .fcard { transition: transform .32s cubic-bezier(.2, .8, .3, 1), filter .2s, opacity .2s; cursor: pointer;
   transform: translate(var(--x), var(--y)) rotate(var(--r)); }
 #fight-hand .fcard .fcard-inner { transition: transform .5s cubic-bezier(.3, .7, .3, 1); }
-#fight-hand .fcard.lift { z-index: 5; transform: translate(var(--x), calc(var(--y) - 34px)) rotate(0deg) scale(1.12); }
+#fight-hand .fcard.lift { z-index: 5; transform: translate(var(--x), calc(var(--y) - 26px)) rotate(0deg) scale(1.12); }
 #fight-hand .fcard.lift .face { box-shadow: 0 16px 30px rgba(0, 0, 0, .7), 0 0 18px rgba(240, 200, 112, .45); }
 #fight-hand .fcard.lift .fcard-inner { transform: rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg)); transition: transform .08s; }
 #fight-hand .fcard.closed { filter: grayscale(.7) brightness(.55); cursor: not-allowed; }
 #fight-wrap.locked #fight-hand .fcard { cursor: default; }
-#fight-deck { position: absolute; left: 10px; top: 712px; width: 46px; height: 64px; }
+#fight-deck { position: absolute; left: 10px; top: 732px; width: 46px; height: 64px; }
 #fight-deck::before { content: ''; position: absolute; inset: 0; background: url('../assets/cards/card-back.png') center / 100% 100% no-repeat; filter: hue-rotate(52deg) saturate(1.45) drop-shadow(2px 2px 0 #0e060a) drop-shadow(2px 2px 0 #0e060a) drop-shadow(0 6px 8px rgba(0, 0, 0, .6)); } /* your deck: violet */
 #fight-deck-n { position: absolute; left: 0; right: 0; bottom: -26px; text-align: center; font-family: var(--display); font-size: 15px; color: #8c7550; }
 
 /* adrenaline: two rows of five diamonds between the lanes and the hand (placeholders until drawn); yours fill from
    the left, the enemy's from the right */
-/* the owner's art (assets/cards/adrenaline-*.png, 139x173 shown at half size): the empty slot, and the glowing gem
-   that fills it (purple for you, red for the enemy); 38px apart, their glows overlapping */
-#fight-adren { position: absolute; left: 0; top: 613px; width: 500px; height: 87px; pointer-events: none; }
+/* the owner's art (assets/cards/adrenaline-*.png, 139x173 shown at 38%): the empty slot, and the glowing gem that
+   fills it (purple for you, red for the enemy); 29px apart, their glows overlapping. Tucked under the lowest lane: yours
+   from its left edge, the enemy's from its right; a lifted card in the hand stays below them (never over them) */
+#fight-adren { position: absolute; left: 0; top: 608px; width: 500px; height: 66px; pointer-events: none; }
 .adren { position: absolute; top: 0; display: flex; }
-.adren.player { left: 4px; } .adren.enemy { right: 4px; }
-.adren i { position: relative; width: 69.5px; height: 86.5px; margin-right: -31.5px; background: url('../assets/cards/adrenaline-slot.png') center / 100% 100% no-repeat; }
+.adren.player { left: -31px; } .adren.enemy { right: -31px; }
+.adren i { position: relative; width: 52.8px; height: 65.7px; margin-right: -23.8px; background: url('../assets/cards/adrenaline-slot.png') center / 100% 100% no-repeat; }
 .adren i:last-child { margin-right: 0; }
 .adren i::after { content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity .35s; background: center / 100% 100% no-repeat; }
 .adren.player i::after { background-image: url('../assets/cards/adrenaline-player.png'); }

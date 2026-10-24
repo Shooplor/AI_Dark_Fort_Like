@@ -37,8 +37,8 @@
     '<path d="M10 22 H55" stroke-width="3"/><path d="M55 22 l-7 -3.5 M55 22 l-7 3.5" stroke-width="2.4"/><path d="M17 13 V31" stroke-width="3.6"/><path d="M10 22 H4" stroke-width="5.5"/></g></svg>';
   const LINE_ICON = { high: blade(-26), mid: blade(0), low: blade(26) };
 
-  const HAND_TOP = 688; // #fight-hand's top inside #fight-wrap
-  const DECK = { x: 10, y: 712 }; // where new cards come from (the deck pile)
+  const HAND_TOP = 708; // #fight-hand's top inside #fight-wrap
+  const DECK = { x: 10, y: 732 }; // where new cards come from (the deck pile)
 
   /** The stage is scaled to fit the window: screen pixels -> stage pixels. */
   const stageScale = () => $('#stage').getBoundingClientRect().width / 1600 || 1;
