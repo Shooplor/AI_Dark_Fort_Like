@@ -535,7 +535,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 .fslot.player { left: 36.5px; } .fslot.enemy { left: 465.5px; }
 .frow-label { display: none; } /* the art has the arrows */
 /* the bound line: 3D arms with crossed swords (js/arms3d.js), under the cards, over the panels */
-#arms3d { position: absolute; left: -38px; top: 0; width: 570px; height: 620px; pointer-events: none; }
+#arms3d { position: absolute; left: -70px; top: 0; width: 640px; height: 620px; pointer-events: none; }
 .frow.open-line .fslot.player { box-shadow: 0 0 0 2px rgba(240, 200, 112, .7), 0 0 16px rgba(240, 200, 112, .45); }
 
 /* a card: two faces in 3D, flipped by turning .fcard-inner */
@@ -5083,10 +5083,12 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 
 </script>
   <script>
-/* The bind in 3D (a test): two low-poly arms with swords cross over the bound panel of the fight.
+/* The fencing arms in 3D (a test): two low-poly arms with swords play out every exchange over the panels.
  *
- * Built from simple shapes with three.js (js/vendor/three.min.js): a tapered sleeve, a lace cuff, a blocky gloved hand
- * and a sword (grip, guard, pommel, blade). Toon shading in a few flat tones and a black outline (a slightly larger
+ * Built from simple shapes with three.js (js/vendor/three.min.js): a shoulder, an upper arm, an elbow, a forearm, a lace
+ * cuff, a blocky gloved hand and a sword (grip, guard, pommel, a tapering blade). The shoulder stays put at the side,
+ * off the panel; the elbow bends or straightens (two-bone "inverse kinematics") to bring the hand where each pose
+ * wants it, so the arm always runs unbroken from off-screen to the hand. Toon shading in a few flat tones and a black outline (a slightly larger
  * copy of each piece, drawn inside out) to sit with the hand-drawn art. Colours stand in for painted textures.
  *
  *   DF.Arms3D.exchange(r) — plays one exchange: the attacker winds up and lunges on the attacked line, the defender
@@ -5099,7 +5101,8 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
   const DF = (globalThis.DF = globalThis.DF || {});
   const THREE = globalThis.THREE;
 
-  const W = 570, H = 620; // the canvas covers #fight-rows (the three panels), 1 world unit = 1 stage pixel
+  const W = 640, H = 620; // the canvas covers the three panels and runs under the frame's pillars; 1 world unit = 1 stage pixel
+  const UPPER = 185, FORE = 165; // arm lengths: shoulder to elbow, elbow to wrist
   const ROW_Y = { high: 117, mid: 323, low: 537 }; // the panels' centres, in canvas pixels from the top
   const OUTLINE = 3; // outline thickness, in pixels
   const INK = 0x0b0608;
@@ -5136,35 +5139,46 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
     return mesh;
   }
 
-  /** One arm, reaching along +x from the shoulder (the group's origin), holding a sword. */
+  /** A tube along +x from the origin: a sleeve segment with `sides` faces. */
+  function tube(r0, r1, len, sides, material) {
+    const geo = new THREE.CylinderGeometry(r1, r0, len, sides, 1);
+    geo.rotateZ(-Math.PI / 2);
+    geo.translate(len / 2, 0, 0);
+    return piece(geo, material);
+  }
+
+  /** One arm. Its parts are placed each frame by pose(): the upper arm turns at the shoulder, the forearm at the elbow,
+   *  the hand and sword at the wrist. All in the player's frame; the enemy's arm is a mirror image of the same. */
   function makeArm(sleeveColor, opts) {
     const root = new THREE.Group();
-    const LEN = 190;
-    // the sleeve: a tapered seven-sided tube, lying along +x
-    const sleeveGeo = new THREE.CylinderGeometry(17, 23, LEN, 7, 1);
-    sleeveGeo.rotateZ(-Math.PI / 2);
-    sleeveGeo.translate(LEN / 2, 0, 0);
-    root.add(piece(sleeveGeo, toon(sleeveColor)));
-    // the lace cuff
+    const sleeve = toon(sleeveColor);
+    const shoulder = new THREE.Group();
+    const shoulderGeo = new THREE.IcosahedronGeometry(33, 0);
+    shoulderGeo.scale(1.1, 1, 1);
+    shoulder.add(piece(shoulderGeo, sleeve));
+    shoulder.add(tube(30, 25, UPPER, 7, sleeve));
+    const elbowGeo = new THREE.IcosahedronGeometry(24, 0);
+    const elbow = piece(elbowGeo, sleeve);
+    const fore = new THREE.Group();
+    fore.add(tube(24, 19, FORE, 7, sleeve));
     const cuffGeo = new THREE.CylinderGeometry(25, 21, 18, 7, 1);
     cuffGeo.rotateZ(-Math.PI / 2);
-    cuffGeo.translate(LEN + 4, 0, 0);
-    root.add(piece(cuffGeo, toon(0xbfb3a2)));
-    // the wrist: the hand and the sword turn around it
+    cuffGeo.translate(FORE - 4, 0, 0);
+    fore.add(piece(cuffGeo, toon(0xbfb3a2)));
+    root.add(shoulder, elbow, fore);
+    // the wrist: the hand and the sword, turned to the sword's angle
     const wrist = new THREE.Group();
-    wrist.position.set(LEN + 16, 0, 0);
     root.add(wrist);
     const handGeo = new THREE.IcosahedronGeometry(19, 0);
     handGeo.scale(1.25, 0.95, 0.85);
-    handGeo.translate(12, 0, 0);
+    handGeo.translate(6, 0, 0);
     wrist.add(piece(handGeo, toon(opts.glove)));
     const thumbGeo = new THREE.BoxGeometry(18, 9, 10);
     thumbGeo.rotateZ(0.5);
-    thumbGeo.translate(16, 12, 10);
+    thumbGeo.translate(10, 12, 10);
     wrist.add(piece(thumbGeo, toon(opts.glove)));
-    // the sword, held in the fist, pointing along +x of its own group
     const sword = new THREE.Group();
-    sword.position.set(14, 0, 4);
+    sword.position.set(8, 0, 4);
     wrist.add(sword);
     const steel = toon(0x9aa2b0), gold = toon(0xb8862e);
     const gripGeo = new THREE.CylinderGeometry(5, 5, 44, 6, 1);
@@ -5176,16 +5190,14 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
     const guardGeo = new THREE.BoxGeometry(8, 58, 9);
     guardGeo.translate(24, 0, 0);
     sword.add(piece(guardGeo, gold));
-    const bladeGeo = new THREE.BoxGeometry(165, 10, 3);
-    bladeGeo.translate(110, 0, 0);
+    // the blade: a four-sided spike, flattened, tapering evenly from the guard to a sharp point
+    const bladeGeo = new THREE.CylinderGeometry(0.6, 6, 190, 4, 1);
+    bladeGeo.rotateY(Math.PI / 4);
+    bladeGeo.scale(1, 1, 0.38);
+    bladeGeo.rotateZ(-Math.PI / 2);
+    bladeGeo.translate(28 + 95, 0, 0);
     sword.add(piece(bladeGeo, steel));
-    const tipGeo = new THREE.ConeGeometry(5.5, 24, 4, 1);
-    tipGeo.rotateZ(-Math.PI / 2);
-    tipGeo.rotateX(Math.PI / 4);
-    tipGeo.scale(1, 1, 0.35);
-    tipGeo.translate(204, 0, 0);
-    sword.add(piece(tipGeo, steel));
-    return { root, wrist, sword };
+    return { root, shoulder, elbow, fore, wrist };
   }
 
   function init() {
@@ -5194,7 +5206,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       if (!THREE) throw new Error('three.js is missing');
       canvas = document.createElement('canvas');
       canvas.id = 'arms3d';
-      renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+      renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, preserveDrawingBuffer: true }); // (kept: screen recordings show it)
       const stage = document.getElementById('stage');
       const s = stage ? stage.getBoundingClientRect().width / 1600 || 1 : 1;
       renderer.setPixelRatio(Math.min(2.5, (globalThis.devicePixelRatio || 1) * s));
@@ -5232,16 +5244,16 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
     if (box && canvas.parentNode !== box) box.insertBefore(canvas, box.firstChild);
   }
 
-  /* Poses, in the player's own frame (the enemy's arm is the mirror image):
-   *   reach — how far the shoulder comes in towards the middle; drop — how far below the line it sits;
-   *   arm   — the arm's angle; wrist — the sword's angle at the wrist; tilt — the blade turning its edge. */
+  /* Poses, in the player's own frame (the enemy's arm is the mirror image), relative to the middle of the line:
+   *   sx, sy — the shoulder (off the panel, at the side); hx, hy — the hand; sword — the blade's angle (0 = level,
+   *   pointing at the other side); tilt — the blade turning its edge. The elbow finds its own place in between. */
   const POSES = {
-    out: { reach: -240, drop: 70, arm: -0.07, wrist: -0.36, tilt: 0.47 },
-    guard: { reach: -50, drop: -6, arm: 0.26, wrist: 0.95, tilt: 0.15 }, // blade raised, waiting for the blow
-    windup: { reach: -80, drop: 4, arm: 0.06, wrist: 0.32, tilt: 0.1 }, // drawn back before the lunge
-    thrust: { reach: 135, drop: 8, arm: 0.12, wrist: -0.14, tilt: 0 }, // arm out, blade level across the panel
-    bind: { reach: 0, drop: 0, arm: 0.18, wrist: 0.24, tilt: 0.12 }, // the blades crossed in the middle
-    recoil: { reach: -95, drop: 10, arm: 0.1, wrist: 0.7, tilt: 0.2 }, // knocked back by a hit
+    out: { sx: -480, sy: -80, hx: -410, hy: -120, sword: 0.2, tilt: 0.4 },
+    guard: { sx: -365, sy: -62, hx: -128, hy: -14, sword: 1.12, tilt: 0.15 }, // blade raised, waiting for the blow
+    windup: { sx: -385, sy: -58, hx: -150, hy: -22, sword: 0.3, tilt: 0.1 }, // drawn back before the lunge
+    thrust: { sx: -345, sy: -45, hx: -18, hy: -4, sword: 0.03, tilt: 0 }, // arm out, blade level across the panel
+    bind: { sx: -370, sy: -60, hx: -118, hy: -38, sword: 0.55, tilt: 0.12 }, // the blades crossed in the middle
+    recoil: { sx: -395, sy: -64, hx: -175, hy: -30, sword: 0.9, tilt: 0.2 }, // knocked back by a hit
   };
   const KEYS = Object.keys(POSES.out);
   const easeIn = (t) => t * t * t;
@@ -5259,19 +5271,32 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
     arm.pose = pose;
   }
 
-  /** Pose both arms for this frame. */
+  /** Pose both arms for this frame: place the shoulder, bend the elbow to reach the hand, turn the sword. */
   function pose(now) {
     const t = now / 1000;
     const bound = arms.player.pose === 'bind' && arms.enemy.pose === 'bind' && arms.player.t >= 1 && arms.enemy.t >= 1;
     const tremble = bound ? Math.sin(t * 9) * 0.012 + Math.sin(t * 23) * 0.006 : 0; // pressing against each other
     for (const [key, arm] of Object.entries(arms)) {
       const c = arm.cur;
-      const dir = key === 'player' ? -1 : 1; // which side it comes from
       const side = key === 'player' ? 1 : -1;
-      arm.root.position.set(dir * (330 - c.reach) - dir * jolt * 10, worldY(c.y) - 78 - c.drop, side * 6);
-      arm.root.rotation.z = side * c.arm;
-      arm.wrist.rotation.z = c.wrist + tremble * side - jolt * 0.06; // inside the mirror: the same turn for both
-      arm.wrist.rotation.x = c.tilt;
+      arm.root.position.set(0, worldY(c.y), side * 6);
+      const sx = c.sx, sy = c.sy;
+      const hx = c.hx - jolt * 10, hy = c.hy;
+      // two-bone reach: the elbow sits below the line from shoulder to hand
+      const dx = hx - sx, dy = hy - sy;
+      const d = Math.min(UPPER + FORE - 0.5, Math.max(Math.abs(UPPER - FORE) + 1, Math.hypot(dx, dy)));
+      const a = Math.atan2(dy, dx);
+      const bend = Math.acos((UPPER * UPPER + d * d - FORE * FORE) / (2 * UPPER * d));
+      const ua = a - bend;
+      const ex = sx + Math.cos(ua) * UPPER, ey = sy + Math.sin(ua) * UPPER;
+      const fa = Math.atan2(hy - ey, hx - ex);
+      arm.shoulder.position.set(sx, sy, 0);
+      arm.shoulder.rotation.z = ua;
+      arm.elbow.position.set(ex, ey, 0);
+      arm.fore.position.set(ex, ey, 0);
+      arm.fore.rotation.z = fa;
+      arm.wrist.position.set(ex + Math.cos(fa) * (FORE + 6), ey + Math.sin(fa) * (FORE + 6), 4);
+      arm.wrist.rotation.set(c.tilt, 0, c.sword + tremble * side - jolt * 0.06);
       arm.root.visible = !(arm.pose === 'out' && arm.t >= 1);
     }
   }
