@@ -581,8 +581,11 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
    fills it (purple for you, red for the enemy); 29px apart, their glows overlapping. Tucked under the lowest lane: yours
    from its left edge, the enemy's from its right; a lifted card in the hand stays below them (never over them) */
 #fight-adren { position: absolute; left: 0; top: 608px; width: 500px; height: 66px; pointer-events: none; }
+/* a dark line between the two rows: yours on the left, theirs on the right (ink like the drawn outlines, fading at the ends) */
+#fight-adren::before { content: ''; position: absolute; left: 248.5px; top: 8px; width: 3px; height: 50px; border-radius: 2px;
+  background: linear-gradient(to bottom, transparent, #0b0608 22%, #0b0608 78%, transparent); box-shadow: 1px 0 0 rgba(255, 255, 255, .05); }
 .adren { position: absolute; top: 0; display: flex; }
-.adren.player { left: 86px; } .adren.enemy { right: 86px; } /* inwards, clear of the 3D arms' hanging sleeves (they reach this low near the edges) */
+.adren.player { left: 76px; } .adren.enemy { right: 76px; } /* inwards, clear of the 3D arms' hanging sleeves (they reach this low near the edges) */
 .adren i { position: relative; width: 52.8px; height: 65.7px; margin-right: -23.8px; background: url('../assets/cards/adrenaline-slot.png') center / 100% 100% no-repeat; }
 .adren i:last-child { margin-right: 0; }
 .adren i::after { content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity .35s; background: center / 100% 100% no-repeat; }
