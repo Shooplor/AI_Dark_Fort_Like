@@ -18,3 +18,7 @@ one big triangle made of four faces.
 dark corners are hidden behind the wood, so paint a little past the edge of the light shape (or fill the whole
 canvas) and nothing will show a hard edge. The map's points and lines sit in the middle, about 1000x1672 of it,
 so keep the texture quiet there. Saved as `assets/ui/route-background.png` (in the game now).
+
+## enemy-guide.png (1000x1770)
+The canvas for an enemy character (`assets/ui/enemy-duellist.png`): your character flipped to face left, faded, so the
+enemy matches its size, height and how it is cut off at the bottom. Draw on top, then hide the guide.
