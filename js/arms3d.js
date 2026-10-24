@@ -30,17 +30,21 @@
   const worldY = (py) => H / 2 - py;
 
   /** A toon material: three flat tones, like cel shading. */
-  function toon(color) {
+  function toon(color, opts) {
     const tones = new Uint8Array([90, 170, 255]);
     const ramp = new THREE.DataTexture(tones, tones.length, 1, THREE.RedFormat);
     ramp.minFilter = ramp.magFilter = THREE.NearestFilter;
     ramp.needsUpdate = true;
-    return new THREE.MeshToonMaterial({ color, gradientMap: ramp, flatShading: true });
+    return new THREE.MeshToonMaterial({ color, gradientMap: ramp, flatShading: true, ...(opts || {}) });
   }
 
   /** A piece with its ink outline: a copy, grown by OUTLINE pixels on every side, drawn back faces only, in black. */
-  function piece(geometry, material) {
+  function piece(geometry, material, hullGeometry) {
     const mesh = new THREE.Mesh(geometry, material);
+    if (hullGeometry) {
+      mesh.add(new THREE.Mesh(hullGeometry, new THREE.MeshBasicMaterial({ color: INK, side: THREE.BackSide })));
+      return mesh;
+    }
     geometry.computeBoundingBox();
     const size = new THREE.Vector3();
     geometry.boundingBox.getSize(size);
@@ -67,50 +71,82 @@
   function makeArm(sleeveColor, opts) {
     const root = new THREE.Group();
     const sleeve = toon(sleeveColor);
+    // a loose coat sleeve: full at the shoulder and elbow, flaring open over the forearm (after the drawing)
     const shoulder = new THREE.Group();
-    const shoulderGeo = new THREE.IcosahedronGeometry(21, 0);
+    const shoulderGeo = new THREE.IcosahedronGeometry(30, 0);
     shoulderGeo.scale(1.1, 1, 1);
     shoulder.add(piece(shoulderGeo, sleeve));
-    shoulder.add(tube(19, 16, UPPER, 7, sleeve));
-    const elbowGeo = new THREE.IcosahedronGeometry(15.5, 0);
+    shoulder.add(tube(29, 27, UPPER, 7, sleeve));
+    const elbowGeo = new THREE.IcosahedronGeometry(27, 0);
     const elbow = piece(elbowGeo, sleeve);
     const fore = new THREE.Group();
-    fore.add(tube(15.5, 12.5, FORE, 7, sleeve));
-    const cuffGeo = new THREE.CylinderGeometry(17, 14, 13, 7, 1);
-    cuffGeo.rotateZ(-Math.PI / 2);
-    cuffGeo.translate(FORE - 3, 0, 0);
-    fore.add(piece(cuffGeo, toon(0xbfb3a2)));
+    const SLEEVE = 78; // how far the open sleeve reaches down the forearm; the white shirt shows after it
+    const bellGeo = new THREE.CylinderGeometry(42, 26, SLEEVE, 8, 1, true);
+    bellGeo.rotateZ(-Math.PI / 2);
+    bellGeo.translate(SLEEVE / 2, 0, 0);
+    fore.add(piece(bellGeo, toon(sleeveColor, { side: THREE.DoubleSide })));
+    const shirtGeo = new THREE.CylinderGeometry(10, 13, FORE - 20, 6, 1);
+    shirtGeo.rotateZ(-Math.PI / 2);
+    shirtGeo.translate(20 + (FORE - 20) / 2, 0, 0);
+    fore.add(piece(shirtGeo, toon(0xe4ddd2)));
     root.add(shoulder, elbow, fore);
-    // the wrist: the hand and the sword, turned to the sword's angle
+    // the wrist: a golden gauntlet glove round the grip, and the sword, turned to the sword's angle
     const wrist = new THREE.Group();
     root.add(wrist);
-    const handGeo = new THREE.IcosahedronGeometry(13, 0);
-    handGeo.scale(1.25, 0.95, 0.85);
-    handGeo.translate(4, 0, 0);
-    wrist.add(piece(handGeo, toon(opts.glove)));
+    const glove = toon(opts.glove);
+    const gauntletGeo = new THREE.CylinderGeometry(15, 10, 14, 7, 1);
+    gauntletGeo.rotateZ(-Math.PI / 2);
+    gauntletGeo.translate(-6, 0, 0);
+    wrist.add(piece(gauntletGeo, glove));
+    const palmGeo = new THREE.IcosahedronGeometry(12, 0);
+    palmGeo.scale(1.25, 1.05, 0.95);
+    palmGeo.translate(6, 0, 0);
+    wrist.add(piece(palmGeo, glove));
+    const fingersGeo = new THREE.BoxGeometry(14, 11, 12);
+    fingersGeo.translate(10, -3, 10);
+    wrist.add(piece(fingersGeo, glove));
     const thumbGeo = new THREE.BoxGeometry(12, 6, 7);
     thumbGeo.rotateZ(0.5);
-    thumbGeo.translate(7, 8, 7);
-    wrist.add(piece(thumbGeo, toon(opts.glove)));
+    thumbGeo.translate(9, 9, 8);
+    wrist.add(piece(thumbGeo, glove));
+    // the rapier (after the reference, simplified): a dark grip, a gold pommel, a gold crossbar with curled ends,
+    // a dark iron knuckle-bow sweeping from the guard round the hand to the pommel, one side ring, a long straight blade
     const sword = new THREE.Group();
-    sword.position.set(4, 0, 3);
+    sword.position.set(6, 0, 3);
     wrist.add(sword);
-    const steel = toon(0x9aa2b0), gold = toon(0xb8862e);
-    const gripGeo = new THREE.CylinderGeometry(4, 4, 34, 6, 1);
+    const steel = toon(0xb3bac6), gold = toon(0xc29a3a), iron = toon(0x2f2b33);
+    const gripGeo = new THREE.CylinderGeometry(3.6, 4.2, 32, 6, 1);
     gripGeo.rotateZ(-Math.PI / 2);
-    sword.add(piece(gripGeo, toon(0x3a2418)));
-    const pommelGeo = new THREE.OctahedronGeometry(6.5, 0);
+    sword.add(piece(gripGeo, toon(0x5a2a22)));
+    const pommelGeo = new THREE.IcosahedronGeometry(6.5, 0);
     pommelGeo.translate(-20, 0, 0);
     sword.add(piece(pommelGeo, gold));
-    const guardGeo = new THREE.BoxGeometry(7, 46, 8);
-    guardGeo.translate(19, 0, 0);
-    sword.add(piece(guardGeo, gold));
-    // the blade: a four-sided spike, flattened, tapering evenly from the guard to a sharp point
-    const bladeGeo = new THREE.CylinderGeometry(0.6, 6, 285, 4, 1);
+    const crossGeo = new THREE.BoxGeometry(5, 40, 5);
+    crossGeo.translate(18, 0, 0);
+    sword.add(piece(crossGeo, gold));
+    for (const y of [-21, 21]) {
+      const endGeo = new THREE.OctahedronGeometry(4.5, 0);
+      endGeo.translate(16, y, 0);
+      sword.add(piece(endGeo, gold));
+    }
+    // thin curved parts get an outline shape of their own (a fatter copy), so the ink line is even
+    const bowCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(18, -20, 0), new THREE.Vector3(8, -24, 9), new THREE.Vector3(-6, -22, 11), new THREE.Vector3(-16, -12, 6), new THREE.Vector3(-20, -4, 0),
+    ]);
+    sword.add(piece(new THREE.TubeGeometry(bowCurve, 8, 2.2, 4, false), iron, new THREE.TubeGeometry(bowCurve, 8, 2.2 + OUTLINE * 0.8, 4, false)));
+    const ringGeo = new THREE.TorusGeometry(9, 2, 4, 9);
+    ringGeo.translate(24, 0, 0);
+    ringGeo.rotateX(Math.PI / 2);
+    const ringHull = new THREE.TorusGeometry(9, 2 + OUTLINE * 0.8, 4, 9);
+    ringHull.translate(24, 0, 0);
+    ringHull.rotateX(Math.PI / 2);
+    sword.add(piece(ringGeo, iron, ringHull));
+    // the blade: a flattened four-sided spike, tapering evenly from the guard to a fine point
+    const bladeGeo = new THREE.CylinderGeometry(0.5, 5.2, 290, 4, 1);
     bladeGeo.rotateY(Math.PI / 4);
     bladeGeo.scale(1, 1, 0.38);
     bladeGeo.rotateZ(-Math.PI / 2);
-    bladeGeo.translate(22 + 142, 0, 0);
+    bladeGeo.translate(20 + 145, 0, 0);
     sword.add(piece(bladeGeo, steel));
     return { root, shoulder, elbow, fore, wrist };
   }
@@ -135,8 +171,8 @@
       const sun = new THREE.DirectionalLight(0xfff0dc, 0.62);
       sun.position.set(-0.6, 1, 0.9);
       scene.add(sun);
-      const player = makeArm(0x5b3a63, { glove: 0x2b1d18 });
-      const enemy = makeArm(0x7a2232, { glove: 0x1c1416 });
+      const player = makeArm(0x4a2c4c, { glove: 0xc8a032 }); // after the drawing: a dark purple coat, golden gloves
+      const enemy = makeArm(0x8a3438, { glove: 0xc8a032 }); // a dark red coat
       enemy.root.scale.x = -1; // the enemy's arm is the mirror image, coming from the right
       scene.add(player.root, enemy.root);
       arms = { player, enemy };
