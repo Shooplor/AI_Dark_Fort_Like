@@ -17,6 +17,7 @@
   const THREE = globalThis.THREE;
 
   const W = 640, H = 840; // the canvas covers the three panels and runs down under the hand and the frame's pillars; 1 world unit = 1 stage pixel
+  const HANG = 24; // how far the loose sleeve's open end hangs below the arm
   const UPPER = 125, FORE = 110; // arm lengths: shoulder to elbow, elbow to wrist (kept slim: the swords are the stars)
   const ROW_Y = { high: 117, mid: 323, low: 537 }; // the panels' centres, in canvas pixels from the top
   const OUTLINE = 3; // outline thickness, in pixels
@@ -38,24 +39,76 @@
     return new THREE.MeshToonMaterial({ color, gradientMap: ramp, flatShading: true, ...(opts || {}) });
   }
 
-  /** A piece with its ink outline: a copy, grown by OUTLINE pixels on every side, drawn back faces only, in black. */
-  function piece(geometry, material, hullGeometry) {
+  /* The ink outline is drawn from the finished picture, not from the shapes: each piece is also drawn in a flat colour
+   * of its own (an "id" picture), and a pixel is inked where a piece in front of it begins (or, on the background,
+   * where any piece begins). So every piece gets an even line where it meets another or the background, thin parts included, and
+   * pieces pushed into each other never show stray black. */
+  const pieces = [];
+  function piece(geometry, material) {
     const mesh = new THREE.Mesh(geometry, material);
-    if (hullGeometry) {
-      mesh.add(new THREE.Mesh(hullGeometry, new THREE.MeshBasicMaterial({ color: INK, side: THREE.BackSide })));
-      return mesh;
-    }
-    geometry.computeBoundingBox();
-    const size = new THREE.Vector3();
-    geometry.boundingBox.getSize(size);
-    const hull = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ color: INK, side: THREE.BackSide }));
-    // grow it around the piece's own centre (the shapes are moved off the origin to build the arm)
-    const c = new THREE.Vector3();
-    geometry.boundingBox.getCenter(c);
-    hull.scale.set((size.x + 2 * OUTLINE) / size.x, (size.y + 2 * OUTLINE) / size.y, (size.z + 2 * OUTLINE) / Math.max(size.z, 0.01));
-    hull.position.set(c.x * (1 - hull.scale.x), c.y * (1 - hull.scale.y), c.z * (1 - hull.scale.z));
-    mesh.add(hull);
+    const n = pieces.length + 1;
+    mesh.userData.idMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(((n * 53) % 251) / 255, ((n * 97) % 241) / 255, ((n * 29) % 239) / 255) });
+    pieces.push(mesh);
     return mesh;
+  }
+
+  let rtColor, rtId, inkScene, inkCamera;
+  function setupInk() {
+    const pr = renderer.getPixelRatio();
+    const w = Math.round(W * pr), h = Math.round(H * pr);
+    rtColor = new THREE.WebGLRenderTarget(w, h, { samples: 4 });
+    rtId = new THREE.WebGLRenderTarget(w, h, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter });
+    rtId.depthTexture = new THREE.DepthTexture(w, h); // to put each line on the far side of an edge
+    inkCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    inkScene = new THREE.Scene();
+    const mat = new THREE.ShaderMaterial({
+      uniforms: {
+        tColor: { value: rtColor.texture },
+        tId: { value: rtId.texture },
+        tDepth: { value: rtId.depthTexture },
+        px: { value: new THREE.Vector2(1 / w, 1 / h) },
+        r: { value: OUTLINE * 0.85 * pr },
+        ink: { value: new THREE.Color(INK) },
+      },
+      vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+      // a pixel is inked when a nearby pixel belongs to another piece that is in front of it (or when it is empty
+      // background next to a piece): the line falls on the far side of every edge, so thin blades keep their steel
+      fragmentShader: `uniform sampler2D tColor; uniform sampler2D tId; uniform sampler2D tDepth; uniform vec2 px; uniform float r; uniform vec3 ink; varying vec2 vUv;
+        void main() {
+          vec4 id = texture2D(tId, vUv);
+          float depth = texture2D(tDepth, vUv).x;
+          float edge = 0.0;
+          for (int ring = 1; ring <= 2; ring++) {
+            for (int i = 0; i < 12; i++) {
+              float a = float(i) * 0.5235988;
+              vec2 at = vUv + vec2(cos(a), sin(a)) * r * px * float(ring) * 0.5;
+              vec4 other = texture2D(tId, at);
+              float otherDepth = texture2D(tDepth, at).x;
+              edge = max(edge, step(0.003, distance(other, id)) * step(otherDepth, depth - 0.00001));
+            }
+          }
+          gl_FragColor = edge > 0.5 ? vec4(ink, 1.0) : texture2D(tColor, vUv);
+        }`,
+      blending: THREE.NoBlending,
+      depthTest: false,
+      depthWrite: false,
+    });
+    inkScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), mat));
+  }
+
+  function draw() {
+    renderer.setClearColor(0x000000, 0);
+    renderer.setRenderTarget(rtColor);
+    renderer.clear();
+    renderer.render(scene, camera);
+    for (const m of pieces) [m.material, m.userData.idMat] = [m.userData.idMat, m.material];
+    renderer.setRenderTarget(rtId);
+    renderer.clear();
+    renderer.render(scene, camera);
+    for (const m of pieces) [m.material, m.userData.idMat] = [m.userData.idMat, m.material];
+    renderer.setRenderTarget(null);
+    renderer.clear();
+    renderer.render(inkScene, inkCamera);
   }
 
   /** A tube along +x from the origin: a sleeve segment with `sides` faces. */
@@ -81,39 +134,53 @@
     const elbow = piece(elbowGeo, sleeve);
     const fore = new THREE.Group();
     const SLEEVE = 78; // how far the open sleeve reaches down the forearm; the white shirt shows after it
-    const bellGeo = new THREE.CylinderGeometry(42, 26, SLEEVE, 8, 1, true);
+    // the open end hangs: its ring is pulled down (towards the floor, whatever the forearm's angle; see pose()), so the
+    // arm comes out near the top of the opening and the loose cloth falls below it
+    const bellGeo = new THREE.CylinderGeometry(39, 25, SLEEVE, 8, 1, true);
     bellGeo.rotateZ(-Math.PI / 2);
     bellGeo.translate(SLEEVE / 2, 0, 0);
-    fore.add(piece(bellGeo, toon(sleeveColor, { side: THREE.DoubleSide })));
-    const shirtGeo = new THREE.CylinderGeometry(10, 13, FORE - 20, 6, 1);
+    const bell = piece(bellGeo, toon(sleeveColor, { side: THREE.DoubleSide }));
+    bell.frustumCulled = false;
+    const bellBase = bellGeo.attributes.position.array.slice();
+    const bellEnd = [];
+    for (let i = 0; i < bellBase.length; i += 3) if (bellBase[i] > SLEEVE - 1) bellEnd.push(i);
+    fore.add(bell);
+    const shirtGeo = new THREE.CylinderGeometry(10, 12.5, FORE - 18, 6, 1);
     shirtGeo.rotateZ(-Math.PI / 2);
-    shirtGeo.translate(20 + (FORE - 20) / 2, 0, 0);
+    shirtGeo.translate(18 + (FORE - 18) / 2, 0, 0);
     fore.add(piece(shirtGeo, toon(0xe4ddd2)));
+    const glove = toon(opts.glove);
+    // the glove's flared gauntlet cuff, over the end of the shirt sleeve
+    const gauntletGeo = new THREE.CylinderGeometry(15, 10.5, 15, 7, 1);
+    gauntletGeo.rotateZ(-Math.PI / 2);
+    gauntletGeo.translate(FORE - 2, 0, 0);
+    fore.add(piece(gauntletGeo, glove));
     root.add(shoulder, elbow, fore);
-    // the wrist: a golden gauntlet glove round the grip, and the sword, turned to the sword's angle
+    // the wrist: the fist and the sword, turned to the sword's angle
     const wrist = new THREE.Group();
     root.add(wrist);
-    const glove = toon(opts.glove);
-    const gauntletGeo = new THREE.CylinderGeometry(15, 10, 14, 7, 1);
-    gauntletGeo.rotateZ(-Math.PI / 2);
-    gauntletGeo.translate(-6, 0, 0);
-    wrist.add(piece(gauntletGeo, glove));
-    const palmGeo = new THREE.IcosahedronGeometry(12, 0);
-    palmGeo.scale(1.25, 1.05, 0.95);
-    palmGeo.translate(6, 0, 0);
-    wrist.add(piece(palmGeo, glove));
-    const fingersGeo = new THREE.BoxGeometry(14, 11, 12);
-    fingersGeo.translate(10, -3, 10);
-    wrist.add(piece(fingersGeo, glove));
-    const thumbGeo = new THREE.BoxGeometry(12, 6, 7);
-    thumbGeo.rotateZ(0.5);
-    thumbGeo.translate(9, 9, 8);
-    wrist.add(piece(thumbGeo, glove));
+    const sword = new THREE.Group();
+    sword.position.set(8, 0, 3);
+    wrist.add(sword);
+    // the fist, closed round the grip (the grip runs along x; the viewer looks from +z): the back of the hand behind
+    // the grip, four fingers wrapped round its front, the knuckles over the top and the thumb laid along it
+    const backGeo = new THREE.BoxGeometry(21, 17, 9);
+    backGeo.translate(-1, 1.5, -7.5);
+    sword.add(piece(backGeo, glove));
+    const knuckleGeo = new THREE.BoxGeometry(21, 6, 10);
+    knuckleGeo.translate(-1, 7.5, 1);
+    sword.add(piece(knuckleGeo, glove));
+    [[-8.2, 7.5], [-3.1, 8.2], [2, 8], [7, 7]].forEach(([x, h]) => {
+      const fingerGeo = new THREE.BoxGeometry(4.7, h, 6.5);
+      fingerGeo.translate(x, 2.5 - h / 2, 6.5);
+      sword.add(piece(fingerGeo, glove));
+    });
+    const thumbGeo = new THREE.BoxGeometry(14, 5.5, 6);
+    thumbGeo.rotateZ(-0.22);
+    thumbGeo.translate(8, 6, 6.5);
+    sword.add(piece(thumbGeo, glove));
     // the rapier (after the reference, simplified): a dark grip, a gold pommel, a gold crossbar with curled ends,
     // a dark iron knuckle-bow sweeping from the guard round the hand to the pommel, one side ring, a long straight blade
-    const sword = new THREE.Group();
-    sword.position.set(6, 0, 3);
-    wrist.add(sword);
     const steel = toon(0xb3bac6), gold = toon(0xc29a3a), iron = toon(0x2f2b33);
     const gripGeo = new THREE.CylinderGeometry(3.6, 4.2, 32, 6, 1);
     gripGeo.rotateZ(-Math.PI / 2);
@@ -129,18 +196,14 @@
       endGeo.translate(16, y, 0);
       sword.add(piece(endGeo, gold));
     }
-    // thin curved parts get an outline shape of their own (a fatter copy), so the ink line is even
     const bowCurve = new THREE.CatmullRomCurve3([
       new THREE.Vector3(18, -20, 0), new THREE.Vector3(8, -24, 9), new THREE.Vector3(-6, -22, 11), new THREE.Vector3(-16, -12, 6), new THREE.Vector3(-20, -4, 0),
     ]);
-    sword.add(piece(new THREE.TubeGeometry(bowCurve, 8, 2.2, 4, false), iron, new THREE.TubeGeometry(bowCurve, 8, 2.2 + OUTLINE * 0.8, 4, false)));
+    sword.add(piece(new THREE.TubeGeometry(bowCurve, 8, 2.2, 4, false), iron));
     const ringGeo = new THREE.TorusGeometry(9, 2, 4, 9);
     ringGeo.translate(24, 0, 0);
     ringGeo.rotateX(Math.PI / 2);
-    const ringHull = new THREE.TorusGeometry(9, 2 + OUTLINE * 0.8, 4, 9);
-    ringHull.translate(24, 0, 0);
-    ringHull.rotateX(Math.PI / 2);
-    sword.add(piece(ringGeo, iron, ringHull));
+    sword.add(piece(ringGeo, iron));
     // the blade: a flattened four-sided spike, tapering evenly from the guard to a fine point
     const bladeGeo = new THREE.CylinderGeometry(0.5, 5.2, 290, 4, 1);
     bladeGeo.rotateY(Math.PI / 4);
@@ -148,7 +211,7 @@
     bladeGeo.rotateZ(-Math.PI / 2);
     bladeGeo.translate(20 + 145, 0, 0);
     sword.add(piece(bladeGeo, steel));
-    return { root, shoulder, elbow, fore, wrist };
+    return { root, shoulder, elbow, fore, wrist, bell: { geo: bellGeo, base: bellBase, end: bellEnd } };
   }
 
   function init() {
@@ -176,6 +239,7 @@
       enemy.root.scale.x = -1; // the enemy's arm is the mirror image, coming from the right
       scene.add(player.root, enemy.root);
       arms = { player, enemy };
+      setupInk();
       for (const arm of Object.values(arms)) {
         arm.cur = { ...POSES.out, y: ROW_Y.mid };
         arm.pose = 'out';
@@ -248,6 +312,14 @@
       arm.elbow.position.set(ex, ey, 0);
       arm.fore.position.set(ex, ey, 0);
       arm.fore.rotation.z = fa;
+      // the sleeve's open end hangs towards the floor: down in the world is (-sin fa, -cos fa) along the forearm
+      const b = arm.bell, pos = b.geo.attributes.position.array;
+      const gx = -Math.sin(fa) * HANG, gy = -Math.cos(fa) * HANG;
+      for (const i of b.end) {
+        pos[i] = b.base[i] + gx;
+        pos[i + 1] = b.base[i + 1] + gy;
+      }
+      b.geo.attributes.position.needsUpdate = true;
       arm.wrist.position.set(ex + Math.cos(fa) * (FORE + 4), ey + Math.sin(fa) * (FORE + 4), 4);
       arm.wrist.rotation.set(c.tilt, 0, c.sword + tremble * side - jolt * 0.06);
       arm.root.visible = !(arm.pose === 'out' && arm.t >= 1);
@@ -269,7 +341,7 @@
     }
     jolt = Math.max(0, jolt - dt * 4);
     pose(now);
-    renderer.render(scene, camera);
+    draw();
     const shown = Object.values(arms).some((a) => a.pose !== 'out' || a.t < 1);
     if (shown || moving || jolt > 0) raf = requestAnimationFrame(frame);
     else canvas.style.display = 'none';
