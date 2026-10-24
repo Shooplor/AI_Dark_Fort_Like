@@ -67,7 +67,8 @@ Add `?seed=1234` to the URL to replay a specific road. The seed is shown under t
   His hint is shown when the fight begins.
 - **Win:** he drops something: sometimes a key still needed in the house, otherwise a draught or a curio.
   **Lose:** the run is over. There is no fleeing.
-- Testing shortcuts: `index.html?house=1&duel=0` starts a fight at once (`duel=20` for full readiness);
+- Testing keys (they also work on the published link): **Shift+F** starts a fight in the room you are in;
+  **Shift+B** makes your next card bind. Testing shortcuts: `index.html?house=1&duel=0` starts a fight at once (`duel=20` for full readiness);
   `&fights=0` switches fights off. `node tests/combat.js` checks the rules; `node tests/balance.js` reports how often
   fights happen and what they cost (`--nofights` to compare).
 

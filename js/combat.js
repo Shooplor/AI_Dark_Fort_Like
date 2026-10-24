@@ -133,7 +133,8 @@
       const card = this.hand.splice(i, 1)[0];
       const role = this.role;
       const bindBefore = this.bind;
-      const enemyLine = this.enemyPick();
+      const enemyLine = this.forceBind ? card.line : this.enemyPick(); // forceBind: a testing key (Shift+B) makes this exchange bind
+      this.forceBind = false;
       const attackLine = role === 'attack' ? card.line : enemyLine;
       const guardLine = role === 'attack' ? enemyLine : card.line;
       const r = { ok: true, card, role, enemyLine, bindBefore, line: attackLine };

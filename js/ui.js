@@ -128,6 +128,12 @@
           if (ev.code === 'KeyM' && !ev.repeat) return this.setMuted(snd('toggleMute'));
           if (ev.code === 'KeyV' && !ev.repeat) return this.setVoiceOn(vo('toggle'));
           if (this.paused) return; // nothing else works while the game is paused
+          // testing keys: Shift+F starts a fight in the room you are in; Shift+B makes your next card bind
+          if (ev.shiftKey && ev.code === 'KeyF' && !ev.repeat && this.mode === 'house' && !this.busy && this.game.status === 'playing') return this.devFight();
+          if (ev.shiftKey && ev.code === 'KeyB' && !ev.repeat && this.mode === 'fight' && this.game.fight) {
+            this.game.fight.forceBind = true;
+            return snd('play', 'cardHover');
+          }
           if (ev.code === 'KeyC' && !ev.repeat) return this.toggleChronicle();
           let side = SIDE_BY_CODE[ev.code];
           if (side === undefined && typeof ev.key === 'string') side = SIDE_BY_KEY[ev.key.toLowerCase()];
