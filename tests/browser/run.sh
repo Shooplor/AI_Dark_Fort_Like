@@ -17,7 +17,7 @@ sleep 1
 list=${*:-$(ls *.js | sed 's/\.js$//')}
 fails=0
 for t in $list; do
-  out=$(timeout 590 node "$t.js" 2>&1)
+  out=$(cd out && timeout 590 node "../$t.js" 2>&1) # from out/, so pictures saved by name land there
   n=$(grep -cE "FAIL|Error" <<<"$out")
   printf "%s:%s " "$t" "$n"
   if [ "$n" -gt 0 ]; then echo; grep -E "FAIL|Error" <<<"$out" | head -5; fi
