@@ -528,7 +528,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 .fslot.player { left: 36.5px; } .fslot.enemy { left: 465.5px; }
 .frow-label { display: none; } /* the art has the arrows */
 /* the bound line: 3D arms with crossed swords (js/arms3d.js), under the cards, over the panels */
-#arms3d { position: absolute; left: -70px; top: 0; width: 640px; height: 620px; pointer-events: none; }
+#arms3d { position: absolute; left: -70px; top: 0; width: 640px; height: 840px; pointer-events: none; } /* under the hand (which comes later in the page) */
 .frow.open-line .fslot.player { box-shadow: 0 0 0 2px rgba(240, 200, 112, .7), 0 0 16px rgba(240, 200, 112, .45); }
 
 /* a card: two faces in 3D, flipped by turning .fcard-inner */

@@ -16,8 +16,8 @@
   const DF = (globalThis.DF = globalThis.DF || {});
   const THREE = globalThis.THREE;
 
-  const W = 640, H = 620; // the canvas covers the three panels and runs under the frame's pillars; 1 world unit = 1 stage pixel
-  const UPPER = 185, FORE = 165; // arm lengths: shoulder to elbow, elbow to wrist
+  const W = 640, H = 840; // the canvas covers the three panels and runs down under the hand and the frame's pillars; 1 world unit = 1 stage pixel
+  const UPPER = 125, FORE = 110; // arm lengths: shoulder to elbow, elbow to wrist (kept slim: the swords are the stars)
   const ROW_Y = { high: 117, mid: 323, low: 537 }; // the panels' centres, in canvas pixels from the top
   const OUTLINE = 3; // outline thickness, in pixels
   const INK = 0x0b0608;
@@ -68,49 +68,49 @@
     const root = new THREE.Group();
     const sleeve = toon(sleeveColor);
     const shoulder = new THREE.Group();
-    const shoulderGeo = new THREE.IcosahedronGeometry(33, 0);
+    const shoulderGeo = new THREE.IcosahedronGeometry(21, 0);
     shoulderGeo.scale(1.1, 1, 1);
     shoulder.add(piece(shoulderGeo, sleeve));
-    shoulder.add(tube(30, 25, UPPER, 7, sleeve));
-    const elbowGeo = new THREE.IcosahedronGeometry(24, 0);
+    shoulder.add(tube(19, 16, UPPER, 7, sleeve));
+    const elbowGeo = new THREE.IcosahedronGeometry(15.5, 0);
     const elbow = piece(elbowGeo, sleeve);
     const fore = new THREE.Group();
-    fore.add(tube(24, 19, FORE, 7, sleeve));
-    const cuffGeo = new THREE.CylinderGeometry(25, 21, 18, 7, 1);
+    fore.add(tube(15.5, 12.5, FORE, 7, sleeve));
+    const cuffGeo = new THREE.CylinderGeometry(17, 14, 13, 7, 1);
     cuffGeo.rotateZ(-Math.PI / 2);
-    cuffGeo.translate(FORE - 4, 0, 0);
+    cuffGeo.translate(FORE - 3, 0, 0);
     fore.add(piece(cuffGeo, toon(0xbfb3a2)));
     root.add(shoulder, elbow, fore);
     // the wrist: the hand and the sword, turned to the sword's angle
     const wrist = new THREE.Group();
     root.add(wrist);
-    const handGeo = new THREE.IcosahedronGeometry(19, 0);
+    const handGeo = new THREE.IcosahedronGeometry(13, 0);
     handGeo.scale(1.25, 0.95, 0.85);
-    handGeo.translate(6, 0, 0);
+    handGeo.translate(4, 0, 0);
     wrist.add(piece(handGeo, toon(opts.glove)));
-    const thumbGeo = new THREE.BoxGeometry(18, 9, 10);
+    const thumbGeo = new THREE.BoxGeometry(12, 6, 7);
     thumbGeo.rotateZ(0.5);
-    thumbGeo.translate(10, 12, 10);
+    thumbGeo.translate(7, 8, 7);
     wrist.add(piece(thumbGeo, toon(opts.glove)));
     const sword = new THREE.Group();
-    sword.position.set(8, 0, 4);
+    sword.position.set(4, 0, 3);
     wrist.add(sword);
     const steel = toon(0x9aa2b0), gold = toon(0xb8862e);
-    const gripGeo = new THREE.CylinderGeometry(5, 5, 44, 6, 1);
+    const gripGeo = new THREE.CylinderGeometry(4, 4, 34, 6, 1);
     gripGeo.rotateZ(-Math.PI / 2);
     sword.add(piece(gripGeo, toon(0x3a2418)));
-    const pommelGeo = new THREE.OctahedronGeometry(8, 0);
-    pommelGeo.translate(-26, 0, 0);
+    const pommelGeo = new THREE.OctahedronGeometry(6.5, 0);
+    pommelGeo.translate(-20, 0, 0);
     sword.add(piece(pommelGeo, gold));
-    const guardGeo = new THREE.BoxGeometry(8, 58, 9);
-    guardGeo.translate(24, 0, 0);
+    const guardGeo = new THREE.BoxGeometry(7, 46, 8);
+    guardGeo.translate(19, 0, 0);
     sword.add(piece(guardGeo, gold));
     // the blade: a four-sided spike, flattened, tapering evenly from the guard to a sharp point
-    const bladeGeo = new THREE.CylinderGeometry(0.6, 6, 190, 4, 1);
+    const bladeGeo = new THREE.CylinderGeometry(0.6, 6, 285, 4, 1);
     bladeGeo.rotateY(Math.PI / 4);
     bladeGeo.scale(1, 1, 0.38);
     bladeGeo.rotateZ(-Math.PI / 2);
-    bladeGeo.translate(28 + 95, 0, 0);
+    bladeGeo.translate(22 + 142, 0, 0);
     sword.add(piece(bladeGeo, steel));
     return { root, shoulder, elbow, fore, wrist };
   }
@@ -162,13 +162,15 @@
   /* Poses, in the player's own frame (the enemy's arm is the mirror image), relative to the middle of the line:
    *   sx, sy — the shoulder (off the panel, at the side); hx, hy — the hand; sword — the blade's angle (0 = level,
    *   pointing at the other side); tilt — the blade turning its edge. The elbow finds its own place in between. */
+  // the shoulder sits about an arm's length behind the hand, so the arm stays nearly straight and the elbow barely
+  // dips: it never hangs into the next line. The long blades are held low enough to stay within their own panel.
   const POSES = {
-    out: { sx: -480, sy: -80, hx: -410, hy: -120, sword: 0.2, tilt: 0.4 },
-    guard: { sx: -365, sy: -62, hx: -128, hy: -14, sword: 1.12, tilt: 0.15 }, // blade raised, waiting for the blow
-    windup: { sx: -385, sy: -58, hx: -150, hy: -22, sword: 0.3, tilt: 0.1 }, // drawn back before the lunge
-    thrust: { sx: -345, sy: -45, hx: -18, hy: -4, sword: 0.03, tilt: 0 }, // arm out, blade level across the panel
-    bind: { sx: -370, sy: -60, hx: -118, hy: -38, sword: 0.55, tilt: 0.12 }, // the blades crossed in the middle
-    recoil: { sx: -395, sy: -64, hx: -175, hy: -30, sword: 0.9, tilt: 0.2 }, // knocked back by a hit
+    out: { sx: -600, sy: -40, hx: -440, hy: -60, sword: 0.1, tilt: 0.4 },
+    guard: { sx: -385, sy: -30, hx: -160, hy: -6, sword: 0.32, tilt: 0.15 }, // blade raised, waiting for the blow
+    windup: { sx: -415, sy: -32, hx: -192, hy: -14, sword: 0.16, tilt: 0.1 }, // drawn back before the lunge
+    thrust: { sx: -335, sy: -22, hx: -108, hy: -4, sword: 0.02, tilt: 0 }, // arm out, blade level across the panel
+    bind: { sx: -425, sy: -34, hx: -200, hy: -40, sword: 0.35, tilt: 0.12 }, // the blades crossed in the middle
+    recoil: { sx: -445, sy: -34, hx: -222, hy: -24, sword: 0.42, tilt: 0.2 }, // knocked back by a hit
   };
   const KEYS = Object.keys(POSES.out);
   const easeIn = (t) => t * t * t;
@@ -210,7 +212,7 @@
       arm.elbow.position.set(ex, ey, 0);
       arm.fore.position.set(ex, ey, 0);
       arm.fore.rotation.z = fa;
-      arm.wrist.position.set(ex + Math.cos(fa) * (FORE + 6), ey + Math.sin(fa) * (FORE + 6), 4);
+      arm.wrist.position.set(ex + Math.cos(fa) * (FORE + 4), ey + Math.sin(fa) * (FORE + 4), 4);
       arm.wrist.rotation.set(c.tilt, 0, c.sword + tremble * side - jolt * 0.06);
       arm.root.visible = !(arm.pose === 'out' && arm.t >= 1);
     }
