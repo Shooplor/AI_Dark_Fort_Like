@@ -613,11 +613,16 @@
         if (w.timer) return; // already moving (or finishing a step): keep the rhythm
         w.frame = 1;
         show(w.frame);
-        w.timer = setInterval(() => {
-          w.frame = (w.frame + 1) % frames.length;
-          show(w.frame);
-          if (w.stopping && w.frame === 0) this.stopWalking(); // back on the still pose: hand over to the picture
-        }, 1000 / 8);
+        // each frame waits its full beat from when it was shown (an interval would rush the frame after a late one)
+        const next = () => {
+          w.timer = setTimeout(() => {
+            w.frame = (w.frame + 1) % frames.length;
+            show(w.frame);
+            if (w.stopping && w.frame === 0) this.stopWalking(); // back on the still pose: hand over to the picture
+            else next();
+          }, 1000 / 8);
+        };
+        next();
         return;
       }
       if (!w.timer) return;
@@ -629,7 +634,7 @@
     stopWalking() {
       const w = this.walk;
       if (w) {
-        clearInterval(w.timer);
+        clearTimeout(w.timer);
         w.timer = null;
         w.stopping = false;
         w.frame = 0;

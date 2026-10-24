@@ -38,7 +38,7 @@
     const ramp = new THREE.DataTexture(tones, tones.length, 1, THREE.RedFormat);
     ramp.minFilter = ramp.magFilter = THREE.NearestFilter;
     ramp.needsUpdate = true;
-    return new THREE.MeshToonMaterial({ color, gradientMap: ramp, flatShading: true, ...(opts || {}) });
+    return new THREE.MeshToonMaterial({ color, gradientMap: ramp, ...(opts || {}) });
   }
 
   /* The ink outline is drawn from the finished picture, not from the shapes: each piece is also drawn in a flat colour

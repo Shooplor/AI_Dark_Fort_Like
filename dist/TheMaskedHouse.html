@@ -4286,11 +4286,16 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
         if (w.timer) return; // already moving (or finishing a step): keep the rhythm
         w.frame = 1;
         show(w.frame);
-        w.timer = setInterval(() => {
-          w.frame = (w.frame + 1) % frames.length;
-          show(w.frame);
-          if (w.stopping && w.frame === 0) this.stopWalking(); // back on the still pose: hand over to the picture
-        }, 1000 / 8);
+        // each frame waits its full beat from when it was shown (an interval would rush the frame after a late one)
+        const next = () => {
+          w.timer = setTimeout(() => {
+            w.frame = (w.frame + 1) % frames.length;
+            show(w.frame);
+            if (w.stopping && w.frame === 0) this.stopWalking(); // back on the still pose: hand over to the picture
+            else next();
+          }, 1000 / 8);
+        };
+        next();
         return;
       }
       if (!w.timer) return;
@@ -4302,7 +4307,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
     stopWalking() {
       const w = this.walk;
       if (w) {
-        clearInterval(w.timer);
+        clearTimeout(w.timer);
         w.timer = null;
         w.stopping = false;
         w.frame = 0;
@@ -5123,7 +5128,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
     const ramp = new THREE.DataTexture(tones, tones.length, 1, THREE.RedFormat);
     ramp.minFilter = ramp.magFilter = THREE.NearestFilter;
     ramp.needsUpdate = true;
-    return new THREE.MeshToonMaterial({ color, gradientMap: ramp, flatShading: true, ...(opts || {}) });
+    return new THREE.MeshToonMaterial({ color, gradientMap: ramp, ...(opts || {}) });
   }
 
   /* The ink outline is drawn from the finished picture, not from the shapes: each piece is also drawn in a flat colour
@@ -6193,7 +6198,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
   }
   DF.ui = ui; // handy in the browser console while developing
   // the 3D fencing arms and their paintings are made in the background soon after the start, ready for any fight
-  setTimeout(() => DF.Arms3D && DF.Arms3D.prepare(), 2500);
+  if (DF.COMBAT.enabled) setTimeout(() => DF.Arms3D && DF.Arms3D.prepare(), 2500); // no fights, no arms to get ready
 })();
 
 </script>
