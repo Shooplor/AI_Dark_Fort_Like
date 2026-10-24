@@ -543,19 +543,23 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 .fcard { position: absolute; width: 100px; height: 138px; transform-style: preserve-3d; }
 .fcard-inner { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .5s cubic-bezier(.3, .7, .3, 1); }
 .fcard.down .fcard-inner { transform: rotateY(180deg); }
-.fcard .face { position: absolute; inset: 0; border-radius: 9px; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, .6); }
-.fcard .front { display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 9px 4px 8px;
-  background: linear-gradient(170deg, #4a1d2b, #22101a 70%); border: 2px solid #b48a3c; color: #f0dfb4; }
-.fcard .front.enemy { background: linear-gradient(170deg, #3a2130, #160b12 70%); border-color: #8e3a4c; }
-.fcard .front .t { font-family: var(--display); font-weight: 700; font-size: 17px; letter-spacing: .08em; }
-.fcard .front svg { width: 64px; height: 44px; color: #e8c27a; }
-.fcard .front.enemy svg { color: #e07a8a; transform: scaleX(-1); } /* the enemy's blade points at you */
+/* the faces are the owner's card art (assets/cards/card-front.png and card-back.png, 200x276 shown at 100x138) */
+.fcard .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; filter: drop-shadow(0 5px 8px rgba(0, 0, 0, .55)); }
+.fcard .front { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px 4px 0; color: #eef0f4; }
+.fcard .front::before { content: ''; position: absolute; inset: 0; z-index: -1; background: url('../assets/cards/card-front.png') center / 100% 100% no-repeat; }
+.fcard .front > * { position: relative; }
+.fcard .front.enemy::before { filter: hue-rotate(148deg) saturate(1.5) brightness(.95); } /* the enemy's cards: the same art, tinted crimson */
+.fcard .front:not(.enemy)::before { filter: hue-rotate(52deg) saturate(1.45); } /* yours: violet */
+/* the adrenaline cost, in the drawn corner (basic cards: 0) */
+.fcard .front .cost { position: absolute; left: 4px; top: 4px; width: 22px; height: 22px; display: grid; place-items: center;
+  font-family: var(--display); font-weight: 700; font-size: 15px; line-height: 1; color: #2a2f38; }
+.fcard .front .t { position: absolute; left: 31px; right: 4px; top: 7px; text-align: left; font-family: var(--display); font-weight: 700; font-size: 14px; letter-spacing: .05em; text-shadow: 0 1px 2px #000; } /* on the top edge, right of the cost */
+.fcard .front svg { width: 64px; height: 44px; color: #d9dde6; filter: drop-shadow(0 1px 1px #000); }
+.fcard .front.enemy svg { color: #f2c2c8; transform: scaleX(-1); } /* the enemy's blade points at you */
 .fslot .fcard { left: -15px; top: -17.5px; scale: .7; } /* a played card shrinks to its slot */
-.fcard .front .role { font-family: var(--display); font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: #c9a87a; }
-.fcard .back { transform: rotateY(180deg); border: 2px solid #8e3a4c;
-  background: radial-gradient(circle at 50% 50%, #5a1e2e 0 18px, transparent 19px), repeating-linear-gradient(45deg, #2a0f18 0 7px, #3a1521 7px 14px); }
-.fcard .back::after { content: ''; position: absolute; inset: 7px; border: 1px solid rgba(201, 160, 72, .45); border-radius: 5px; }
+.fcard .front .role { position: absolute; right: 9px; bottom: 9px; text-align: right; font-family: var(--display); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: #b9c0cc; text-shadow: 0 1px 2px #000; }
+.fcard .back { transform: rotateY(180deg); background: url('../assets/cards/card-back.png') center / 100% 100% no-repeat; filter: hue-rotate(52deg) saturate(1.45) drop-shadow(0 5px 8px rgba(0, 0, 0, .55)); } /* your deck: violet, like your cards */
+.fcard .back.enemy { filter: hue-rotate(148deg) saturate(1.5) brightness(.95) drop-shadow(0 5px 8px rgba(0, 0, 0, .55)); } /* the enemy's face-down card: crimson */
 
 /* the hand: fanned along the bottom; a card lifts and leans towards the mouse */
 #fight-hand { position: absolute; left: 0; top: 688px; width: 500px; height: 200px; }
@@ -567,9 +571,36 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 #fight-hand .fcard.lift .fcard-inner { transform: rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg)); transition: transform .08s; }
 #fight-hand .fcard.closed { filter: grayscale(.7) brightness(.55); cursor: not-allowed; }
 #fight-wrap.locked #fight-hand .fcard { cursor: default; }
-#fight-deck { position: absolute; left: 10px; top: 712px; width: 46px; height: 64px; border-radius: 7px; border: 2px solid #8e3a4c;
-  background: repeating-linear-gradient(45deg, #2a0f18 0 6px, #3a1521 6px 12px); box-shadow: 3px 3px 0 #160a10, 6px 6px 0 #0e060a, 0 8px 16px rgba(0, 0, 0, .6); }
+#fight-deck { position: absolute; left: 10px; top: 712px; width: 46px; height: 64px; }
+#fight-deck::before { content: ''; position: absolute; inset: 0; background: url('../assets/cards/card-back.png') center / 100% 100% no-repeat; filter: hue-rotate(52deg) saturate(1.45) drop-shadow(2px 2px 0 #0e060a) drop-shadow(2px 2px 0 #0e060a) drop-shadow(0 6px 8px rgba(0, 0, 0, .6)); } /* your deck: violet */
 #fight-deck-n { position: absolute; left: 0; right: 0; bottom: -26px; text-align: center; font-family: var(--display); font-size: 15px; color: #8c7550; }
+
+/* adrenaline: two rows of five diamonds between the lanes and the hand (placeholders until drawn); yours fill from
+   the left, the enemy's from the right */
+/* the owner's art (assets/cards/adrenaline-*.png, 139x173 shown at half size): the empty slot, and the glowing gem
+   that fills it (purple for you, red for the enemy); 38px apart, their glows overlapping */
+#fight-adren { position: absolute; left: 0; top: 613px; width: 500px; height: 87px; pointer-events: none; }
+.adren { position: absolute; top: 0; display: flex; }
+.adren.player { left: 4px; } .adren.enemy { right: 4px; }
+.adren i { position: relative; width: 69.5px; height: 86.5px; margin-right: -31.5px; background: url('../assets/cards/adrenaline-slot.png') center / 100% 100% no-repeat; }
+.adren i:last-child { margin-right: 0; }
+.adren i::after { content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity .35s; background: center / 100% 100% no-repeat; }
+.adren.player i::after { background-image: url('../assets/cards/adrenaline-player.png'); }
+.adren.enemy i::after { background-image: url('../assets/cards/adrenaline-enemy.png'); }
+.adren i.on::after { opacity: 1; }
+.adren i.gain::after { animation: adrenGain .7s cubic-bezier(.2, .8, .3, 1); }
+@keyframes adrenGain { 0% { transform: scale(.3); opacity: 0; } 45% { transform: scale(1.5); opacity: 1; filter: brightness(1.8); } 100% { transform: scale(1); opacity: 1; } }
+
+/* the attacker: a little larger (growing from its own screen corner), with a faint glow in its colour on its side */
+#figure, #stage .anim-frames, #enemy-body { transition: scale .6s cubic-bezier(.2, .8, .3, 1); }
+#figure { transform-origin: 45px 831px; } #stage .anim-frames { transform-origin: 5px 801px; } #enemy-body { transform-origin: 455px 831px; }
+#stage.mode-fight.atk-player #figure, #stage.mode-fight.atk-player .anim-frames, #stage.mode-fight.atk-enemy #enemy-body { scale: 1.05; }
+#atk-glow { position: absolute; inset: 0; z-index: 0; pointer-events: none; display: none; }
+#stage.mode-fight #atk-glow { display: block; }
+#atk-glow .g { position: absolute; top: 0; bottom: 0; width: 560px; opacity: 0; transition: opacity .7s; }
+#atk-glow .player { left: 0; background: radial-gradient(ellipse 90% 75% at 0% 62%, rgba(160, 90, 210, .38), rgba(160, 90, 210, .12) 55%, transparent 80%); }
+#atk-glow .enemy { right: 0; background: radial-gradient(ellipse 90% 75% at 100% 62%, rgba(205, 45, 70, .36), rgba(205, 45, 70, .11) 55%, transparent 80%); }
+#stage.mode-fight.atk-player #atk-glow .player, #stage.mode-fight.atk-enemy #atk-glow .enemy { opacity: 1; }
 
 /* the clash of a bind, and a hit */
 .clash { position: absolute; left: 236px; top: 26px; width: 100px; height: 100px; pointer-events: none;

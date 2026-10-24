@@ -10,7 +10,10 @@
  * turn it is. The enemy has no hand: it picks by its habits (weights per line), which a careful player can learn.
  *
  * Who strikes first: the player's combat readiness (it rises as the house is explored) is the chance to attack first.
- * If the enemy strikes first it is an ambush, and the player starts with one card fewer. */
+ * If the enemy strikes first it is an ambush, and the player starts with one card fewer.
+ *
+ * Adrenaline: every bind gives both sides one point (each has its own pool, up to 5). A card costs adrenaline to play:
+ * the basic line cards cost nothing; special cards (to come) will need one or more binds first. */
 (function () {
   const DF = (globalThis.DF = globalThis.DF || {});
 
@@ -25,11 +28,21 @@
     readinessMax: 20,
     firstStrikePerPoint: 0.05, // chance to attack first, per point of readiness (capped at 95%)
     readinessAfterWin: 2, // a fight survived leaves you on your guard
-    startDeck: ['high', 'high', 'high', 'mid', 'mid', 'mid', 'low', 'low', 'low'],
+    startDeck: ['high', 'high', 'high', 'mid', 'mid', 'mid', 'low', 'low', 'low'], // card ids (DF.CARDS)
+    adrenalineMax: 5, // each side's pool
+    adrenalinePerBind: 1, // a bind gives this much to both sides
   };
 
   DF.LINES = ['high', 'mid', 'low'];
   DF.LINE_NAMES = { high: 'High', mid: 'Middle', low: 'Low' };
+
+  /** Every kind of card. `line`: where it strikes or guards; `cost`: adrenaline needed (and spent) to play it. The three
+   *  basic cards are what every deck starts with; special cards (with a cost, and their own effects) will join them. */
+  DF.CARDS = {
+    high: { id: 'high', line: 'high', name: 'High', cost: 0, basic: true },
+    mid: { id: 'mid', line: 'mid', name: 'Middle', cost: 0, basic: true },
+    low: { id: 'low', line: 'low', name: 'Low', cost: 0, basic: true },
+  };
 
   /* The enemies. `habits` are weights per line for each role: guard (you attack), attack (it attacks), counter (it
    * attacks out of a bind). `tell` is the hint shown when the fight begins. */
@@ -65,21 +78,24 @@
       this.enemyMaxHp = this.enemy.hp;
       this.playerHp = opts.hp;
       this.nextUid = 1;
-      this.deck = rng.shuffle(C.startDeck.map((line) => this.card(line)));
+      this.deck = rng.shuffle((opts.deck || C.startDeck).map((id) => this.card(id)));
       this.discard = [];
       this.hand = [];
       this.playerFirst = rng.chance(Math.min(0.95, (opts.readiness || 0) * C.firstStrikePerPoint));
       this.ambush = !this.playerFirst;
       this.attacker = this.playerFirst ? 'player' : 'enemy';
       this.bind = null; // the line the blades are bound on, if any
+      this.adrenaline = { player: 0, enemy: 0 }; // each side's own pool
       this.exchanges = 0;
       this.status = 'on'; // on | won | lost
       this.draw(this.ambush ? C.ambushHand : C.handSize);
       this.ensurePlayable();
     }
 
-    card(line) {
-      return { uid: this.nextUid++, line, name: DF.LINE_NAMES[line] };
+    /** A new card of a kind (an id in DF.CARDS; a line name is a basic card). */
+    card(id) {
+      const def = DF.CARDS[id];
+      return { uid: this.nextUid++, id: def.id, line: def.line, name: def.name, cost: def.cost };
     }
 
     draw(n) {
@@ -103,8 +119,13 @@
       return this.bind ? DF.LINES.filter((l) => l !== this.bind) : DF.LINES.slice();
     }
 
+    /** Can it be played now: its line is open, and there is the adrenaline to pay for it. */
     playable(card) {
-      return this.allowedLines().includes(card.line);
+      return this.allowedLines().includes(card.line) && this.affordable(card);
+    }
+
+    affordable(card) {
+      return (card.cost || 0) <= this.adrenaline.player;
     }
 
     /** A hand with nothing playable (all cards on the bound line) is swapped for a fresh one. */
@@ -115,7 +136,7 @@
         this.hand = [];
         this.draw(n);
       }
-      if (!this.hand.some((c) => this.playable(c))) this.hand.push(this.card(this.allowedLines()[0])); // never stuck
+      if (!this.hand.some((c) => this.playable(c))) this.hand.push(this.card(DF.CARDS[this.allowedLines()[0]].id)); // never stuck
     }
 
     /** The enemy's pick for this exchange, by its habits, among the open lines. */
@@ -131,6 +152,7 @@
       const i = this.hand.findIndex((c) => c.uid === uid);
       if (i < 0 || !this.playable(this.hand[i])) return { ok: false };
       const card = this.hand.splice(i, 1)[0];
+      this.adrenaline.player -= card.cost || 0;
       const role = this.role;
       const bindBefore = this.bind;
       const enemyLine = this.forceBind ? card.line : this.enemyPick(); // forceBind: a testing key (Shift+B) makes this exchange bind
@@ -142,6 +164,8 @@
       if (attackLine === guardLine) {
         r.outcome = 'bind';
         this.bind = attackLine;
+        const C = DF.COMBAT;
+        for (const side of ['player', 'enemy']) this.adrenaline[side] = Math.min(C.adrenalineMax, this.adrenaline[side] + C.adrenalinePerBind);
         this.attacker = this.attacker === 'player' ? 'enemy' : 'player'; // the defender counters
       } else {
         r.outcome = 'hit';
@@ -162,6 +186,7 @@
       r.status = this.status;
       r.bind = this.bind;
       r.nextRole = this.role;
+      r.adrenaline = { ...this.adrenaline };
       return r;
     }
   }

@@ -43,16 +43,19 @@
   /** The stage is scaled to fit the window: screen pixels -> stage pixels. */
   const stageScale = () => $('#stage').getBoundingClientRect().width / 1600 || 1;
 
-  /** A card element. `enemy`: the enemy's (red); `down`: face down. */
+  /** A card element: the card art (assets/cards/), its adrenaline cost in the corner, its name, line and role.
+   *  `enemy`: the enemy's (tinted red); `down`: face down. */
   function cardEl(card, opts = {}) {
     const el = document.createElement('div');
     el.className = 'fcard' + (opts.down ? ' down' : '');
     if (card) el.dataset.uid = card.uid;
     const line = card ? card.line : 'mid';
+    const name = card && card.name ? card.name : NAME[line];
     el.innerHTML =
       '<div class="fcard-inner">' +
-      `<div class="face front${opts.enemy ? ' enemy' : ''}"><span class="t">${esc(NAME[line])}</span>${LINE_ICON[line]}<span class="role">${esc(opts.role || '')}</span></div>` +
-      '<div class="face back"></div></div>';
+      `<div class="face front${opts.enemy ? ' enemy' : ''}"><span class="cost" title="Adrenaline to play it">${card && card.cost ? card.cost : 0}</span>` +
+      `<span class="t">${esc(name)}</span>${LINE_ICON[line]}<span class="role">${esc(opts.role || '')}</span></div>` +
+      `<div class="face back${opts.enemy ? ' enemy' : ''}"></div></div>`;
     return el;
   }
 
@@ -85,6 +88,7 @@
     $('#enemy-tell').textContent = fight.enemy.tell;
     this.renderEnemyHp(0);
     this.renderFightRows();
+    this.renderAdrenaline();
     this.renderReadiness();
     this.fightPrompt(fight.ambush ? 'They strike from the shadows!' : null, fight.ambush ? ' ' : null);
     await sleep(1000);
@@ -158,8 +162,40 @@
     $('#ready-max').textContent = DF.COMBAT.readinessMax;
   };
 
+  /** Each side's adrenaline: five diamonds, filled one per bind. `gained`: the newly filled ones flare up. */
+  P.renderAdrenaline = function (gained) {
+    const f = this.game.fight || this.lastFight;
+    if (!f) return;
+    const max = DF.COMBAT.adrenalineMax;
+    for (const side of ['player', 'enemy']) {
+      const box = $('#fight-adren .adren.' + side);
+      if (box.children.length !== max) box.innerHTML = '<i></i>'.repeat(max);
+      const n = f.adrenaline[side];
+      [...box.children].forEach((pip, i) => {
+        // the enemy's fill from the right edge inwards, mirroring yours
+        const k = side === 'enemy' ? max - 1 - i : i;
+        const was = pip.classList.contains('on');
+        pip.classList.toggle('on', k < n);
+        if (gained && !was && k < n) {
+          pip.classList.remove('gain');
+          void pip.offsetWidth;
+          pip.classList.add('gain');
+        }
+      });
+    }
+  };
+
+  /** Whoever attacks next stands a little larger, with a faint glow in their colour on their side. */
+  P.renderAttacker = function () {
+    const f = this.game.fight;
+    const st = $('#stage');
+    st.classList.toggle('atk-player', !!f && f.attacker === 'player');
+    st.classList.toggle('atk-enemy', !!f && f.attacker === 'enemy');
+  };
+
   /** The three rows: slots for both sides, the line's name between them; the bound line is closed. */
   P.renderFightRows = function () {
+    this.renderAttacker();
     const f = this.game.fight;
     const box = $('#fight-rows');
     if (!box.children.length) {
@@ -212,7 +248,7 @@
       el.style.setProperty('--r', k * 5 + 'deg');
       el.style.zIndex = i + 1;
       el.classList.toggle('closed', !f.playable(card));
-      el.querySelector('.role').textContent = f.playable(card) ? role : 'Closed';
+      el.querySelector('.role').textContent = f.playable(card) ? role : f.affordable(card) ? 'Closed' : `Needs ${card.cost}`;
     });
     $('#fight-deck-n').textContent = f.deck.length;
   };
@@ -289,7 +325,7 @@
     if (!card) return;
     if (!f.playable(card)) {
       snd('play', 'bump');
-      this.fightPrompt(null, `The ${lower(card.line)} line is closed by the bind. Choose another.`);
+      this.fightPrompt(null, f.affordable(card) ? `The ${lower(card.line)} line is closed by the bind. Choose another.` : `${card.name} needs ${card.cost} adrenaline.`);
       return;
     }
     this.fightBusy = true;
@@ -385,6 +421,7 @@
       theirs.animate([{ transform: 'none' }, { transform: 'translateX(-26px)' }, { transform: 'translateX(-14px)' }], { duration: 300, fill: 'forwards' });
       await contact; // the blades meet: sparks
       this.clash(rows[r.line]);
+      this.renderAdrenaline(true); // the bind's adrenaline, on both sides
       snd('play', 'clash');
       this.quake && this.quake('slam');
       this.fightPrompt(`Bind, ${lower(r.line)}!`, r.role === 'attack' ? 'Steel on steel. They will counter.' : 'Steel on steel. Your counter!');

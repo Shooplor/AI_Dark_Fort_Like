@@ -55,8 +55,10 @@ Placeholders drawn by code or quickly painted now. Sizes are file sizes (2x), tr
 | Enemy: the Masked Duellist (done) | 1000x1770 | Still picture `assets/ui/enemy-duellist.png` and hit frames `enemy-hurt-1..4.png` + the still picture as the 5th (from `assets/ui/source/enemy-art.psd`, layers 0 to 5), played at 11 a second like your character. Optional later: falling. |
 | Combat readiness icon (done) | 97x97 | `assets/ui/readiness-counter.png` |
 | Enemy heart | (none) | Your heart, mirrored and desaturated by code. Draw its own if you like, 97x97. |
-| Card front: High, Middle, Low | 200x276 | Shown at 100x138. The name and "Attack/Guard" are live text now; draw empty fronts with the line's picture, or tell me where text should go. The enemy's cards use a red-tinted version (optional separate art). |
-| Card back | 200x276 | Used for the enemy's face-down card and the deck pile. |
+| Card front (done) | 200x276 | `assets/cards/card-front.png`, shown at 100x138 (70x97 in a slot). Tinted by code: violet for yours, crimson for the enemy's. The cost goes in the grey corner, the name on the top edge beside it, ATTACK/GUARD right-aligned at the bottom (live text); the line icon in the middle is still a placeholder. |
+| Card back (done) | 200x276 | `assets/cards/card-back.png`: your deck and your face-down cards (violet), the enemy's face-down card (crimson). |
+| Adrenaline slot and gems (done) | 139x173 each | `assets/cards/adrenaline-slot.png`, `adrenaline-player.png`, `adrenaline-enemy.png` (from `assets/ui/source/adrenaline.psd`), shown at half size, five a side between the lanes and the hand. |
+| Line icons on the cards | about 128x88 | Optional: the blade pictures in the middle of the cards (now simple drawn lines). |
 | Card slot (done, in the fight background) | 140x206 in the art | Played cards shrink to 70% to sit in them. The bound line will be shown by the drawn arms. |
 | Line symbols (done, in the fight background) | | The arrow diamonds; the bound line's diamond glows (code). |
 | Bind clash | about 200x200 | Optional: a spark/flash sprite where blades meet (a strip of frames works too). |

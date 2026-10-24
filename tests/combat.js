@@ -23,6 +23,7 @@ for (let seed = 1; seed <= 3000; seed++) {
     if (f.hand.length !== C.ambushHand) throw new Error(`seed ${seed}: an ambush starts with ${f.hand.length} cards`);
     if (f.attacker !== 'enemy') throw new Error(`seed ${seed}: in an ambush the enemy strikes first`);
   } else if (f.hand.length !== C.handSize || f.attacker !== 'player') throw new Error(`seed ${seed}: a fair start is wrong`);
+  let fightBinds = 0;
   for (let guard = 0; f.status === 'on'; guard++) {
     if (guard > 300) throw new Error(`seed ${seed}: the fight never ends`);
     const open = f.hand.filter((c) => f.playable(c));
@@ -39,6 +40,7 @@ for (let seed = 1; seed <= 3000; seed++) {
     const guardLine = r.role === 'attack' ? r.enemyLine : r.card.line;
     if (r.outcome === 'bind') {
       binds++;
+      fightBinds++;
       if (attackLine !== guardLine || f.bind !== attackLine) throw new Error(`seed ${seed}: a bind needs the guard on the attacked line`);
       if (before.e !== f.enemyHp || before.p !== f.playerHp) throw new Error(`seed ${seed}: a bind does no damage`);
       if (f.status === 'on' && f.attacker === before.attacker) throw new Error(`seed ${seed}: after a bind the defender counters`);
@@ -50,6 +52,8 @@ for (let seed = 1; seed <= 3000; seed++) {
         throw new Error(`seed ${seed}: the hit landed on the wrong side`);
       if (f.status === 'on' && (f.attacker !== r.target || f.bind)) throw new Error(`seed ${seed}: after a hit the one hit attacks, freely`);
     }
+    const adr = Math.min(C.adrenalineMax, fightBinds * C.adrenalinePerBind); // basic cards are free: nothing is spent
+    if (f.adrenaline.player !== adr || f.adrenaline.enemy !== adr || r.adrenaline.player !== adr) throw new Error(`seed ${seed}: each bind gives both sides one adrenaline, up to ${C.adrenalineMax}`);
     if (f.status === 'on' && f.hand.length !== C.handSize) throw new Error(`seed ${seed}: the hand was not refilled`);
     const total = f.hand.length + f.deck.length + f.discard.length;
     if (total < C.startDeck.length) throw new Error(`seed ${seed}: cards went missing`);
@@ -58,7 +62,25 @@ for (let seed = 1; seed <= 3000; seed++) {
 }
 console.log(`  3000 fights: ${ambushes} ambushes, ${binds} binds, ${hits} hits`);
 
-// 2. readiness: nobody is ready in the first room; nearly always ready at the end
+// 2. adrenaline: a card that costs more than the pool cannot be played; playing it spends the points
+{
+  DF.CARDS.test_lunge = { id: 'test_lunge', line: 'high', name: 'Lunge', cost: 2 };
+  const f = new DF.Fight(DF.makeRng(7), { hp: 10, readiness: 20 });
+  const special = f.card('test_lunge');
+  f.hand.push(special);
+  ok(!f.playable(special) && !f.play(special.uid).ok, 'a card costing 2 cannot be played with no adrenaline');
+  f.adrenaline.player = 3;
+  const before = f.adrenaline.enemy;
+  const r = f.play(special.uid);
+  ok(r.ok && r.card.cost === 2, 'with 3 adrenaline it can');
+  ok(f.adrenaline.player === 3 - 2 + (r.outcome === 'bind' ? 1 : 0), 'and it spends 2 from your pool only');
+  ok(f.adrenaline.enemy === before + (r.outcome === 'bind' ? 1 : 0), "the enemy's pool is its own");
+  f.adrenaline.player = C.adrenalineMax;
+  ok(f.hand.every((c) => c.cost === 0) && C.startDeck.every((id) => DF.CARDS[id].cost === 0), 'the basic cards cost nothing');
+  delete DF.CARDS.test_lunge;
+}
+
+// 3. readiness: nobody is ready in the first room; nearly always ready at the end
 const firstStrike = (readiness) => {
   let n = 0;
   for (let s = 1; s <= 2000; s++) if (new DF.Fight(DF.makeRng(s * 7), { hp: 10, readiness }).playerFirst) n++;
@@ -68,7 +90,7 @@ ok(firstStrike(0) === 0, 'with no readiness the enemy always strikes first');
 ok(Math.abs(firstStrike(10) - 0.5) < 0.05, 'at readiness 10, about half the fights are fair');
 ok(firstStrike(20) > 0.9, 'at readiness 20 you almost always strike first');
 
-// 3. in the house: readiness rises with new rooms; a fight blocks moving; a won fight leaves a reward
+// 4. in the house: readiness rises with new rooms; a fight blocks moving; a won fight leaves a reward
 {
   let found = null;
   for (let seed = 1; seed <= 400 && !found; seed++) {

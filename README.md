@@ -63,6 +63,10 @@ Add `?seed=1234` to the URL to replay a specific road. The seed is shown under t
   **hit** (2 damage), and the one who was hit attacks next. Guard on the same line: the blades **bind** there and the
   defender counters at once, but only on the two other lines (the bound line is closed for both), so guarding the
   counter is a 1-in-2 guess. A guarded counter binds again.
+- **Adrenaline:** every bind fills one gem on both sides (each side has its own five). Every card has an adrenaline
+  cost, shown in its corner: the basic High, Middle and Low cost 0; special cards (to come) will need gems, spent when
+  played. A card you cannot pay for yet says "Needs N".
+- **Who attacks** stands a little larger, with a faint glow on their side (purple: you, crimson: the enemy).
 - **The Masked Duellist** (4 health) has habits: he guards high and counters low out of a bind more often than not.
   His hint is shown when the fight begins.
 - **Win:** he drops something: sometimes a key still needed in the house, otherwise a draught or a curio.

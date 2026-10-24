@@ -16,6 +16,8 @@
     <main id="stage">
 
       <!-- LEFT: the masked figure, counters, inventory -->
+      <!-- in a fight: a faint glow on the side of whoever attacks (purple: you, crimson: the enemy) -->
+      <div id="atk-glow" aria-hidden="true"><div class="g player"></div><div class="g enemy"></div></div>
       <div id="figure"></div>
       <div id="walk-frames" class="anim-frames"></div>
       <div id="hurt-frames" class="anim-frames"></div>
@@ -68,6 +70,8 @@
         <div id="fight-rows"></div>
         <div id="fight-hand"></div>
         <div id="fight-deck" title="Your deck"><span id="fight-deck-n"></span></div>
+        <!-- adrenaline: each bind fills one point on both sides (yours left, the enemy's right); special cards cost it -->
+        <div id="fight-adren"><div class="adren player" title="Your adrenaline"></div><div class="adren enemy" title="Their adrenaline"></div></div>
       </div>
       <!-- the great doors over the centre: shut at the start (Embark), they slide apart top and bottom -->
       <div id="gate" class="shut">
