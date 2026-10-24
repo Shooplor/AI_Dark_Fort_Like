@@ -346,26 +346,32 @@
     else await sleep(340);
     await sleep(160);
 
-    // 4. what happened
+    // 4. what happened: the arms play it out (js/arms3d.js): the attacker lunges on the attacked line, the defender
+    //    guards the guarded one; `contact` is the moment the blades meet or the hit lands
     const attacker = r.role === 'attack' ? mine : theirs;
     const dir = r.role === 'attack' ? 1 : -1;
+    const guardLine = r.role === 'attack' ? r.enemyLine : r.card.line;
+    const armsOn = !!DF.Arms3D && !reduced();
+    const arms = armsOn ? DF.Arms3D.exchange({ attacker: r.role === 'attack' ? 'player' : 'enemy', attackLine: r.line, guardLine }) : null;
+    const contact = arms ? Promise.race([arms, sleep(1000)]) : sleep(150);
     if (r.outcome === 'bind') {
-      const meet = DF.Arms3D ? DF.Arms3D.bind(r.line) : Promise.resolve(); // the arms swing in; the blades meet...
+      if (armsOn) await sleep(330); // they take their places first
       mine.animate([{ transform: 'none' }, { transform: 'translateX(26px)' }, { transform: 'translateX(14px)' }], { duration: 300, fill: 'forwards' });
       theirs.animate([{ transform: 'none' }, { transform: 'translateX(-26px)' }, { transform: 'translateX(-14px)' }], { duration: 300, fill: 'forwards' });
-      await Promise.race([meet, sleep(700)]); // ...and the sparks fly
+      await contact; // the blades meet: sparks
       this.clash(rows[r.line]);
       snd('play', 'clash');
       this.quake && this.quake('slam');
       this.fightPrompt(`Bind, ${lower(r.line)}!`, r.role === 'attack' ? 'Steel on steel. They will counter.' : 'Steel on steel. Your counter!');
       await sleep(900);
     } else {
-      if (DF.Arms3D) DF.Arms3D.release(); // a hit breaks any bind
+      if (armsOn) await sleep(330); // the wind-up
       snd('play', 'swish');
-      await attacker.animate([{ transform: 'none' }, { transform: `translateX(${dir * 70}px) scale(1.08)` }, { transform: 'none' }], {
+      attacker.animate([{ transform: 'none' }, { transform: `translateX(${dir * 70}px) scale(1.08)` }, { transform: 'none' }], {
         duration: reduced() ? 1 : 340,
         easing: 'ease-in-out',
-      }).finished;
+      });
+      await contact; // the thrust lands
       if (r.target === 'enemy') {
         snd('play', 'enemyHurt');
         this.renderEnemyHp(-r.damage);

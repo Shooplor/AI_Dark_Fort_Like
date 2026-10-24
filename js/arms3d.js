@@ -4,8 +4,11 @@
  * and a sword (grip, guard, pommel, blade). Toon shading in a few flat tones and a black outline (a slightly larger
  * copy of each piece, drawn inside out) to sit with the hand-drawn art. Colours stand in for painted textures.
  *
- *   DF.Arms3D.bind(line)  — the arms swing in over that row (or move there); resolves when the blades meet
- *   DF.Arms3D.release()   — they pull back and vanish
+ *   DF.Arms3D.exchange(r) — plays one exchange: the attacker winds up and lunges on the attacked line, the defender
+ *                           raises a guard on the guarded line. Same line: the blades bind (and stay crossed).
+ *                           Other lines: the thrust goes through, the guard waits in vain, then both pull back.
+ *                           Resolves at the moment of contact (the blades meet, or the hit lands).
+ *   DF.Arms3D.release()   — both pull back and vanish
  * Without WebGL (or three.js) both simply do nothing. */
 (function () {
   const DF = (globalThis.DF = globalThis.DF || {});
@@ -17,8 +20,8 @@
   const INK = 0x0b0608;
 
   let renderer, scene, camera, canvas, arms, raf = 0, failed = false;
-  let state = { shown: 0, target: 0, y: ROW_Y.mid, yTarget: ROW_Y.mid, jolt: 0, t0: 0 };
-  let meetResolve = null;
+  let jolt = 0; // the blades knocking apart a little when they meet
+  let last = 0;
 
   const ease = (t) => 1 - Math.pow(1 - t, 3);
   const worldY = (py) => H / 2 - py;
@@ -125,6 +128,11 @@
       enemy.root.scale.x = -1; // the enemy's arm is the mirror image, coming from the right
       scene.add(player.root, enemy.root);
       arms = { player, enemy };
+      for (const arm of Object.values(arms)) {
+        arm.cur = { ...POSES.out, y: ROW_Y.mid };
+        arm.pose = 'out';
+        arm.t = 1;
+      }
       return true;
     } catch (err) {
       failed = true;
@@ -139,100 +147,131 @@
     if (box && canvas.parentNode !== box) box.insertBefore(canvas, box.firstChild);
   }
 
-  /** Pose both arms for this frame: `p` 0 (out of sight) to 1 (blades crossed). */
+  /* Poses, in the player's own frame (the enemy's arm is the mirror image):
+   *   reach — how far the shoulder comes in towards the middle; drop — how far below the line it sits;
+   *   arm   — the arm's angle; wrist — the sword's angle at the wrist; tilt — the blade turning its edge. */
+  const POSES = {
+    out: { reach: -240, drop: 70, arm: -0.07, wrist: -0.36, tilt: 0.47 },
+    guard: { reach: -50, drop: -6, arm: 0.26, wrist: 0.95, tilt: 0.15 }, // blade raised, waiting for the blow
+    windup: { reach: -80, drop: 4, arm: 0.06, wrist: 0.32, tilt: 0.1 }, // drawn back before the lunge
+    thrust: { reach: 135, drop: 8, arm: 0.12, wrist: -0.14, tilt: 0 }, // arm out, blade level across the panel
+    bind: { reach: 0, drop: 0, arm: 0.18, wrist: 0.24, tilt: 0.12 }, // the blades crossed in the middle
+    recoil: { reach: -95, drop: 10, arm: 0.1, wrist: 0.7, tilt: 0.2 }, // knocked back by a hit
+  };
+  const KEYS = Object.keys(POSES.out);
+  const easeIn = (t) => t * t * t;
+  const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+  /** Move an arm to a pose on a line over `ms`. An arm out of sight comes in on its new line (it does not slide there). */
+  function go(arm, pose, line, ms, curve) {
+    const y = line ? ROW_Y[line] : arm.cur.y;
+    if (arm.pose === 'out' && pose !== 'out') arm.cur.y = y;
+    arm.from = { ...arm.cur };
+    arm.to = { ...POSES[pose], y };
+    arm.t = 0;
+    arm.dur = Math.max(1, ms);
+    arm.curve = curve || ease;
+    arm.pose = pose;
+  }
+
+  /** Pose both arms for this frame. */
   function pose(now) {
-    const p = state.shown;
-    const y = worldY(state.y);
     const t = now / 1000;
-    const tremble = p > 0.98 ? Math.sin(t * 9) * 0.012 + Math.sin(t * 23) * 0.006 : 0; // pressing against each other
-    const jolt = state.jolt; // the blades knocking apart a little on contact
+    const bound = arms.player.pose === 'bind' && arms.enemy.pose === 'bind' && arms.player.t >= 1 && arms.enemy.t >= 1;
+    const tremble = bound ? Math.sin(t * 9) * 0.012 + Math.sin(t * 23) * 0.006 : 0; // pressing against each other
     for (const [key, arm] of Object.entries(arms)) {
+      const c = arm.cur;
       const dir = key === 'player' ? -1 : 1; // which side it comes from
       const side = key === 'player' ? 1 : -1;
-      // from below the panel's outer corner, swinging up to cross over the middle
-      arm.root.position.set(dir * (330 + (1 - p) * 230) - dir * jolt * 10, y - 78 - (1 - p) * 60, side * 6);
-      arm.root.rotation.z = side * (0.18 + (1 - p) * -0.25);
-      arm.wrist.rotation.z = 0.24 + (1 - p) * -0.6 + tremble * side - jolt * 0.06; // inside the mirror: the same turn for both
-      arm.wrist.rotation.x = 0.35 * (1 - p) + 0.12; // the blade turns its edge towards the other
-      arm.root.visible = p > 0.001;
+      arm.root.position.set(dir * (330 - c.reach) - dir * jolt * 10, worldY(c.y) - 78 - c.drop, side * 6);
+      arm.root.rotation.z = side * c.arm;
+      arm.wrist.rotation.z = c.wrist + tremble * side - jolt * 0.06; // inside the mirror: the same turn for both
+      arm.wrist.rotation.x = c.tilt;
+      arm.root.visible = !(arm.pose === 'out' && arm.t >= 1);
     }
   }
 
   function frame(now) {
     raf = 0;
-    const dt = Math.min(0.05, (now - (state.last || now)) / 1000);
-    state.last = now;
-    // ease towards the target: swinging in takes about 0.38s, pulling out 0.3s
-    const speed = state.target > state.shown ? 1 / 0.38 : 1 / 0.3;
-    const before = state.shown;
-    if (state.target !== state.shown) {
-      state.k = Math.min(1, (state.k || 0) + dt * speed);
-      state.shown = state.from + (state.target - state.from) * ease(state.k);
-      if (state.k >= 1) state.shown = state.target;
+    const dt = Math.min(0.05, (now - (last || now)) / 1000);
+    last = now;
+    let moving = false;
+    for (const arm of Object.values(arms)) {
+      if (arm.t < 1) {
+        arm.t = Math.min(1, arm.t + (dt * 1000) / arm.dur);
+        const k = arm.curve(arm.t);
+        for (const key of [...KEYS, 'y']) arm.cur[key] = arm.from[key] + (arm.to[key] - arm.from[key]) * k;
+        moving = true;
+      }
     }
-    state.y += (state.yTarget - state.y) * Math.min(1, dt * 12);
-    if (before < 1 && state.shown >= 1 && state.target === 1) contact();
-    state.jolt = Math.max(0, state.jolt - dt * 4);
+    jolt = Math.max(0, jolt - dt * 4);
     pose(now);
     renderer.render(scene, camera);
-    if (state.shown > 0 || state.target > 0) raf = requestAnimationFrame(frame);
+    const shown = Object.values(arms).some((a) => a.pose !== 'out' || a.t < 1);
+    if (shown || moving || jolt > 0) raf = requestAnimationFrame(frame);
     else canvas.style.display = 'none';
-  }
-
-  function contact() {
-    state.jolt = 1;
-    if (meetResolve) meetResolve();
-    meetResolve = null;
   }
 
   function run() {
     canvas.style.display = '';
     if (!raf) {
-      state.last = 0;
+      last = 0;
       raf = requestAnimationFrame(frame);
     }
   }
 
-  function moveTo(target) {
-    state.from = state.shown;
-    state.target = target;
-    state.k = 0;
-  }
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
   DF.Arms3D = {
-    /** The blades bind on `line`: the arms swing in (or slide to that row). Resolves when the blades meet. */
-    bind(line) {
+    /** One exchange. `r`: { attacker: 'player' | 'enemy', attackLine, guardLine }. Resolves on contact. */
+    exchange(r) {
       if (!init()) return Promise.resolve();
       attach();
-      const y = ROW_Y[line] || ROW_Y.mid;
-      const p = new Promise((res) => (meetResolve = res));
-      if (state.shown > 0.5) {
-        // already crossed on another row: slide there, then knock together again
-        state.yTarget = y;
-        setTimeout(contact, 260);
-      } else {
-        state.y = state.yTarget = y;
-        moveTo(1);
-      }
-      run();
+      const atk = arms[r.attacker], def = arms[r.attacker === 'player' ? 'enemy' : 'player'];
+      let contact;
+      const p = new Promise((res) => (contact = res));
+      (async () => {
+        run();
+        // both take their places: the attacker draws back on its line, the defender raises a guard on its own
+        go(atk, 'windup', r.attackLine, 330);
+        go(def, 'guard', r.guardLine, 300);
+        await wait(360);
+        if (r.attackLine === r.guardLine) {
+          // the blow is met: the blades bind there, and stay crossed
+          go(atk, 'bind', r.attackLine, 170, easeIn);
+          go(def, 'bind', r.guardLine, 170, easeIn);
+          await wait(170);
+          jolt = 1;
+          contact();
+        } else {
+          // the lunge goes through; the guard waits on the wrong line
+          go(atk, 'thrust', r.attackLine, 160, easeIn);
+          await wait(160);
+          contact();
+          go(def, 'recoil', r.guardLine, 220);
+          await wait(650);
+          go(atk, 'out', null, 340, easeInOut);
+          go(def, 'out', null, 380, easeInOut);
+        }
+        run();
+      })();
       return p;
     },
-    /** The bind is over: the arms pull back. `now`: vanish at once (the fight is over). */
+    /** The arms pull back. `now`: vanish at once (the fight is over). */
     release(now) {
       if (!renderer) return;
-      if (meetResolve) meetResolve();
-      meetResolve = null;
-      if (now) {
-        state.shown = state.target = 0;
-        canvas.style.display = 'none';
-        return;
+      for (const arm of Object.values(arms)) {
+        if (now) {
+          go(arm, 'out', null, 1);
+          arm.cur = { ...arm.to };
+          arm.t = 1;
+        } else if (arm.pose !== 'out') go(arm, 'out', null, 320, easeInOut);
       }
-      if (state.target === 0 && state.shown === 0) return;
-      moveTo(0);
-      run();
+      if (now) canvas.style.display = 'none';
+      else run();
     },
     get active() {
-      return state.shown > 0 || state.target > 0;
+      return !!arms && Object.values(arms).some((a) => a.pose !== 'out' || a.t < 1);
     },
   };
 })();
