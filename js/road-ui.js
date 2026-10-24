@@ -50,16 +50,17 @@
     st.classList.remove('mode-gate', 'mode-route', 'mode-house', 'mode-fight');
     st.classList.add('mode-' + mode);
     this.mode = mode;
-    // entering a house from the road: the eye and readiness rise into place and fade in (not after a fight: they stayed)
+    // entering a house from the road: the eye, readiness and the inventory slots rise into place and fade in (not after
+    // a fight: they stayed)
     if (mode === 'house' && prev !== 'house' && prev !== 'fight') {
-      for (const id of ['#stat-turns', '#stat-ready']) {
+      for (const id of ['#stat-turns', '#stat-ready', '#inventory']) {
         const el = $(id);
         el.classList.remove('arrive');
         void el.offsetWidth;
         el.classList.add('arrive');
       }
       clearTimeout(this.arriveTimer); // done: let the counters' own pulses (a point spent) play again
-      this.arriveTimer = setTimeout(() => ['#stat-turns', '#stat-ready'].forEach((id) => $(id).classList.remove('arrive')), 1000);
+      this.arriveTimer = setTimeout(() => ['#stat-turns', '#stat-ready', '#inventory'].forEach((id) => $(id).classList.remove('arrive')), 1100);
     }
     $('#route-wrap').hidden = mode === 'house' || mode === 'fight';
     $('#fight-wrap').hidden = mode !== 'fight';
