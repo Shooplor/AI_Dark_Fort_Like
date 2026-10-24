@@ -39,5 +39,20 @@ const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode =
     }
     await page.close();
   }
+  // a first visit on a slow connection (served from the web server run.sh starts, every picture a second late): the
+  // slot frame must already be loaded when the house appears, or the slots would rise in empty and pop in later
+  {
+    const page = await b.newPage({ viewport: { width: 1600, height: 900 } });
+    await page.route('**/*.png', async (r) => { await new Promise((ok) => setTimeout(ok, 1000)); r.continue(); });
+    await page.goto('http://127.0.0.1:8765/index.html?seed=21'); await page.waitForTimeout(1500);
+    await page.click('#embark'); await page.waitForTimeout(3300);
+    await page.click('.route-node.can');
+    const loaded = await page.evaluate(() => new Promise((res) => { const f = () => {
+      if (DF.ui.mode !== 'house') return requestAnimationFrame(f);
+      const done = (name) => performance.getEntriesByType('resource').some((e) => e.name.endsWith(name) && e.responseEnd > 0);
+      res(['inventory-slot.png', 'right-panel.png', 'room-field.png'].filter((n) => !done(n))); }; f(); }));
+    assert(loaded.length === 0, 'first visit, slow connection: the house pictures are there when it appears ' + JSON.stringify(loaded));
+    await page.close();
+  }
   await b.close();
 })();

@@ -49,6 +49,9 @@ html = html.replace(/src="(assets\/[^"]+)"/g, (_, rel) => {
   return f.big ? `src="${BLANK_GIF}" data-blob="${rel}"` : `src="${dataUri(f)}"`;
 });
 
+// the tab icon (favicon) links
+html = html.replace(/(<link rel="(?:icon|apple-touch-icon)"[^>]*?)href="(assets\/[^"]+)"/g, (_, start, rel) => `${start}href="${dataUri(file(rel))}"`);
+
 // 3. scripts, in order. Pictures the scripts load themselves (via Art.asset) travel in one lookup table.
 const scripts = [...html.matchAll(/<script src="(js\/[^"]+)"><\/script>/g)].map((m) => m[1]);
 const scriptWants = new Set();

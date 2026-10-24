@@ -270,7 +270,7 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 /* the golden pendant: 100x100, centred on the room it marks */
 #marker {
   position: absolute; left: -10px; top: -7px; width: 100px; height: 100px; z-index: 5; pointer-events: none;
-  transition: transform 650ms cubic-bezier(.45, .05, .25, 1);
+  transition: transform 650ms cubic-bezier(.45, .05, .45, 1); /* an even start and finish: no long creep at the end */
 }
 #marker .token { width: 100%; height: 100%; animation: tokenBob 2.4s ease-in-out infinite; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, .8)); }
 #marker .token img { width: 100%; height: 100%; }

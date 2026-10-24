@@ -83,10 +83,23 @@
 
     /* ---------------------------------------------------------------- setup */
 
-    /** Load (and decode) the pictures that appear mid-game, so a room never waits for its picture. */
+    /** Load (and decode) the pictures that appear later, while the gate and the road are on screen: a room never waits
+     *  for its picture, and the house screen (its slots, panel and board, drawn by the stylesheet) arrives complete
+     *  the first time too, not only once the browser has them saved. */
     preloadArt() {
-      const srcs = [...Object.values(Art.ROOM_IMAGES), ...Object.values(Art.DOOR_IMAGES), ...Object.values(Art.LOCK_IMAGES), Art.BARRED, DF.Art.asset('assets/rooms/secret.png')];
-      this.preloaded = srcs.map((src) => { const im = new Image(); im.src = src; if (im.decode) im.decode().catch(() => {}); return im; });
+      const asset = DF.Art.asset;
+      // pictures the stylesheet draws (not written as asset(...): the single-file build must not pack them twice)
+      const STYLE_PICTURES = ['inventory-slot', 'right-panel', 'room-field', 'highlighted-field', 'spark-strip', 'fight-background', 'route-background'].map((n) => 'assets/ui/' + n + '.png');
+      const srcs = [
+        ...Object.values(Art.ROOM_IMAGES), ...Object.values(Art.DOOR_IMAGES), ...Object.values(Art.LOCK_IMAGES), Art.BARRED, asset('assets/rooms/secret.png'),
+        ...(globalThis.DF_ASSETS ? [] : STYLE_PICTURES), // the single file has them inside already
+        ...[...Art.ITEM_IMAGES].map((id) => asset('assets/items/' + id.replace(':', '-') + '.png')),
+        asset('assets/ui/enemy-duellist.png'), ...Object.values(DF.ROUTE_ART || {}),
+      ];
+      // once the opening has settled (the gate and road take seconds), so the loading never stutters an animation
+      const load = () => { this.preloaded = srcs.map((src) => { const im = new Image(); im.src = src; if (im.decode) im.decode().catch(() => {}); return im; }); };
+      if (globalThis.requestIdleCallback) requestIdleCallback(load, { timeout: 1500 });
+      else setTimeout(load, 800);
     }
 
     buildBoard() {
@@ -434,7 +447,17 @@
         m.style.transition = '';
       }
       m.classList.toggle('moving', !!animate);
-      if (animate) setTimeout(() => m.classList.remove('moving'), MOVE_MS);
+      if (!animate) return;
+      // the hop stops when the slide has really landed (it can start a frame or two after this), so the pendant never
+      // hops in place and then glides on by itself
+      clearTimeout(this.markerTimer);
+      const land = () => {
+        clearTimeout(this.markerTimer);
+        m.removeEventListener('transitionend', land);
+        m.classList.remove('moving');
+      };
+      m.addEventListener('transitionend', land);
+      this.markerTimer = setTimeout(land, MOVE_MS + 200); // in case the slide never runs (a hidden tab)
     }
 
     nudge(side) {

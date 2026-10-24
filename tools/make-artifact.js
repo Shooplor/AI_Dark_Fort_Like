@@ -25,7 +25,7 @@ walk('assets', (n) => /\.(png|webp|jpe?g|svg|woff2?|ttf|otf|ogg|mp3|wav)$/i.test
 
 let html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const title = (html.match(/<title>[\s\S]*?<\/title>/) || ['<title>The Masked House</title>'])[0];
-const link = (html.match(/<link rel="stylesheet"[^>]*>/) || [''])[0];
+const link = (html.match(/<link rel="(?:icon|apple-touch-icon|stylesheet)"[^>]*>/g) || []).join('\n'); // tab icon + styles
 const body = html.slice(html.indexOf('<body>') + 6, html.indexOf('</body>')).trim();
 fs.writeFileSync(path.join(out, 'index.html'), `${title}\n${link}\n${body}\n`);
 files.unshift('index.html');

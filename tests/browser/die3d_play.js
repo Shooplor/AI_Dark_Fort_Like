@@ -11,7 +11,7 @@ const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode =
   for (const [label, url] of [['normal', 'file://' + ROOT + 'index.html?house=1&fights=0&seed=5'], ['single', 'file://' + OUT + '/lonely/TheMaskedHouse.html?house=1&fights=0&seed=5']]) {
     const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
     const errors = []; page.on('pageerror', (e) => errors.push(e.message));
-    await page.goto(url); await page.waitForTimeout(700);
+    await page.goto(url); await page.waitForTimeout(2500); // settled: the opening's pictures have loaded
     const start = await page.evaluate(() => [document.getElementById('map-die').hidden, !document.getElementById('die'), !document.getElementById('die-style')]);
     assert(start.every(Boolean), `${label}: no die on the map before a roll; no die in the panel; no 2D/3D switch`);
     await page.keyboard.press('ArrowUp');

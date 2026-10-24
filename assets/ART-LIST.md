@@ -8,7 +8,7 @@ parts are the corners so I can stretch only the middle.
 ## Already done (real art in the game)
 
 Tapestry background, pillar frame, right-panel frame, all 15 item icons, all five room tiles, the hidden (rubble) room, the boarded-up room, the crowbar, all six door locks, the open door, character (idle, walk x3, hit x5, heal x4), heart and eye
-counters, inventory slot, unexplored-room field, current-room highlight, player pendant, the great gate doors, the road's point icons, the map background, the 3D fate die's texture, mouse cursor.
+counters, inventory slot, unexplored-room field, current-room highlight, player pendant (also the browser tab icon, scaled down by code: favicon-16/32/180.png), the great gate doors, the road's point icons, the map background, the 3D fate die's texture, mouse cursor.
 
 ## 1. The map
 

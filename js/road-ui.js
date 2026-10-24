@@ -41,6 +41,7 @@
     gamble: DF.Art.asset('assets/ui/route/route-gamble.png'),
     final: DF.Art.asset('assets/ui/route/route-final.png'),
   };
+  DF.ROUTE_ART = ART; // preloaded with the rest (js/ui.js)
 
   /* ---------------------------------------------------------------- screens */
 
