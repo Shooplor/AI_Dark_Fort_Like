@@ -67,6 +67,11 @@ Add `?seed=1234` to the URL to replay a specific road. The seed is shown under t
   His hint is shown when the fight begins.
 - **Win:** he drops something: sometimes a key still needed in the house, otherwise a draught or a curio.
   **Lose:** the run is over. There is no fleeing.
+- **The arms:** each exchange is played out by two 3D arms over the panels: the attacker winds up and lunges on its
+  line, the defender raises a guard on its own. Same line: the blades bind and stay crossed; other lines: the thrust
+  lands. They are painted (assets/arms, over the templates in assets/arms/templates). A page opened straight from
+  the disk shows them in plain colours (browsers do not hand local pictures to 3D); the single file and the
+  published page show the paintings.
 - Testing keys (they also work on the published link): **Shift+F** starts a fight in the room you are in;
   **Shift+B** makes your next card bind. Testing shortcuts: `index.html?house=1&duel=0` starts a fight at once (`duel=20` for full readiness);
   `&fights=0` switches fights off. `node tests/combat.js` checks the rules; `node tests/balance.js` reports how often
@@ -129,7 +134,7 @@ js/sound.js       sound effects and music, synthesised live (real files can repl
 js/voice.js       reads the on-screen text aloud with the browser's built-in voice (a stand-in for a voice actor)
 js/route.js       the road: the travel map's points and lines            (pure logic, no DOM)
 js/combat.js      fencing: readiness, the deck, exchanges, binds, enemy habits       (pure logic, no DOM)
-js/arms3d.js      (test) the bind in 3D: low-poly arms and swords crossing over the bound panel (three.js)
+js/arms3d.js      the fencing arms in 3D: lofted low-poly arms and rapiers with painted textures, playing every exchange (three.js)
 js/vendor/        three.min.js 0.149 (MIT licence, three-LICENSE.txt): the 3D library, kept here so the game works offline
 js/fight-ui.js    the fight on screen: AMBUSH on the doors, cards, slots, the enemy
 js/road-ui.js     the gate doors, the travel map on screen, going in and out of houses

@@ -60,7 +60,7 @@ Placeholders drawn by code or quickly painted now. Sizes are file sizes (2x), tr
 | Card slot (done, in the fight background) | 140x206 in the art | Played cards shrink to 70% to sit in them. The bound line will be shown by the drawn arms. |
 | Line symbols (done, in the fight background) | | The arrow diamonds; the bound line's diamond glows (code). |
 | Bind clash | about 200x200 | Optional: a spark/flash sprite where blades meet (a strip of frames works too). |
-| Fencing arms (3D test) | | Low-poly arms and swords in 3D (js/arms3d.js) playing every exchange (guard, wind-up, thrust, bind), built from simple shapes in flat colours for now; to be modelled from your 2D references (with elbows, proper blades). If we keep 3D: textures painted on UV templates, or models made in Blender. |
+| Fencing arms (done) | coat 1024x1024 (x2), glove and sword 1024x512 (x2 each) | Painted textures in `assets/arms/`; templates, colour-coded maps and model sheets in `assets/arms/templates/`. |
 | "AMBUSH!" / "En garde" lettering | about 1000x200 each | Optional; the display font is used now. |
 | Fight background (done) | 1432x1812 | `assets/ui/fight-background.png`. If the panels move, tell me and I re-measure the slots. |
 
