@@ -86,3 +86,13 @@ Clear messages saying what changed for the player. End every commit message with
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01YWJj1wmoXTWpr8za72f5Ah
 ```
+
+## Roadmap (the owner's plan, to talk through before building each part)
+
+The basis is in place (house, road, fencing with cards and adrenaline, 3D arms). Next, roughly in order:
+
+1. **Experience:** every run rewards the player by how far they got on the travel map; levelling up unlocks new cards.
+2. **Deck-building:** choosing which unlocked cards go into the deck (the rules already take any deck and card costs).
+3. **Enemy variety and a boss battle.**
+4. **The road's points doing things:** the campfire, the hooded stranger, the game of chance.
+5. **Content variety:** more kinds of room situations, special cards (with adrenaline costs), enemies, swords.
