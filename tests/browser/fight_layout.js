@@ -6,7 +6,8 @@ require('fs').mkdirSync(OUT, { recursive: true });
 require('fs').mkdirSync(path.join(OUT, 'lonely'), { recursive: true });
 const { chromium } = require('/opt/node-tools/node_modules/playwright');
 // The duel's layout: hovering any card in the hand lifts it, but never over the adrenaline gems; the hand stays on
-// screen; the gems sit under the lowest lane, yours on its left, the enemy's on its right.
+// screen; the gems sit under the lowest lane, yours on its left, the enemy's on its right, never under the 3D arms
+// (their sleeves hang low when they meet on the lowest lane).
 const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode = 1; } else console.log('ok:', m); };
 (async () => {
   const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox', '--enable-unsafe-swiftshader', '--use-angle=swiftshader'] });
@@ -20,7 +21,7 @@ const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode =
     const lane = await page.evaluate(() => { const r = document.querySelector('.frow[data-line="low"]').getBoundingClientRect(); return { l: r.left, r: r.right, b: r.bottom }; });
     assert(gems.length === 10, `${tag}: five gems a side`);
     assert(gems.slice(0, 5).every((g) => g.r < 800) && gems.slice(5).every((g) => g.l > 800), `${tag}: yours on the left, theirs on the right`);
-    assert(gems[0].l - lane.l < 40 && lane.r - gems[9].r < 40, `${tag}: from the lowest lane's edges (${(gems[0].l - lane.l).toFixed(0)}px, ${(lane.r - gems[9].r).toFixed(0)}px in)`);
+    assert(gems[0].l > lane.l && gems[9].r < lane.r, `${tag}: under the lowest lane`);
     const n = await page.evaluate(() => document.querySelectorAll('#fight-hand .fcard').length);
     let worst = 1e9, lowest = 0;
     for (let i = 0; i < n; i++) {
@@ -39,6 +40,36 @@ const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode =
     }
     console.log(tag, 'closest a lifted card comes to a gem above it:', worst.toFixed(1), 'px; lowest card bottom', lowest.toFixed(0));
     assert(lowest <= 900, `${tag}: the hand stays on screen (lowest card bottom ${lowest.toFixed(0)})`);
+    // the arms on the lowest lane (and lunging down to it): no arm pixel where a gem is
+    if (tag === 'single') {
+      const clip = { x: 450, y: 600, width: 700, height: 120 };
+      await page.evaluate(() => { document.getElementById('fight-adren').style.visibility = 'hidden'; document.getElementById('fight-hand').style.visibility = 'hidden'; const a = document.getElementById('arms3d'); if (a) a.style.visibility = 'hidden'; });
+      await page.waitForTimeout(200);
+      const base = await page.screenshot({ clip });
+      await page.evaluate(() => { const a = document.getElementById('arms3d'); if (a) a.style.visibility = ''; });
+      const { PNG } = (() => { try { return require('/opt/node-tools/node_modules/pngjs'); } catch (e) { return {}; } })();
+      let touched = 0, frames = 0;
+      for (const attacker of ['player', 'enemy']) for (const [a, g] of [['low', 'low'], ['low', 'mid'], ['high', 'low']]) {
+        await page.evaluate((c) => DF.Arms3D.exchange(c), { attacker, attackLine: a, guardLine: g });
+        for (let i = 0; i < 14; i++) {
+          await page.waitForTimeout(130);
+          const shot = await page.screenshot({ clip });
+          frames++;
+          // compare the gem boxes only (the shot is at 1:1, so stage = page pixels)
+          touched += await page.evaluate(([b64a, b64b, gems, clip]) => new Promise((res) => {
+            const load = (src) => new Promise((ok) => { const im = new Image(); im.onload = () => ok(im); im.src = 'data:image/png;base64,' + src; });
+            Promise.all([load(b64a), load(b64b)]).then(([A, B]) => {
+              const c = document.createElement('canvas'); c.width = clip.width; c.height = clip.height; const x = c.getContext('2d');
+              x.drawImage(A, 0, 0); const da = x.getImageData(0, 0, c.width, c.height).data; x.drawImage(B, 0, 0); const db = x.getImageData(0, 0, c.width, c.height).data;
+              let n = 0;
+              for (const g of gems) for (let y = Math.floor(g.t - clip.y); y < g.b - clip.y; y++) for (let X = Math.floor(g.l - clip.x); X < g.r - clip.x; X++) {
+                const k = (y * c.width + X) * 4; if (Math.abs(da[k] - db[k]) + Math.abs(da[k + 1] - db[k + 1]) + Math.abs(da[k + 2] - db[k + 2]) > 90) n++; }
+              res(n); }); }), [base.toString('base64'), shot.toString('base64'), gems, clip]);
+        }
+        await page.evaluate(() => DF.Arms3D.release(true)); await page.waitForTimeout(300);
+      }
+      assert(touched === 0, `${tag}: the 3D arms never cross a gem (${frames} frames of lowest-lane exchanges, ${touched} arm pixels on gems)`);
+    }
     assert(errors.length === 0, `${tag}: no errors`);
     await page.close();
   }

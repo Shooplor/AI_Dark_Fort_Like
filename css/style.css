@@ -582,7 +582,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
    from its left edge, the enemy's from its right; a lifted card in the hand stays below them (never over them) */
 #fight-adren { position: absolute; left: 0; top: 608px; width: 500px; height: 66px; pointer-events: none; }
 .adren { position: absolute; top: 0; display: flex; }
-.adren.player { left: -31px; } .adren.enemy { right: -31px; }
+.adren.player { left: 86px; } .adren.enemy { right: 86px; } /* inwards, clear of the 3D arms' hanging sleeves (they reach this low near the edges) */
 .adren i { position: relative; width: 52.8px; height: 65.7px; margin-right: -23.8px; background: url('../assets/cards/adrenaline-slot.png') center / 100% 100% no-repeat; }
 .adren i:last-child { margin-right: 0; }
 .adren i::after { content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity .35s; background: center / 100% 100% no-repeat; }
