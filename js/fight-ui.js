@@ -55,6 +55,7 @@
   /** Called when arriving in a room starts a fight: doors shut with the word, the fight is set behind them, they open. */
   P.startFight = async function (fight) {
     this.fightBusy = true;
+    if (DF.Arms3D) DF.Arms3D.prepare(); // the 3D arms and their paintings get ready while the doors are shut
     this.closePop();
     vo('stop');
     const word = $('#gate-word');

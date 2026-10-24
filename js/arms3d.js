@@ -359,8 +359,9 @@
       swordEnemy: DF.Art.asset('assets/arms/sword-enemy.png'),
     };
     if (location.protocol === 'file:' && !/^(data|blob):/.test(T.coatPlayer)) return;
-    DF.Arms3D.setTextures(T);
+    paintingsReady = DF.Arms3D.setTextures(T);
   }
+  let paintingsReady = Promise.resolve(); // settles when the paintings are on the arms (or at once, without them)
 
   /** Put the canvas under the cards in #fight-rows (the rows are rebuilt from time to time). */
   function attach() {
@@ -467,6 +468,11 @@
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
   DF.Arms3D = {
+    /** Get ready ahead of time (the game's start, a fight's start): make the arms and load their paintings, so the
+     *  first exchange never shows them unpainted. */
+    prepare() {
+      return init() ? paintingsReady : Promise.resolve();
+    },
     /** One exchange. `r`: { attacker: 'player' | 'enemy', attackLine, guardLine }. Resolves on contact. */
     exchange(r) {
       if (!init()) return Promise.resolve();
@@ -475,6 +481,7 @@
       let contact;
       const p = new Promise((res) => (contact = res));
       (async () => {
+        await Promise.race([paintingsReady, wait(1500)]); // never on screen unpainted (normally ready long before)
         run();
         // both take their places: the attacker draws back on its line, the defender raises a guard on its own
         go(atk, 'windup', r.attackLine, 330);
@@ -580,12 +587,17 @@
     /** Put painted textures on: { coatPlayer, coatEnemy, glovePlayer, gloveEnemy, swordPlayer, swordEnemy } (image
      *  addresses; a plain glove / sword is worn by both sides). */
     setTextures(urls) {
-      if (!init()) return;
+      if (!init()) return Promise.resolve();
       const loader = new THREE.TextureLoader();
+      const loads = [];
       for (const [k, url] of Object.entries(urls)) {
-        // each texture goes on once it has loaded (until then the parts keep their plain colours, never black)
+        // each texture goes on once it has loaded (until then the parts keep their plain colours, never black),
+        // and is sent to the graphics card at once, so the first frame that shows it does not stall
+        let done;
+        loads.push(new Promise((res) => (done = res)));
         loader.load(url, (t) => {
           t.flipY = true;
+          renderer.initTexture(t);
           for (const [side, arm] of Object.entries(arms)) {
             arm.root.traverse((m) => {
               if (!m.isMesh || !m.geometry.userData.atlas) return;
@@ -603,9 +615,10 @@
               m.material.needsUpdate = true;
             });
           }
-          run();
-        });
+          done();
+        }, undefined, () => done()); // a texture that fails to load: the plain colours stay
       }
+      return Promise.all(loads);
     },
     get active() {
       return !!arms && Object.values(arms).some((a) => a.pose !== 'out' || a.t < 1);

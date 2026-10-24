@@ -28,4 +28,6 @@
     ui.newRun(seed); // the great doors, shut: "Embark" opens them onto the road
   }
   DF.ui = ui; // handy in the browser console while developing
+  // the 3D fencing arms and their paintings are made in the background soon after the start, ready for any fight
+  setTimeout(() => DF.Arms3D && DF.Arms3D.prepare(), 2500);
 })();
