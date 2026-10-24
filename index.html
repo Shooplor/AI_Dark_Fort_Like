@@ -105,7 +105,10 @@
 
       <!-- RIGHT, during a fight: the enemy, mirroring the player -->
       <div id="enemy" hidden>
-        <img id="enemy-img" src="assets/ui/enemy-duellist.png" alt="" draggable="false">
+        <div id="enemy-body">
+          <img id="enemy-img" src="assets/ui/enemy-duellist.png" alt="" draggable="false">
+          <div id="enemy-hurt-frames"></div>
+        </div>
         <div id="enemy-floaters"></div>
         <div id="enemy-hud">
           <img id="enemy-hp-icon" src="assets/ui/hp-counter.png" alt="Enemy health" draggable="false">

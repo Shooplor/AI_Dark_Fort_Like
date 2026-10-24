@@ -580,11 +580,14 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 /* the enemy, mirroring the player on the right (assets/ui/enemy-*.png, 1000x1770 shown at half size) */
 #enemy { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 #enemy[hidden] { display: none; }
-#enemy-img { position: absolute; left: 1145px; top: 69px; width: 500px; height: 885px; animation: enemyIn .7s cubic-bezier(.2, .8, .3, 1) both; }
+#enemy-body { position: absolute; left: 1145px; top: 69px; width: 500px; height: 885px; animation: enemyIn .7s cubic-bezier(.2, .8, .3, 1) both; }
+#enemy-img, #enemy-hurt-frames img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
 @keyframes enemyIn { from { opacity: 0; transform: translateX(90px); } }
-#enemy.hit #enemy-img { animation: enemyHit .45s ease-out; }
-@keyframes enemyHit { 20% { transform: translateX(18px); filter: brightness(1.6) sepia(1) hue-rotate(-40deg) saturate(5); } 100% { transform: none; filter: none; } }
-#enemy.down #enemy-img { transition: opacity 1.2s, transform 1.2s; opacity: .15; transform: translate(40px, 40px) rotate(4deg); }
+/* hit: its hurt frames (assets/ui/enemy-hurt-1..5.png, same canvas as the still picture) play in its place */
+#enemy-hurt-frames img { display: none; }
+#enemy-hurt-frames img.on { display: block; }
+#enemy.hurt #enemy-img { visibility: hidden; }
+#enemy.down #enemy-body { transition: opacity 1.2s, transform 1.2s; opacity: .15; transform: translate(40px, 40px) rotate(4deg); }
 #enemy-floaters { position: absolute; left: 1150px; top: 0; width: 450px; height: 400px; z-index: 3; }
 #enemy-hud { position: absolute; right: 0; top: 0; width: 500px; height: 140px; z-index: 2; }
 /* the enemy's heart: the player's, mirrored and with less colour */
@@ -606,5 +609,4 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 
 @media (prefers-reduced-motion: reduce) {
   #fight-hand .fcard.lift .fcard-inner { transform: none; }
-  #enemy.hit #enemy-img { animation: none; }
 }

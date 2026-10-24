@@ -62,7 +62,10 @@ node tools/build.js && tests/browser/run.sh          # every browser check; must
 tests/browser/run.sh fight_ui arms_check             # just some
 ```
 
-- Commit only when the Node tests pass and `TOTAL_FAILS=0`. Screenshots from the checks land in `tests/browser/out/`.
+- Screenshots from the checks land in `tests/browser/out/`.
+- **Keep pushes quick** (the full browser suite takes about 20 minutes): for a change, run the Node tests and only the
+  browser checks that touch what changed (pick them by name), then commit, push and republish. Run the full suite in
+  the background after pushing (or before bigger milestones) and fix anything it finds in the next push.
 - Some checks measure timings and positions; on a busy machine they can miss by a hair. Run the suite on its own
   (not alongside other heavy work), re-run a failing check alone, and find the real cause before changing any wait.
 - The browser checks use the pre-installed Playwright (`/opt/node-tools/node_modules/playwright`) and Chromium

@@ -52,7 +52,7 @@ Placeholders drawn by code or quickly painted now. Sizes are file sizes (2x), tr
 
 | Piece | File size | Notes |
 | --- | --- | --- |
-| Enemy: the Masked Duellist | 1000x1770 | Same canvas as your character, facing left (towards the centre), cut off at the bottom the same way. Replaces `assets/ui/enemy-duellist.png`. Optional extra frames later: hit, falling. |
+| Enemy: the Masked Duellist (done) | 1000x1770 | Still picture `assets/ui/enemy-duellist.png` and hit frames `enemy-hurt-1..4.png` + the still picture as the 5th (from `assets/ui/source/enemy-art.psd`, layers 0 to 5), played at 11 a second like your character. Optional later: falling. |
 | Combat readiness icon (done) | 97x97 | `assets/ui/readiness-counter.png` |
 | Enemy heart | (none) | Your heart, mirrored and desaturated by code. Draw its own if you like, 97x97. |
 | Card front: High, Middle, Low | 200x276 | Shown at 100x138. The name and "Attack/Guard" are live text now; draw empty fronts with the line's picture, or tell me where text should go. The enemy's cards use a red-tinted version (optional separate art). |

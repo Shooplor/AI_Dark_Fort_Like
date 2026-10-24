@@ -22,6 +22,12 @@
   const P = DF.UI.prototype;
 
   const ENEMY_ART = { duellist: DF.Art.asset('assets/ui/enemy-duellist.png') };
+  // its hit animation: five frames, played like the player's (11 a second), then back to the still picture
+  const ENEMY_HURT = {
+    duellist: [DF.Art.asset('assets/ui/enemy-hurt-1.png'), DF.Art.asset('assets/ui/enemy-hurt-2.png'), DF.Art.asset('assets/ui/enemy-hurt-3.png'),
+      DF.Art.asset('assets/ui/enemy-hurt-4.png'), DF.Art.asset('assets/ui/enemy-duellist.png')], // the 5th frame is the still pose
+  };
+  DF.ENEMY_ART = { still: ENEMY_ART, hurt: ENEMY_HURT }; // preloaded with the rest (js/ui.js)
   const NAME = DF.LINE_NAMES;
   const lower = (line) => NAME[line].toLowerCase();
 
@@ -73,6 +79,8 @@
     const enemy = $('#enemy');
     enemy.className = '';
     $('#enemy-img').src = ENEMY_ART[fight.enemy.id] || ENEMY_ART.duellist;
+    clearInterval(this.enemyFrameTimer);
+    $('#enemy-hurt-frames').innerHTML = (ENEMY_HURT[fight.enemy.id] || ENEMY_HURT.duellist).map((src) => `<img src="${src}" alt="" draggable="false">`).join('');
     $('#enemy-name').textContent = fight.enemy.name;
     $('#enemy-tell').textContent = fight.enemy.tell;
     this.renderEnemyHp(0);
@@ -114,10 +122,26 @@
     n.textContent = '−' + Math.abs(delta);
     n.addEventListener('animationend', () => n.remove());
     $('#enemy-floaters').appendChild(n);
+    this.enemyHurt();
+  };
+
+  /** The enemy's hit: its hurt frames one after another at 11 a second (as the player's), then its still picture. */
+  P.enemyHurt = function () {
     const enemy = $('#enemy');
-    enemy.classList.remove('hit');
-    void enemy.offsetWidth;
-    enemy.classList.add('hit');
+    const frames = $('#enemy-hurt-frames').children;
+    let i = 0;
+    const show = () => {
+      for (let k = 0; k < frames.length; k++) frames[k].classList.toggle('on', k === i);
+    };
+    clearInterval(this.enemyFrameTimer);
+    enemy.classList.add('hurt');
+    show();
+    this.enemyFrameTimer = setInterval(() => {
+      if (++i < frames.length) return show();
+      clearInterval(this.enemyFrameTimer);
+      for (const f of frames) f.classList.remove('on');
+      enemy.classList.remove('hurt');
+    }, 1000 / 11);
   };
 
   P.renderReadiness = function () {
