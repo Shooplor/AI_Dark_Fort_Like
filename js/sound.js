@@ -381,6 +381,24 @@
       [50, 57, 62, 66].forEach((m) => tone(b, b.sfx, { t: t + 0.6, f: mtof(m), a: 0.3, dur: 3.4, peak: 0.09 }));
       tone(b, b.sfx, { t: t + 0.9, f: 2349, type: 'triangle', dur: 0.7, peak: 0.05 });
     },
+    /* ---- gold and the pedlar (js/pedlar-ui.js) ---- */
+    // coins into your purse: a few bright clinks
+    coins(b, t) {
+      [0, 0.06, 0.13].forEach((d, i) => {
+        tone(b, b.sfx, { t: t + d, f: rand(2600, 3400) + i * 150, f2: rand(2300, 2900), type: 'triangle', dur: 0.09, peak: 0.12 });
+        noise(b, b.sfx, { t: t + d, type: 'highpass', f: 5000, dur: 0.03, peak: 0.06 });
+      });
+    },
+    // coins out: two duller clinks
+    coinsSpend(b, t) {
+      [0, 0.08].forEach((d) => tone(b, b.sfx, { t: t + d, f: rand(1700, 2100), f2: rand(1400, 1600), type: 'triangle', dur: 0.08, peak: 0.1 }));
+    },
+    // the pedlar: his lantern's handle creaks, a little bell on his pack
+    pedlar(b, t) {
+      tone(b, b.sfx, { t, f: 320, f2: 260, type: 'sawtooth', a: 0.03, dur: 0.35, peak: 0.04, lp: 900 });
+      pluck(b, b.sfx, mtof(88), t + 0.25, 0.6, 1.2);
+      pluck(b, b.sfx, mtof(93), t + 0.4, 0.4, 1);
+    },
     /* ---- experience (the end of a run, js/road-ui.js) ---- */
     // a line of the tally counting in: a small bright tick
     xpTick(b, t) {

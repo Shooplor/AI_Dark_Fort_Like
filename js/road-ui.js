@@ -49,12 +49,12 @@
   P.setMode = function (mode) {
     const st = $('#stage');
     const prev = this.mode;
-    st.classList.remove('mode-gate', 'mode-route', 'mode-house', 'mode-fight');
+    st.classList.remove('mode-gate', 'mode-route', 'mode-house', 'mode-fight', 'mode-pedlar');
     st.classList.add('mode-' + mode);
     this.mode = mode;
     // entering a house from the road: the eye, readiness and the inventory slots rise into place and fade in (not after
     // a fight: they stayed)
-    if (mode === 'house' && prev !== 'house' && prev !== 'fight') {
+    if (mode === 'house' && prev !== 'house' && prev !== 'fight' && prev !== 'pedlar') {
       for (const id of ['#stat-turns', '#stat-ready', '#inventory']) {
         const el = $(id);
         el.classList.remove('arrive');
@@ -64,9 +64,10 @@
       clearTimeout(this.arriveTimer); // done: let the counters' own pulses (a point spent) play again
       this.arriveTimer = setTimeout(() => ['#stat-turns', '#stat-ready', '#inventory'].forEach((id) => $(id).classList.remove('arrive')), 1100);
     }
-    $('#route-wrap').hidden = mode === 'house' || mode === 'fight';
+    $('#route-wrap').hidden = mode === 'house' || mode === 'fight' || mode === 'pedlar';
     $('#fight-wrap').hidden = mode !== 'fight';
-    $('#enemy').hidden = mode !== 'fight';
+    $('#pedlar-wrap').hidden = mode !== 'pedlar';
+    $('#enemy').hidden = mode !== 'fight' && mode !== 'pedlar';
     if (mode !== 'fight') {
       if (DF.Arms3D) DF.Arms3D.release(true);
       $('#fight-hand').innerHTML = '';
@@ -90,7 +91,7 @@
   /** Start a new run: a fresh road, full health, an empty satchel, the doors shut. */
   P.newRun = function (seed) {
     seed = seed === undefined ? (Math.random() * 4294967296) >>> 0 : seed >>> 0;
-    this.run = { route: new DF.Route(seed), hp: DF.CONFIG.maxHp, items: [], node: null, houses: 0, xp: DF.Progress.newRun() };
+    this.run = { route: new DF.Route(seed), hp: DF.CONFIG.maxHp, items: [], gold: 0, node: null, houses: 0, xp: DF.Progress.newRun() };
     this.game = null;
     this.busy = false;
     this.gateBusy = false;
@@ -404,6 +405,8 @@
     await sleep(250);
     if (node.type === 'mansion' || node.type === 'final') {
       await this.enterHouse(node);
+    } else if (node.type === 'stranger' && DF.Shop && this.strangerIsPedlar(node)) {
+      await this.meetPedlarOnRoad(node); // js/pedlar-ui.js
     } else {
       R.done.add(node.id);
       this.gateBusy = false;
@@ -417,7 +420,7 @@
     this.renderRoute();
     await this.closeGate();
     this.run.node = node;
-    this.newGame(this.run.route.houseSeed(node), { hp: this.run.hp, items: this.run.items });
+    this.newGame(this.run.route.houseSeed(node), { hp: this.run.hp, items: this.run.items, gold: this.run.gold });
     await this.openGate('quick');
     this.gateBusy = false;
   };
@@ -427,6 +430,7 @@
     const run = this.run, g = this.game, node = run.node;
     run.hp = g.hp;
     run.items = g.slots.map((it) => (it && !it.quest && !it.keyType ? it : null)); // evidence and keys stay in their house
+    run.gold = g.gold;
     run.houses++;
     run.xp.houses.push(DF.Progress.house(g, true));
     if (node) run.route.done.add(node.id);

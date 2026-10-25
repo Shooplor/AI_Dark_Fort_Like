@@ -356,6 +356,7 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 .room-event { font-size: 21px; line-height: 1.35; margin: 0 0 14px; padding: 10px 14px; border-left: 3px solid var(--gold); background: rgba(212, 166, 58, .07); }
 .room-event.trap { border-color: #d6304f; background: rgba(214, 48, 79, .1); }
 .room-event.quest { border-color: #4fe38c; background: rgba(79, 227, 140, .08); }
+.room-event.gold { border-color: #e0b44a; background: rgba(224, 180, 74, .09); }
 .room-event.heal { border-color: #4fd08d; background: rgba(79, 208, 141, .08); }
 .room-event.quiet { border-color: var(--gold-dim); background: transparent; color: var(--text-dim); font-style: italic; }
 .room-event.choice { border-color: var(--gold-light); font-style: normal; }
@@ -460,8 +461,9 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 .gate-grit { position: absolute; width: 3px; height: 3px; border-radius: 1px; background: #8d7a68; pointer-events: none; }
 
 /* screens: the doors (before embarking), the road, a house. The inventory and the eye only exist inside a house. */
-#stage:not(.mode-house) #inventory, #stage:not(.mode-house) #item-pop,
+#stage:not(.mode-house):not(.mode-pedlar) #inventory, #stage:not(.mode-house):not(.mode-pedlar) #item-pop,
 #stage:not(.mode-house) #die-row, #stage:not(.mode-house) #chronicle-toggle { visibility: hidden; }
+#stage.mode-pedlar #right { visibility: hidden; } /* with the pedlar, he takes the right-hand side */
 /* the eye and combat readiness: in a house, and during a fight there */
 #stage:not(.mode-house):not(.mode-fight) #stat-turns, #stage:not(.mode-house):not(.mode-fight) #stat-ready,
 #stage:not(.mode-house):not(.mode-fight) #danger-eye { visibility: hidden; }
@@ -691,6 +693,45 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
   #fight-hand .fcard.lift .fcard-inner { transform: none; }
 }
 
+/* ------------------------------------------------------------------ GOLD AND THE PEDLAR (js/shop.js, js/pedlar-ui.js) */
+
+/* your gold, above the satchel's first slot (a placeholder coin until drawn); in a house and with the pedlar */
+#stat-gold { position: absolute; left: 20px; top: 606px; z-index: 5; display: flex; align-items: center; gap: 8px; pointer-events: auto; }
+#stage:not(.mode-house):not(.mode-pedlar) #stat-gold { visibility: hidden; }
+#stat-gold .coin { width: 34px; height: 34px; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .8)); }
+#stat-gold .gold-n { font-family: var(--display); font-weight: 700; font-size: 27px; line-height: 1; color: #f0cd6a; text-shadow: 0 2px 4px #000; }
+#stat-gold.pulse .coin { animation: coinPulse .5s cubic-bezier(.2, .8, .3, 1); }
+@keyframes coinPulse { 40% { transform: scale(1.3) rotate(-12deg); } }
+#gold-floaters { position: absolute; left: 44px; top: -6px; width: 80px; height: 10px; pointer-events: none; }
+.gold-float { position: absolute; left: 0; top: 0; font-family: var(--display); font-weight: 700; font-size: 22px; text-shadow: 0 2px 4px #000; animation: goldFloat 1.3s ease-out forwards; }
+.gold-float.up { color: #ffe08a; } .gold-float.down { color: #d9a0a8; }
+@keyframes goldFloat { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-38px); } }
+
+/* the pedlar stands where an enemy would: a placeholder (the duellist's picture, darkened to a hooded silhouette) */
+#enemy.pedlar #enemy-img { filter: brightness(.32) sepia(.7) hue-rotate(10deg) saturate(.8) drop-shadow(0 0 30px rgba(255, 190, 90, .18)); }
+#enemy.pedlar #enemy-hp-icon, #enemy.pedlar #enemy-hp-nums { display: none; }
+#enemy.pedlar #enemy-name { color: #e8c27a; }
+
+/* his wares, in the frame's opening */
+#pedlar-wrap { position: absolute; left: 550px; top: 32px; width: 500px; height: 836px; z-index: 2; display: flex; flex-direction: column; align-items: center; padding-top: 150px; box-sizing: border-box; }
+#pedlar-wrap[hidden] { display: none; }
+.pedlar-title { margin: 0 0 18px; font-family: var(--display); font-size: 30px; letter-spacing: .18em; color: #e8c27a; text-shadow: 0 2px 6px #000; }
+#pedlar-wares { display: flex; flex-direction: column; gap: 12px; width: 430px; }
+.ware { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: linear-gradient(#22121a, #150a10); border: 1px solid #6a5130; border-radius: 4px; box-shadow: 0 6px 16px rgba(0, 0, 0, .6); }
+.ware.sold { opacity: .45; }
+.ware-icon { width: 58px; height: 58px; flex: none; }
+.ware-icon svg, .ware-icon img { width: 100%; height: 100%; display: block; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .7)); }
+.ware-text { flex: 1; min-width: 0; }
+.ware-name { font-family: var(--display); font-weight: 700; font-size: 16px; color: #f0dfb4; letter-spacing: .04em; }
+.ware-desc { font-size: 14px; line-height: 1.25; color: var(--text-dim); font-style: italic; }
+.ware-buy { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: none; }
+.ware-price { display: flex; align-items: center; gap: 5px; font-family: var(--display); font-weight: 700; font-size: 18px; color: #f0cd6a; }
+.coin-mini { width: 14px; height: 14px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #f3d27a, #b07a22); border: 1.5px solid #2a1608; }
+.ware-buy button { padding: 5px 14px; font-size: 12px; }
+.pedlar-hint { margin: 22px 0 0; font-style: italic; font-size: 17px; color: var(--text-dim); text-shadow: 0 1px 3px #000; }
+#pedlar-leave { margin-top: 18px; padding: 9px 30px; }
+#item-pop .no-sale { font-style: italic; font-size: 15px; color: var(--text-dim); }
+
 </style>
 <script>
 (function () {
@@ -751,6 +792,12 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
         </div>
       </div>
 
+      <!-- your gold, above the satchel (js/shop.js, js/pedlar-ui.js) -->
+      <div id="stat-gold" title="Your gold">
+        <svg class="coin" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="#c9962e" stroke="#2a1608" stroke-width="3"/><circle cx="20" cy="20" r="11.5" fill="none" stroke="#f3d27a" stroke-width="2"/><path d="M15 14 h10 M20 14 v13 M15 27 h10" stroke="#7a4e12" stroke-width="2.4" stroke-linecap="round"/><path d="M9 14 a13 13 0 0 1 9 -7" stroke="#fff3c4" stroke-width="2" fill="none" stroke-linecap="round" opacity=".8"/></svg>
+        <span class="gold-n" id="gold-now">0</span>
+        <div id="gold-floaters"></div>
+      </div>
       <div id="inventory" aria-label="Inventory"></div>
       <div id="item-pop" hidden></div>
 
@@ -771,6 +818,13 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       <div id="route-wrap" hidden>
         <svg id="route-lines" width="500" height="836" aria-hidden="true"></svg>
         <div id="route-nodes"></div>
+      </div>
+      <!-- the pedlar (js/shop.js, js/pedlar-ui.js): his wares in the frame's opening; your satchel sells -->
+      <div id="pedlar-wrap" hidden>
+        <h2 class="pedlar-title">Wares</h2>
+        <div id="pedlar-wares"></div>
+        <p class="pedlar-hint">Click something in your satchel to sell it.</p>
+        <button type="button" id="pedlar-leave">Leave</button>
       </div>
       <!-- a fight (js/combat.js, js/fight-ui.js): your three slots on the left, the enemy's on the right, your hand below -->
       <div id="fight-wrap" hidden>
@@ -1199,6 +1253,15 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       'A silver fountain murmurs in the corner. You drink, but you are unhurt and it tastes of nothing.',
     ],
     packFull: ' Your satchel is full, so it stays on the floor.',
+    purse: [
+      'A velvet purse lies forgotten on a chair. Inside: [[{n} gold coins]].',
+      'Coins glint in a dish of ash by the hearth: [[{n} gold coins]].',
+      'Someone dropped their winnings here. You gather [[{n} gold coins]].',
+    ],
+    pedlar: [
+      'A lantern bobs in the dark. A hunched figure with a pack of oddments steps out to meet you: [[the Pedlar]].',
+      'Someone has set up a little stall among the dust sheets. The [[Pedlar]] smiles at you over his wares.',
+    ],
   };
 
   /* ---------- Choice events ---------- */
@@ -1937,6 +2000,9 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       this.fight = null; // the fight going on, if any: nothing else happens until it is over
       this.fightsWon = 0;
       this.feats = { hidden: 0, locks: 0, choices: 0 }; // things done in this house that earn experience (js/progress.js)
+      this.gold = opts.gold || 0; // carried along the road (js/shop.js)
+      this.pedlarMet = false; // the pedlar turns up at most once per house
+      this.coinRng = DF.makeRng(this.seed ^ 0x6c0b1d55); // gold and the pedlar have their own dice: the house stays as it was
       this.fightRng = DF.makeRng(this.seed ^ 0x2f6b1c3d); // fights never reshuffle the house
       this.fightsOn = opts.fights !== undefined ? opts.fights : DF.COMBAT ? DF.COMBAT.enabled : false;
 
@@ -2049,7 +2115,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       else if (this.hp <= 0) this.status = 'dead';
       else if (this.explored >= this.maxExplorations) this.status = 'caught';
       else if (d.analyze(cell.x, cell.y, this.heldKeyTypes()).frontier === 0) this.status = 'stuck';
-      if (this.status === 'playing') result.fight = this.maybeFight(isNew);
+      if (this.status === 'playing' && !(result.outcome && result.outcome.kind === 'pedlar')) result.fight = this.maybeFight(isNew);
       result.status = this.status;
       return result;
     }
@@ -2111,8 +2177,13 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
         const item = this.makeItem(DF.keyItemDef(owed.keyType));
         return this.grantItem(cell, item, 'key', `${flee} Something falls from its sleeve: a [[${item.name}]].`);
       }
+      const gold = DF.GOLD ? DF.GOLD.duel[0] + this.coinRng.int(DF.GOLD.duel[1] - DF.GOLD.duel[0] + 1) : 0; // on the gold dice: fights stay as they were
+      this.gold += gold;
+      const coins = gold ? ` and [[${gold} gold coins]]` : '';
       const item = this.makeItem(rng.chance(0.5) ? DF.ITEM_DEFS.potion : rng.pick(DF.CURIOS));
-      return this.grantItem(cell, item, 'item', `${flee} It leaves something behind: [[${item.name}]].`);
+      const r = this.grantItem(cell, item, 'item', `${flee} It leaves something behind: [[${item.name}]]${coins}.`);
+      r.gold = gold;
+      return r;
     }
 
     /* ---------- room events ---------- */
@@ -2172,8 +2243,23 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
           cell.pending = { eventId: def.id, intro: def.intro, labels: def.choices.map((c) => c.label), resolved: false, logEntry: null };
           return { kind: 'choice', text: def.intro, short: 'A choice awaits' };
         }
-        default:
-          return { kind: 'nothing', text: pick(DF.EVENT_TEXT.nothing), short: 'Nothing of note' };
+        default: {
+          const nothing = pick(DF.EVENT_TEXT.nothing);
+          // A room that would hold nothing may hold the pedlar (once per house at most: the doors close and he lays out
+          // his wares) or a purse. Both are on the gold dice, after the house's own roll, so the house stays as it was.
+          const P = DF.PEDLAR, G = DF.GOLD, coin = this.coinRng;
+          if (P && !this.pedlarMet && !cell.entrance && this.explored >= P.houseFrom && coin.chance(P.houseChance)) {
+            this.pedlarMet = true;
+            cell.pedlar = DF.Shop.wares(coin);
+            return { kind: 'pedlar', text: coin.pick(DF.EVENT_TEXT.pedlar), short: 'Met the Pedlar' };
+          }
+          if (G && coin.chance(G.purseChance)) {
+            const n = G.purse[0] + coin.int(G.purse[1] - G.purse[0] + 1);
+            this.gold += n;
+            return { kind: 'gold', gold: n, text: fill(coin.pick(DF.EVENT_TEXT.purse), { n }), short: `Found ${n} gold` };
+          }
+          return { kind: 'nothing', text: nothing, short: 'Nothing of note' };
+        }
       }
     }
 
@@ -2535,6 +2621,128 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
   };
 
   DF.Progress = Progress;
+})();
+
+</script>
+  <script>
+/* Gold and the pedlar: what things are worth, what he sells, buying and selling. Pure logic, no DOM.
+ *
+ * Gold is found in rooms (a purse), dropped by beaten duellists, and earned by selling to the pedlar. It travels with
+ * you along the road, like your health and your satchel, and is lost when the run ends.
+ *
+ * The pedlar turns up now and then in a house, and some of the hooded strangers on the road are him. He sells a few
+ * useful things and buys whatever you carry, except the evidence, for half its worth.
+ *
+ * All the numbers are placeholders, to be tuned. */
+(function () {
+  const DF = (globalThis.DF = globalThis.DF || {});
+
+  DF.GOLD = {
+    purse: [4, 12], // a purse found in a room...
+    purseChance: 0.35, // ...in this share of the rooms that would otherwise hold nothing (about 1 room in 10)
+    duel: [5, 12], // dropped by a beaten duellist
+    sellShare: 0.5, // the pedlar pays this share of a thing's worth
+  };
+
+  /** What each thing is worth (the pedlar sells at this price, and buys at half). Keys: any key. */
+  DF.WORTH = {
+    potion: 12,
+    crowbar: 10,
+    key: 4,
+    porcelain_mask: 14,
+    silver_bell: 12,
+    opera_glasses: 10,
+    wax_letter: 8,
+    withered_rose: 6,
+  };
+
+  /** The pedlar's stock: each entry is offered with its weight; he lays out `size` of them (the same one can repeat). */
+  DF.PEDLAR = {
+    name: 'The Pedlar',
+    tell: 'A pack of oddments on his back and a lantern on a pole. "Everything has a price. Even you."',
+    size: 3,
+    stock: [
+      { id: 'potion', weight: 6 },
+      { id: 'crowbar', weight: 3 },
+      { id: 'porcelain_mask', weight: 1 },
+      { id: 'silver_bell', weight: 1 },
+      { id: 'opera_glasses', weight: 1 },
+    ],
+    houseChance: 0.15, // per new room in a house that would otherwise hold nothing (from the 4th room on, once per house)
+    houseFrom: 4,
+    strangerChance: 0.5, // a hooded stranger on the road is the pedlar this often
+  };
+
+  const defOf = (id) => DF.ITEM_DEFS[id] || DF.CURIOS.find((c) => c.id === id);
+
+  const Shop = {
+    /** A thing's worth (0: the pedlar will not take it). */
+    worth(item) {
+      if (!item || item.quest) return 0;
+      if (item.keyType) return DF.WORTH.key;
+      return DF.WORTH[item.id] || 0;
+    },
+    sellPrice(item) {
+      const w = this.worth(item);
+      return w ? Math.max(1, Math.floor(w * DF.GOLD.sellShare)) : 0;
+    },
+
+    /** The pedlar's wares for one visit: [{ id, name, price, sold }]. */
+    wares(rng) {
+      const P = DF.PEDLAR;
+      const out = [];
+      for (let i = 0; i < P.size; i++) {
+        const id = rng.weighted(P.stock).id;
+        const def = defOf(id);
+        out.push({ id, name: def.name, price: DF.WORTH[id], sold: false });
+      }
+      return out;
+    },
+
+    /** Buy ware `index` for `owner` (anything with slots, gold, freeSlot() and makeItem()). */
+    buy(owner, wares, index) {
+      const w = wares[index];
+      if (!w || w.sold) return { ok: false, msg: '' };
+      if (owner.gold < w.price) return { ok: false, msg: `The [[${w.name}]] costs ${w.price} gold. You have ${owner.gold}.` };
+      const slot = owner.freeSlot();
+      if (slot < 0) return { ok: false, msg: 'Your satchel is full. Sell something first.' };
+      owner.gold -= w.price;
+      owner.slots[slot] = owner.makeItem(defOf(w.id));
+      w.sold = true;
+      return { ok: true, item: owner.slots[slot], slot, price: w.price, msg: `You buy the [[${w.name}]] for ${w.price} gold.` };
+    },
+
+    /** Sell what is in `slot` to the pedlar. */
+    sell(owner, slot) {
+      const item = owner.slots[slot];
+      if (!item) return { ok: false, msg: '' };
+      if (item.quest) return { ok: false, msg: 'You cannot part with the evidence.' };
+      const price = this.sellPrice(item);
+      if (!price) return { ok: false, msg: `The pedlar shakes his head at the [[${item.name}]].` };
+      owner.slots[slot] = null;
+      owner.gold += price;
+      return { ok: true, item, price, msg: `You sell the [[${item.name}]] for ${price} gold.` };
+    },
+  };
+
+  /** Your satchel and purse between houses, on the road (inside a house, the house itself, DF.Game, holds them). */
+  class Satchel {
+    constructor(items, gold, size) {
+      this.slots = new Array(size).fill(null);
+      (items || []).forEach((it, i) => { if (i < size) this.slots[i] = it || null; });
+      this.gold = gold || 0;
+      this.nextUid = 1; // things bought on the road: uids r1, r2, ... (a house makes its own when you enter it)
+    }
+    freeSlot() {
+      return this.slots.findIndex((s) => !s);
+    }
+    makeItem(def) {
+      return { ...def, uid: 'r' + this.nextUid++ };
+    }
+  }
+
+  DF.Shop = Shop;
+  DF.Satchel = Satchel;
 })();
 
 </script>
@@ -3456,6 +3664,24 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       [50, 57, 62, 66].forEach((m) => tone(b, b.sfx, { t: t + 0.6, f: mtof(m), a: 0.3, dur: 3.4, peak: 0.09 }));
       tone(b, b.sfx, { t: t + 0.9, f: 2349, type: 'triangle', dur: 0.7, peak: 0.05 });
     },
+    /* ---- gold and the pedlar (js/pedlar-ui.js) ---- */
+    // coins into your purse: a few bright clinks
+    coins(b, t) {
+      [0, 0.06, 0.13].forEach((d, i) => {
+        tone(b, b.sfx, { t: t + d, f: rand(2600, 3400) + i * 150, f2: rand(2300, 2900), type: 'triangle', dur: 0.09, peak: 0.12 });
+        noise(b, b.sfx, { t: t + d, type: 'highpass', f: 5000, dur: 0.03, peak: 0.06 });
+      });
+    },
+    // coins out: two duller clinks
+    coinsSpend(b, t) {
+      [0, 0.08].forEach((d) => tone(b, b.sfx, { t: t + d, f: rand(1700, 2100), f2: rand(1400, 1600), type: 'triangle', dur: 0.08, peak: 0.1 }));
+    },
+    // the pedlar: his lantern's handle creaks, a little bell on his pack
+    pedlar(b, t) {
+      tone(b, b.sfx, { t, f: 320, f2: 260, type: 'sawtooth', a: 0.03, dur: 0.35, peak: 0.04, lp: 900 });
+      pluck(b, b.sfx, mtof(88), t + 0.25, 0.6, 1.2);
+      pluck(b, b.sfx, mtof(93), t + 0.4, 0.4, 1);
+    },
     /* ---- experience (the end of a run, js/road-ui.js) ---- */
     // a line of the tally counting in: a small bright tick
     xpTick(b, t) {
@@ -3972,7 +4198,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
   };
 
   /** Which style the event box in the right-hand panel gets for an outcome. */
-  const outcomeClass = (o) => (o.kind === 'trap' ? 'trap' : o.kind === 'heal' ? 'heal' : o.kind === 'nothing' ? 'quiet' : o.kind === 'choice' ? 'choice' : o.kind === 'quest' ? 'quest' : '');
+  const outcomeClass = (o) => (o.kind === 'trap' ? 'trap' : o.kind === 'heal' ? 'heal' : o.kind === 'nothing' ? 'quiet' : o.kind === 'choice' ? 'choice' : o.kind === 'quest' ? 'quest' : o.kind === 'gold' ? 'gold' : '');
 
   // Movement keys by physical position (`code`, so they work on any keyboard layout, e.g. Cyrillic) and by
   // the character typed (`key`) as a fallback. Numbers 1-9 pick a choice.
@@ -4070,8 +4296,9 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
           if (ev.code === 'KeyV' && !ev.repeat) return this.setVoiceOn(vo('toggle'));
           if (this.paused) return; // nothing else works while the game is paused
           // testing keys: Shift+F starts a fight in the room you are in; Shift+B makes your next card bind; Shift+L (gate,
-          // road) resets the experience to level 1
+          // road) resets the experience to level 1; Shift+P brings the pedlar into the room you are in
           if (ev.shiftKey && ev.code === 'KeyL' && !ev.repeat && (this.mode === 'gate' || this.mode === 'route')) return this.resetLevel();
+          if (ev.shiftKey && ev.code === 'KeyP' && !ev.repeat && this.mode === 'house' && !this.busy && this.game.status === 'playing') return this.devPedlar();
           if (ev.shiftKey && ev.code === 'KeyF' && !ev.repeat && this.mode === 'house' && !this.busy && this.game.status === 'playing') return this.devFight();
           if (ev.shiftKey && ev.code === 'KeyB' && !ev.repeat && this.mode === 'fight' && this.game.fight) {
             this.game.fight.forceBind = true;
@@ -4264,6 +4491,10 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       this.renderHp(r.hpAfter - r.hpBefore);
       this.renderInventory();
       this.renderChronicle();
+      if (r.newRoom && r.outcome.kind === 'pedlar' && r.status === 'playing') {
+        await this.meetPedlarInHouse(r.cell); // the doors close on the pedlar and his wares (js/pedlar-ui.js)
+        return;
+      }
       if (r.fight) {
         await sleep(r.newRoom ? 700 : 250); // a moment to see the room, then steel is drawn (js/fight-ui.js)
         await this.startFight(r.fight);
@@ -4663,7 +4894,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       const box = $('#inventory');
       const uids = new Set();
       box.innerHTML = '';
-      this.game.slots.forEach((item, i) => {
+      this.satchel().slots.forEach((item, i) => {
         const b = document.createElement('button');
         b.type = 'button';
         b.className = 'slot' + (item ? ' has' : '') + (item && item.quest ? ' quest' : '');
@@ -4686,19 +4917,33 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
         box.appendChild(b);
       });
       this.prevUids = uids;
+      this.renderGold();
+    }
+
+    /** Whatever holds your satchel and purse right now: the house, or (meeting the pedlar on the road) the road's. */
+    satchel() {
+      return this.mode === 'pedlar' && this.shop ? this.shop.owner : this.game;
     }
 
     togglePop(slot) {
       const open = !$('#item-pop').hidden && $('#item-pop').dataset.slot === String(slot);
-      if (open || this.busy || this.game.status !== 'playing') return this.closePop();
-      const item = this.game.slots[slot];
+      const selling = this.mode === 'pedlar';
+      if (open || (!selling && (this.busy || this.game.status !== 'playing')) || (selling && this.shopBusy)) return this.closePop();
+      const item = this.satchel().slots[slot];
       if (!item) return this.closePop();
       snd('play', 'click');
       const pop = $('#item-pop');
       pop.dataset.slot = slot;
       pop.className = item.quest ? 'quest' : '';
+      // with the pedlar, Sell takes the place of Use and Drop
+      const price = selling ? DF.Shop.sellPrice(item) : 0;
+      const buttons = selling
+        ? price
+          ? `<button type="button" data-act="sell">Sell for ${price} gold</button>`
+          : `<span class="no-sale">${item.quest ? 'You cannot part with the evidence.' : 'He has no use for it.'}</span>`
+        : `${item.usable ? '<button type="button" data-act="use">Use</button>' : ''}${item.quest ? '' : '<button type="button" data-act="drop" class="quiet">Drop</button>'}`;
       pop.innerHTML = `${item.quest ? '<div class="tag">Evidence</div>' : ''}<h3>${esc(item.name)}</h3><p>${esc(item.desc)}</p>
-        <div class="row">${item.usable ? '<button type="button" data-act="use">Use</button>' : ''}${item.quest ? '' : '<button type="button" data-act="drop" class="quiet">Drop</button>'}</div>`;
+        <div class="row">${buttons}</div>`;
       pop.hidden = false;
       document.querySelectorAll('.slot').forEach((s) => s.classList.toggle('open', s.dataset.slot === String(slot)));
       pop.querySelectorAll('button').forEach((btn) =>
@@ -4716,6 +4961,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
     }
 
     itemAction(slot, act) {
+      if (act === 'sell') return this.sellItem(slot); // js/pedlar-ui.js
       const g = this.game;
       const res = act === 'use' ? g.useItem(slot) : g.dropItem(slot);
       if (res.ok && act === 'drop') snd('play', 'drop');
@@ -5035,12 +5281,12 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
   P.setMode = function (mode) {
     const st = $('#stage');
     const prev = this.mode;
-    st.classList.remove('mode-gate', 'mode-route', 'mode-house', 'mode-fight');
+    st.classList.remove('mode-gate', 'mode-route', 'mode-house', 'mode-fight', 'mode-pedlar');
     st.classList.add('mode-' + mode);
     this.mode = mode;
     // entering a house from the road: the eye, readiness and the inventory slots rise into place and fade in (not after
     // a fight: they stayed)
-    if (mode === 'house' && prev !== 'house' && prev !== 'fight') {
+    if (mode === 'house' && prev !== 'house' && prev !== 'fight' && prev !== 'pedlar') {
       for (const id of ['#stat-turns', '#stat-ready', '#inventory']) {
         const el = $(id);
         el.classList.remove('arrive');
@@ -5050,9 +5296,10 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       clearTimeout(this.arriveTimer); // done: let the counters' own pulses (a point spent) play again
       this.arriveTimer = setTimeout(() => ['#stat-turns', '#stat-ready', '#inventory'].forEach((id) => $(id).classList.remove('arrive')), 1100);
     }
-    $('#route-wrap').hidden = mode === 'house' || mode === 'fight';
+    $('#route-wrap').hidden = mode === 'house' || mode === 'fight' || mode === 'pedlar';
     $('#fight-wrap').hidden = mode !== 'fight';
-    $('#enemy').hidden = mode !== 'fight';
+    $('#pedlar-wrap').hidden = mode !== 'pedlar';
+    $('#enemy').hidden = mode !== 'fight' && mode !== 'pedlar';
     if (mode !== 'fight') {
       if (DF.Arms3D) DF.Arms3D.release(true);
       $('#fight-hand').innerHTML = '';
@@ -5076,7 +5323,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
   /** Start a new run: a fresh road, full health, an empty satchel, the doors shut. */
   P.newRun = function (seed) {
     seed = seed === undefined ? (Math.random() * 4294967296) >>> 0 : seed >>> 0;
-    this.run = { route: new DF.Route(seed), hp: DF.CONFIG.maxHp, items: [], node: null, houses: 0, xp: DF.Progress.newRun() };
+    this.run = { route: new DF.Route(seed), hp: DF.CONFIG.maxHp, items: [], gold: 0, node: null, houses: 0, xp: DF.Progress.newRun() };
     this.game = null;
     this.busy = false;
     this.gateBusy = false;
@@ -5390,6 +5637,8 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
     await sleep(250);
     if (node.type === 'mansion' || node.type === 'final') {
       await this.enterHouse(node);
+    } else if (node.type === 'stranger' && DF.Shop && this.strangerIsPedlar(node)) {
+      await this.meetPedlarOnRoad(node); // js/pedlar-ui.js
     } else {
       R.done.add(node.id);
       this.gateBusy = false;
@@ -5403,7 +5652,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
     this.renderRoute();
     await this.closeGate();
     this.run.node = node;
-    this.newGame(this.run.route.houseSeed(node), { hp: this.run.hp, items: this.run.items });
+    this.newGame(this.run.route.houseSeed(node), { hp: this.run.hp, items: this.run.items, gold: this.run.gold });
     await this.openGate('quick');
     this.gateBusy = false;
   };
@@ -5413,6 +5662,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
     const run = this.run, g = this.game, node = run.node;
     run.hp = g.hp;
     run.items = g.slots.map((it) => (it && !it.quest && !it.keyType ? it : null)); // evidence and keys stay in their house
+    run.gold = g.gold;
     run.houses++;
     run.xp.houses.push(DF.Progress.house(g, true));
     if (node) run.route.done.add(node.id);
@@ -6600,6 +6850,206 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
     await sleep(1400);
     this.showEnd('dead');
   };
+})();
+
+</script>
+  <script>
+/* The pedlar on screen (the rules are in js/shop.js), and your gold.
+ *
+ * Meeting him (in a house, or as a hooded stranger on the road): the doors close, and open on him standing where an
+ * enemy would, his wares laid out in the frame's opening. Buy with a click; click something in your satchel to sell it
+ * (Sell takes the place of Use and Drop). Leave: the doors close and open on the house, or the road, again.
+ *
+ * Adds methods to DF.UI (js/ui.js). His picture is a placeholder (see assets/ART-LIST.md). */
+(function () {
+  const DF = globalThis.DF;
+  const $ = (sel) => document.querySelector(sel);
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const snd = (method, ...args) => {
+    try { if (DF.Sound && DF.Sound[method]) DF.Sound[method](...args); } catch (e) { /* sound is optional */ }
+  };
+  const vo = (method, ...args) => {
+    try { if (DF.Voice && DF.Voice[method]) DF.Voice[method](...args); } catch (e) { /* voice is optional */ }
+  };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const plain = (s) => String(s).replace(/\[\[|\]\]/g, '');
+  const P = DF.UI.prototype;
+
+  // his picture: a placeholder (the duellist's, darkened to a hooded silhouette) until he is drawn
+  const PEDLAR_ART = DF.Art.asset('assets/ui/enemy-duellist.png');
+
+  /* ---------------------------------------------------------------- gold */
+
+  /** The gold counter above the satchel. A change pulses it, with a floating +N / −N. */
+  P.renderGold = function () {
+    const owner = this.satchel ? this.satchel() : this.game;
+    if (!owner) return;
+    const n = owner.gold || 0;
+    const el = $('#gold-now');
+    const before = this.goldShown;
+    el.textContent = n;
+    this.goldShown = n;
+    if (before === undefined || before === n || this.goldOwner !== owner) {
+      this.goldOwner = owner;
+      return;
+    }
+    const box = $('#stat-gold');
+    box.classList.remove('pulse');
+    void box.offsetWidth;
+    box.classList.add('pulse');
+    const f = document.createElement('div');
+    f.className = 'gold-float ' + (n > before ? 'up' : 'down');
+    f.textContent = (n > before ? '+' : '−') + Math.abs(n - before);
+    f.addEventListener('animationend', () => f.remove());
+    $('#gold-floaters').appendChild(f);
+    snd('play', n > before ? 'coins' : 'coinsSpend');
+  };
+
+  /* ---------------------------------------------------------------- meeting him */
+
+  /** On the road: is this hooded stranger the pedlar? (Decided by the road, so it never changes.) */
+  P.strangerIsPedlar = function (node) {
+    return DF.makeRng((this.run.route.seed ^ (node.id * 0x9e3779b1)) >>> 0).chance(DF.PEDLAR.strangerChance);
+  };
+
+  /** The doors close; behind them he takes his place and lays out his wares; they open. */
+  P.openPedlar = async function (shop) {
+    this.shop = shop;
+    this.shopBusy = true;
+    this.closePop && this.closePop();
+    vo('stop');
+    await this.closeGate();
+    this.setMode('pedlar');
+    const enemy = $('#enemy');
+    enemy.className = 'pedlar';
+    $('#enemy-img').src = PEDLAR_ART;
+    $('#enemy-hurt-frames').innerHTML = '';
+    $('#enemy-name').textContent = DF.PEDLAR.name;
+    $('#enemy-tell').textContent = DF.PEDLAR.tell;
+    this.goldOwner = shop.owner;
+    this.goldShown = shop.owner.gold;
+    this.prevUids = new Set(shop.owner.slots.filter(Boolean).map((it) => it.uid)); // no "new item" sparkle for what you had
+    this.renderInventory();
+    this.renderWares();
+    await sleep(500);
+    await this.openGate('quick');
+    snd('play', 'pedlar');
+    vo('say', [DF.PEDLAR.tell.replace(/^.*?"/, '"')], { interrupt: true });
+    this.shopBusy = false;
+  };
+
+  /** His wares, each with its price and a Buy button (greyed when you cannot afford it, or have no room). */
+  P.renderWares = function () {
+    const shop = this.shop;
+    if (!shop) return;
+    const owner = shop.owner;
+    const room = owner.freeSlot() >= 0;
+    $('#pedlar-wares').innerHTML = shop.wares
+      .map((w, i) => {
+        const def = DF.ITEM_DEFS[w.id] || DF.CURIOS.find((c) => c.id === w.id);
+        const why = w.sold ? 'Sold' : owner.gold < w.price ? 'Not enough gold' : !room ? 'Your satchel is full' : '';
+        return `<div class="ware${w.sold ? ' sold' : ''}" data-ware="${i}">
+          <div class="ware-icon">${DF.Art.itemIcon({ ...def, uid: 0 })}</div>
+          <div class="ware-text"><div class="ware-name">${esc(w.name)}</div><div class="ware-desc">${esc(def.desc)}</div></div>
+          <div class="ware-buy"><div class="ware-price"><i class="coin-mini"></i>${w.price}</div>
+            <button type="button" data-buy="${i}" ${why ? `disabled title="${esc(why)}"` : ''}>${w.sold ? 'Sold' : 'Buy'}</button></div>
+        </div>`;
+      })
+      .join('');
+    document.querySelectorAll('#pedlar-wares [data-buy]').forEach((b) =>
+      b.addEventListener('click', () => this.buyWare(+b.dataset.buy))
+    );
+  };
+
+  P.buyWare = function (i) {
+    if (!this.shop || this.shopBusy) return;
+    const r = DF.Shop.buy(this.shop.owner, this.shop.wares, i);
+    if (!r.ok) {
+      snd('play', 'bump');
+      if (r.msg) this.notice(r.msg, true);
+      return;
+    }
+    this.notice(r.msg);
+    this.renderInventory(); // the new thing drops into the satchel (with its "got it" flourish), and the gold counts down
+    this.renderWares();
+  };
+
+  /** Sell what is in a satchel slot (from the item menu). */
+  P.sellItem = function (slot) {
+    this.closePop();
+    if (!this.shop || this.shopBusy) return;
+    const r = DF.Shop.sell(this.shop.owner, slot);
+    if (!r.ok) {
+      if (r.msg) this.notice(r.msg, true);
+      return;
+    }
+    this.notice(r.msg);
+    this.renderInventory();
+    this.renderWares();
+  };
+
+  /** Leave: the doors close and open on wherever you were. */
+  P.leavePedlar = async function () {
+    const shop = this.shop;
+    if (!shop || this.shopBusy) return;
+    this.shopBusy = true;
+    this.closePop();
+    this.notice('');
+    vo('stop');
+    snd('play', 'click');
+    await this.closeGate();
+    this.shop = null;
+    if (shop.from === 'road') {
+      const run = this.run;
+      run.items = shop.owner.slots.slice();
+      run.gold = shop.owner.gold;
+      run.route.done.add(shop.node.id);
+      this.setMode('route');
+      this.renderRoute();
+      this.renderRoadCard(null, 'The pedlar shoulders his pack and is gone into the dark. The road goes on.');
+      await this.openGate('quick');
+      this.gateBusy = false;
+      this.renderRoute();
+    } else {
+      const g = this.game;
+      g.cell.pedlar = null; // he moves on
+      this.setMode('house');
+      this.view.notes.push('The pedlar has gone, and taken his lantern with him.');
+      this.renderRoom(false);
+      this.renderInventory();
+      await this.openGate('quick');
+      this.refreshHints && this.refreshHints();
+    }
+    this.shopBusy = false;
+  };
+
+  /** A hooded stranger on the road turns out to be the pedlar. */
+  P.meetPedlarOnRoad = async function (node) {
+    const run = this.run;
+    const owner = new DF.Satchel(run.items, run.gold, DF.CONFIG.slots);
+    const rng = DF.makeRng((run.route.seed ^ (node.id * 0x85ebca6b)) >>> 0);
+    this.renderRoadCard(null, plain(DF.EVENT_TEXT.pedlar[0]));
+    await this.openPedlar({ owner, wares: DF.Shop.wares(rng), from: 'road', node });
+  };
+
+  /** For testing (Shift+P in a house): the pedlar, here and now. */
+  P.devPedlar = function () {
+    const g = this.game;
+    if (!g || g.fight || this.mode !== 'house') return;
+    g.cell.pedlar = DF.Shop.wares(g.coinRng);
+    this.openPedlar({ owner: g, wares: g.cell.pedlar, from: 'house' });
+  };
+
+  /** Met in a house: called once the room has been shown. */
+  P.meetPedlarInHouse = async function (cell) {
+    await sleep(900); // a moment to read the room
+    await this.openPedlar({ owner: this.game, wares: cell.pedlar, from: 'house' });
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const leave = $('#pedlar-leave');
+    if (leave) leave.addEventListener('click', () => DF.ui && DF.ui.leavePedlar());
+  });
 })();
 
 </script>

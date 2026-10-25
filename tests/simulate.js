@@ -4,7 +4,7 @@
  *
  * Exits non-zero if any invariant breaks (inconsistent doors, orphaned keys, false "stuck" states...). */
 const path = require('path');
-for (const f of ['rng', 'data', 'dungeon', 'combat', 'game']) require(path.join(__dirname, '..', 'js', f + '.js'));
+for (const f of ['rng', 'data', 'dungeon', 'combat', 'shop', 'game']) require(path.join(__dirname, '..', 'js', f + '.js'));
 const DF = globalThis.DF;
 
 const fail = (seed, msg) => {

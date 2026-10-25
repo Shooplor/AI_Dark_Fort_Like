@@ -49,6 +49,27 @@ Add `?seed=1234` to the URL to replay a specific road. The seed is shown under t
   Winning the last house ends the run: "The rite is exposed". **Dying (or being discovered, or getting stuck) in any
   house ends the whole run**; Begin anew starts a fresh road at the gate.
 
+## Gold and the Pedlar
+
+Gold travels with you along the road (like your health and satchel) and is lost when the run ends. It is shown above
+your satchel. You find it in purses (about 1 room in 10 that would otherwise hold nothing: 4-12 gold), duellists drop
+5-12 when beaten, and the Pedlar pays for what you sell him.
+
+**The Pedlar** turns up now and then in a house (from the 4th room on, at most once per house), and about half the
+hooded strangers on the road are him. The doors close on him standing where an enemy would; his three wares are laid
+out in the middle with their prices (Buy). Click something in your satchel to **sell** it instead of using or dropping
+it: he pays half its worth, and will not take the evidence. **Leave** goes back to the house or the road.
+
+| Thing | Worth (his price) | He pays |
+| --- | --- | --- |
+| Healing Draught | 12 | 6 |
+| Crowbar | 10 | 5 |
+| Porcelain Mask, Silver Bell, Opera Glasses | 14, 12, 10 | 7, 6, 5 |
+| Wax-Sealed Letter, Withered Rose | 8, 6 | 4, 3 |
+| Any key | 4 | 2 |
+
+All placeholder numbers (`js/shop.js`). **Shift+P** in a house brings the Pedlar into the room (testing).
+
 ## Experience
 
 Every run earns experience (XP), however it ends, and it adds up from run to run into levels (shown with a badge and a
@@ -156,6 +177,8 @@ js/die3d.js       the fate die as a 3D pyramid, wrapped in one painted texture
 js/sound.js       sound effects and music, synthesised live (real files can replace any of it)
 js/voice.js       reads the on-screen text aloud with the browser's built-in voice (a stand-in for a voice actor)
 js/route.js       the road: the travel map's points and lines            (pure logic, no DOM)
+js/shop.js        gold and the Pedlar: worth, prices, his wares, buying, selling (pure logic, no DOM)
+js/pedlar-ui.js   the Pedlar on screen and the gold counter
 js/progress.js    experience: what a run is worth, levels, the saved total     (pure logic, no DOM)
 js/combat.js      fencing: readiness, the deck, exchanges, binds, enemy habits       (pure logic, no DOM)
 js/arms3d.js      the fencing arms in 3D: lofted low-poly arms and rapiers with painted textures, playing every exchange (three.js)

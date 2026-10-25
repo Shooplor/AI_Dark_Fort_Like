@@ -1,0 +1,67 @@
+// (paths) the project, and where this check keeps its screenshots and the single-file copy (tests/browser/out, not in git)
+const path = require('path');
+const ROOT = path.resolve(__dirname, '..', '..') + '/';
+const OUT = path.join(__dirname, 'out');
+require('fs').mkdirSync(OUT, { recursive: true });
+require('fs').mkdirSync(path.join(OUT, 'lonely'), { recursive: true });
+const { chromium } = require('/opt/node-tools/node_modules/playwright');
+// Gold and the pedlar: the coin counter above the satchel (house and pedlar only); meeting him in a house (Shift+P):
+// the doors close on him and his wares, Sell replaces Use/Drop, buying and selling move gold and things, Leave goes back.
+// On the road: a hooded stranger who is the pedlar trades from the road's satchel, and gold carries into the next house.
+const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode = 1; } else console.log('ok:', m); };
+(async () => {
+  const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox', '--enable-unsafe-swiftshader', '--use-angle=swiftshader'] });
+  for (const [u, tag] of [['file://' + ROOT + 'index.html', 'page'], ['file://' + OUT + '/lonely/TheMaskedHouse.html', 'single']]) {
+    const page = await b.newPage({ viewport: { width: 1600, height: 900 } });
+    const errors = []; page.on('pageerror', (e) => errors.push(e.message));
+    // --- in a house
+    await page.goto(u + '?house=1&fights=0&seed=5'); await page.waitForTimeout(2500);
+    await page.evaluate(() => { const g = DF.ui.game; g.gold = 25; g.slots[0] = g.makeItem(DF.CURIOS[0]); g.slots[1] = g.makeItem(DF.QUEST_ITEMS[0]); DF.ui.renderInventory(); });
+    const vis = (sel) => page.evaluate((s) => { const e = document.querySelector(s); return !!e && getComputedStyle(e).visibility !== 'hidden' && getComputedStyle(e).display !== 'none' && !e.closest('[hidden]'); }, sel);
+    assert(await vis('#stat-gold') && (await page.textContent('#gold-now')) === '25', `${tag}: the gold counter shows 25 in the house`);
+    await page.keyboard.press('Shift+KeyP'); await page.waitForTimeout(3500);
+    assert((await page.evaluate(() => DF.ui.mode)) === 'pedlar' && await vis('#pedlar-wrap') && await vis('#enemy-img'), `${tag}: Shift+P: the doors open on the pedlar and his wares`);
+    assert((await page.textContent('#enemy-name')) === 'The Pedlar' && !(await vis('#enemy-hp-icon')), `${tag}: his name, and no health heart`);
+    assert(await vis('#inventory') && await vis('#stat-gold') && !(await vis('#board-wrap')), `${tag}: your satchel and gold stay, the map goes`);
+    await page.click('#inventory .slot[data-slot="1"]'); await page.waitForTimeout(300);
+    assert(await page.evaluate(() => !document.querySelector('#item-pop [data-act]') && /evidence/.test(document.getElementById('item-pop').textContent)), `${tag}: the evidence cannot be sold`);
+    await page.click('#inventory .slot[data-slot="0"]'); await page.waitForTimeout(300);
+    const pop = await page.evaluate(() => [...document.querySelectorAll('#item-pop button')].map((x) => x.textContent));
+    assert(pop.length === 1 && pop[0] === 'Sell for 7 gold', `${tag}: a curio offers Sell (instead of Use and Drop): ${pop}`);
+    await page.click('#item-pop button[data-act="sell"]'); await page.waitForTimeout(500);
+    let st = await page.evaluate(() => ({ gold: DF.ui.game.gold, slot0: DF.ui.game.slots[0], shown: document.getElementById('gold-now').textContent }));
+    assert(st.gold === 32 && !st.slot0 && st.shown === '32', `${tag}: sold: +7 gold, the slot empties (${JSON.stringify(st)})`);
+    const price = await page.evaluate(() => DF.ui.shop.wares[0].price);
+    await page.click('#pedlar-wares button[data-buy="0"]'); await page.waitForTimeout(500);
+    st = await page.evaluate(() => ({ gold: DF.ui.game.gold, items: DF.ui.game.slots.filter(Boolean).length, sold: DF.ui.shop.wares[0].sold, btn: document.querySelector('#pedlar-wares button[data-buy="0"]').disabled }));
+    assert(st.gold === 32 - price && st.items === 2 && st.sold && st.btn, `${tag}: bought: −${price} gold, into the satchel, sold out (${JSON.stringify(st)})`);
+    await page.evaluate(() => { DF.ui.game.gold = 1; DF.ui.renderInventory(); DF.ui.renderWares(); });
+    assert(await page.evaluate(() => [...document.querySelectorAll('#pedlar-wares button')].every((x) => x.disabled)), `${tag}: with 1 gold nothing can be bought`);
+    await page.click('#pedlar-leave'); await page.waitForTimeout(3500);
+    assert((await page.evaluate(() => DF.ui.mode)) === 'house' && await vis('#board-wrap') && !(await vis('#pedlar-wrap')), `${tag}: Leave: back in the house`);
+    // in a house, opening an item offers Use/Drop again
+    await page.evaluate(() => { const g = DF.ui.game; g.slots[3] = g.makeItem(DF.ITEM_DEFS.potion); g.hp = 5; DF.ui.renderInventory(); });
+    await page.click('#inventory .slot[data-slot="3"]'); await page.waitForTimeout(300);
+    assert(await page.evaluate(() => !!document.querySelector('#item-pop [data-act="use"]') && !document.querySelector('#item-pop [data-act="sell"]')), `${tag}: away from the pedlar, Use and Drop are back`);
+    // --- on the road
+    await page.goto(u + '?seed=21'); await page.waitForTimeout(1200);
+    await page.click('#embark'); await page.waitForTimeout(3600);
+    assert(!(await vis('#stat-gold')), `${tag}: no gold counter on the road`);
+    await page.evaluate(() => { const r = DF.ui.run; r.gold = 30; r.items = [Object.assign({ uid: 50 }, DF.CURIOS[1]), null, null, null, null, null];
+      const node = r.route.nodes.find((n) => n.type === 'stranger'); DF.ui.gateBusy = true; DF.ui.meetPedlarOnRoad(node); });
+    await page.waitForTimeout(3800);
+    assert((await page.evaluate(() => DF.ui.mode)) === 'pedlar' && (await page.textContent('#gold-now')) === '30', `${tag}: a stranger who is the pedlar: his wares, your 30 gold`);
+    await page.click('#inventory .slot[data-slot="0"]'); await page.waitForTimeout(300);
+    await page.click('#item-pop button[data-act="sell"]'); await page.waitForTimeout(400);
+    await page.click('#pedlar-leave'); await page.waitForTimeout(3500);
+    st = await page.evaluate(() => ({ mode: DF.ui.mode, gold: DF.ui.run.gold, items: DF.ui.run.items.filter(Boolean).length }));
+    assert(st.mode === 'route' && st.gold === 30 + 4 && st.items === 0, `${tag}: back on the road with the gold, the letter sold (${JSON.stringify(st)})`);
+    // the gold goes into the next house
+    await page.click('.route-node.can'); await page.waitForTimeout(4500);
+    assert((await page.evaluate(() => DF.ui.game.gold)) === st.gold && (await page.textContent('#gold-now')) === String(st.gold), `${tag}: and carries into the next house`);
+    if (tag === 'page') await page.screenshot({ path: path.join(OUT, 'pedlar_house.png') });
+    assert(errors.length === 0, `${tag}: no errors ${errors}`);
+    await page.close();
+  }
+  await b.close();
+})();

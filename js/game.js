@@ -36,6 +36,9 @@
       this.fight = null; // the fight going on, if any: nothing else happens until it is over
       this.fightsWon = 0;
       this.feats = { hidden: 0, locks: 0, choices: 0 }; // things done in this house that earn experience (js/progress.js)
+      this.gold = opts.gold || 0; // carried along the road (js/shop.js)
+      this.pedlarMet = false; // the pedlar turns up at most once per house
+      this.coinRng = DF.makeRng(this.seed ^ 0x6c0b1d55); // gold and the pedlar have their own dice: the house stays as it was
       this.fightRng = DF.makeRng(this.seed ^ 0x2f6b1c3d); // fights never reshuffle the house
       this.fightsOn = opts.fights !== undefined ? opts.fights : DF.COMBAT ? DF.COMBAT.enabled : false;
 
@@ -148,7 +151,7 @@
       else if (this.hp <= 0) this.status = 'dead';
       else if (this.explored >= this.maxExplorations) this.status = 'caught';
       else if (d.analyze(cell.x, cell.y, this.heldKeyTypes()).frontier === 0) this.status = 'stuck';
-      if (this.status === 'playing') result.fight = this.maybeFight(isNew);
+      if (this.status === 'playing' && !(result.outcome && result.outcome.kind === 'pedlar')) result.fight = this.maybeFight(isNew);
       result.status = this.status;
       return result;
     }
@@ -210,8 +213,13 @@
         const item = this.makeItem(DF.keyItemDef(owed.keyType));
         return this.grantItem(cell, item, 'key', `${flee} Something falls from its sleeve: a [[${item.name}]].`);
       }
+      const gold = DF.GOLD ? DF.GOLD.duel[0] + this.coinRng.int(DF.GOLD.duel[1] - DF.GOLD.duel[0] + 1) : 0; // on the gold dice: fights stay as they were
+      this.gold += gold;
+      const coins = gold ? ` and [[${gold} gold coins]]` : '';
       const item = this.makeItem(rng.chance(0.5) ? DF.ITEM_DEFS.potion : rng.pick(DF.CURIOS));
-      return this.grantItem(cell, item, 'item', `${flee} It leaves something behind: [[${item.name}]].`);
+      const r = this.grantItem(cell, item, 'item', `${flee} It leaves something behind: [[${item.name}]]${coins}.`);
+      r.gold = gold;
+      return r;
     }
 
     /* ---------- room events ---------- */
@@ -271,8 +279,23 @@
           cell.pending = { eventId: def.id, intro: def.intro, labels: def.choices.map((c) => c.label), resolved: false, logEntry: null };
           return { kind: 'choice', text: def.intro, short: 'A choice awaits' };
         }
-        default:
-          return { kind: 'nothing', text: pick(DF.EVENT_TEXT.nothing), short: 'Nothing of note' };
+        default: {
+          const nothing = pick(DF.EVENT_TEXT.nothing);
+          // A room that would hold nothing may hold the pedlar (once per house at most: the doors close and he lays out
+          // his wares) or a purse. Both are on the gold dice, after the house's own roll, so the house stays as it was.
+          const P = DF.PEDLAR, G = DF.GOLD, coin = this.coinRng;
+          if (P && !this.pedlarMet && !cell.entrance && this.explored >= P.houseFrom && coin.chance(P.houseChance)) {
+            this.pedlarMet = true;
+            cell.pedlar = DF.Shop.wares(coin);
+            return { kind: 'pedlar', text: coin.pick(DF.EVENT_TEXT.pedlar), short: 'Met the Pedlar' };
+          }
+          if (G && coin.chance(G.purseChance)) {
+            const n = G.purse[0] + coin.int(G.purse[1] - G.purse[0] + 1);
+            this.gold += n;
+            return { kind: 'gold', gold: n, text: fill(coin.pick(DF.EVENT_TEXT.purse), { n }), short: `Found ${n} gold` };
+          }
+          return { kind: 'nothing', text: nothing, short: 'Nothing of note' };
+        }
       }
     }
 

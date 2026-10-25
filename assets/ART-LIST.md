@@ -14,6 +14,15 @@ counters, inventory slot, unexplored-room field, current-room highlight, player 
 
 All done: rooms, hidden and boarded-up rooms, doors, all six locks.
 
+## Gold and the Pedlar (placeholders)
+
+| Piece | Size | Notes |
+| --- | --- | --- |
+| Gold coin icon | file 68x68 (34x34 on screen) | Above the first satchel slot, beside the number. Drawn by code now. |
+| The Pedlar | 1000x1770 | Same canvas as the enemy, facing left, standing where the enemy stands. Now the duellist's picture darkened to a silhouette. |
+| Ware panel | about 860x160 (430x80 on screen) | Optional: the frame each ware sits in (it may stretch sideways). |
+| Small coin by prices | file 28x28 | Optional. |
+
 ## Experience (placeholders drawn by code)
 
 | Piece | Size | Notes |

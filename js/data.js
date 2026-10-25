@@ -264,6 +264,15 @@
       'A silver fountain murmurs in the corner. You drink, but you are unhurt and it tastes of nothing.',
     ],
     packFull: ' Your satchel is full, so it stays on the floor.',
+    purse: [
+      'A velvet purse lies forgotten on a chair. Inside: [[{n} gold coins]].',
+      'Coins glint in a dish of ash by the hearth: [[{n} gold coins]].',
+      'Someone dropped their winnings here. You gather [[{n} gold coins]].',
+    ],
+    pedlar: [
+      'A lantern bobs in the dark. A hunched figure with a pack of oddments steps out to meet you: [[the Pedlar]].',
+      'Someone has set up a little stall among the dust sheets. The [[Pedlar]] smiles at you over his wares.',
+    ],
   };
 
   /* ---------- Choice events ---------- */

@@ -57,7 +57,7 @@ listing every staged file (the script prints them). The single file is also sent
 ## Testing
 
 ```sh
-node tests/rules.js && node tests/combat.js && node tests/progress.js && node tests/simulate.js && node tests/balance.js
+node tests/rules.js && node tests/combat.js && node tests/progress.js && node tests/shop.js && node tests/simulate.js && node tests/balance.js
 node tools/build.js && tests/browser/run.sh          # every browser check; must end with TOTAL_FAILS=0
 tests/browser/run.sh fight_ui arms_check             # just some
 ```
@@ -76,7 +76,7 @@ tests/browser/run.sh fight_ui arms_check             # just some
 - Useful URL options: `?house=1` skips the gate and road, `&fights=0` switches fights off, `&duel=N` starts a duel at
   once, `&seed=N` picks the house.
 - Testing keys (remove before sharing the game): Shift+F starts a fight in the house, Shift+B makes the next exchange
-  a bind, Shift+L (gate or road) resets the experience to level 1.
+  a bind, Shift+L (gate or road) resets the experience to level 1, Shift+P (house) brings the Pedlar into the room.
 
 ## Commits
 
@@ -96,4 +96,5 @@ The basis is in place (house, road, fencing with cards and adrenaline, 3D arms).
 2. **Deck-building:** choosing which unlocked cards go into the deck (the rules already take any deck and card costs).
 3. **Enemy variety and a boss battle.**
 4. **The road's points doing things:** the campfire, the hooded stranger, the game of chance.
+   Gold and the Pedlar are in (js/shop.js): in houses and as some hooded strangers on the road.
 5. **Content variety:** more kinds of room situations, special cards (with adrenaline costs), enemies, swords.

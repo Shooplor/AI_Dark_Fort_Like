@@ -50,6 +50,12 @@
         </div>
       </div>
 
+      <!-- your gold, above the satchel (js/shop.js, js/pedlar-ui.js) -->
+      <div id="stat-gold" title="Your gold">
+        <svg class="coin" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="#c9962e" stroke="#2a1608" stroke-width="3"/><circle cx="20" cy="20" r="11.5" fill="none" stroke="#f3d27a" stroke-width="2"/><path d="M15 14 h10 M20 14 v13 M15 27 h10" stroke="#7a4e12" stroke-width="2.4" stroke-linecap="round"/><path d="M9 14 a13 13 0 0 1 9 -7" stroke="#fff3c4" stroke-width="2" fill="none" stroke-linecap="round" opacity=".8"/></svg>
+        <span class="gold-n" id="gold-now">0</span>
+        <div id="gold-floaters"></div>
+      </div>
       <div id="inventory" aria-label="Inventory"></div>
       <div id="item-pop" hidden></div>
 
@@ -70,6 +76,13 @@
       <div id="route-wrap" hidden>
         <svg id="route-lines" width="500" height="836" aria-hidden="true"></svg>
         <div id="route-nodes"></div>
+      </div>
+      <!-- the pedlar (js/shop.js, js/pedlar-ui.js): his wares in the frame's opening; your satchel sells -->
+      <div id="pedlar-wrap" hidden>
+        <h2 class="pedlar-title">Wares</h2>
+        <div id="pedlar-wares"></div>
+        <p class="pedlar-hint">Click something in your satchel to sell it.</p>
+        <button type="button" id="pedlar-leave">Leave</button>
       </div>
       <!-- a fight (js/combat.js, js/fight-ui.js): your three slots on the left, the enemy's on the right, your hand below -->
       <div id="fight-wrap" hidden>
@@ -190,6 +203,7 @@
   <script src="js/game.js"></script>
   <script src="js/route.js"></script>
   <script src="js/progress.js"></script>
+  <script src="js/shop.js"></script>
   <script src="js/art.js"></script>
   <script src="js/die3d.js"></script>
   <script src="js/sound.js"></script>
@@ -199,6 +213,7 @@
   <script src="js/vendor/three.min.js"></script>
   <script src="js/arms3d.js"></script>
   <script src="js/fight-ui.js"></script>
+  <script src="js/pedlar-ui.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

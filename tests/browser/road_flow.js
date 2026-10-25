@@ -89,6 +89,13 @@ const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode =
         housesWon++;
       } else {
         await page.waitForTimeout(1700);
+        if (type === 'stranger' && (await page.evaluate((id) => DF.ui.strangerIsPedlar(DF.ui.run.route.nodes[id]), +pick))) {
+          // some hooded strangers are the pedlar (js/pedlar-ui.js): the doors close on him; leave, and the road goes on
+          await page.waitForTimeout(2800);
+          assert(await page.evaluate(() => DF.ui.mode) === 'pedlar', `point ${pick} (stranger) is the pedlar`);
+          await page.click('#pedlar-leave');
+          await page.waitForTimeout(3500);
+        }
         assert(await page.evaluate(() => DF.ui.mode) === 'route', `point ${pick} (${type}) passed through on the map`);
         passed++;
       }

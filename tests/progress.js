@@ -3,7 +3,7 @@
  *   node tests/progress.js */
 const assert = require('assert');
 const path = require('path');
-for (const f of ['rng', 'data', 'dungeon', 'combat', 'game', 'progress']) require(path.join(__dirname, '..', 'js', f + '.js'));
+for (const f of ['rng', 'data', 'dungeon', 'combat', 'shop', 'game', 'progress']) require(path.join(__dirname, '..', 'js', f + '.js'));
 const DF = globalThis.DF;
 const P = DF.Progress, X = DF.XP;
 let checks = 0;

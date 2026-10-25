@@ -3,7 +3,7 @@
  *   node tests/combat.js */
 const assert = require('assert');
 const path = require('path');
-for (const f of ['rng', 'data', 'dungeon', 'combat', 'game']) require(path.join(__dirname, '..', 'js', f + '.js'));
+for (const f of ['rng', 'data', 'dungeon', 'combat', 'shop', 'game']) require(path.join(__dirname, '..', 'js', f + '.js'));
 const DF = globalThis.DF;
 const C = DF.COMBAT;
 let checks = 0;

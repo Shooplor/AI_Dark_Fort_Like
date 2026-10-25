@@ -44,7 +44,7 @@
   };
 
   /** Which style the event box in the right-hand panel gets for an outcome. */
-  const outcomeClass = (o) => (o.kind === 'trap' ? 'trap' : o.kind === 'heal' ? 'heal' : o.kind === 'nothing' ? 'quiet' : o.kind === 'choice' ? 'choice' : o.kind === 'quest' ? 'quest' : '');
+  const outcomeClass = (o) => (o.kind === 'trap' ? 'trap' : o.kind === 'heal' ? 'heal' : o.kind === 'nothing' ? 'quiet' : o.kind === 'choice' ? 'choice' : o.kind === 'quest' ? 'quest' : o.kind === 'gold' ? 'gold' : '');
 
   // Movement keys by physical position (`code`, so they work on any keyboard layout, e.g. Cyrillic) and by
   // the character typed (`key`) as a fallback. Numbers 1-9 pick a choice.
@@ -142,8 +142,9 @@
           if (ev.code === 'KeyV' && !ev.repeat) return this.setVoiceOn(vo('toggle'));
           if (this.paused) return; // nothing else works while the game is paused
           // testing keys: Shift+F starts a fight in the room you are in; Shift+B makes your next card bind; Shift+L (gate,
-          // road) resets the experience to level 1
+          // road) resets the experience to level 1; Shift+P brings the pedlar into the room you are in
           if (ev.shiftKey && ev.code === 'KeyL' && !ev.repeat && (this.mode === 'gate' || this.mode === 'route')) return this.resetLevel();
+          if (ev.shiftKey && ev.code === 'KeyP' && !ev.repeat && this.mode === 'house' && !this.busy && this.game.status === 'playing') return this.devPedlar();
           if (ev.shiftKey && ev.code === 'KeyF' && !ev.repeat && this.mode === 'house' && !this.busy && this.game.status === 'playing') return this.devFight();
           if (ev.shiftKey && ev.code === 'KeyB' && !ev.repeat && this.mode === 'fight' && this.game.fight) {
             this.game.fight.forceBind = true;
@@ -336,6 +337,10 @@
       this.renderHp(r.hpAfter - r.hpBefore);
       this.renderInventory();
       this.renderChronicle();
+      if (r.newRoom && r.outcome.kind === 'pedlar' && r.status === 'playing') {
+        await this.meetPedlarInHouse(r.cell); // the doors close on the pedlar and his wares (js/pedlar-ui.js)
+        return;
+      }
       if (r.fight) {
         await sleep(r.newRoom ? 700 : 250); // a moment to see the room, then steel is drawn (js/fight-ui.js)
         await this.startFight(r.fight);
@@ -735,7 +740,7 @@
       const box = $('#inventory');
       const uids = new Set();
       box.innerHTML = '';
-      this.game.slots.forEach((item, i) => {
+      this.satchel().slots.forEach((item, i) => {
         const b = document.createElement('button');
         b.type = 'button';
         b.className = 'slot' + (item ? ' has' : '') + (item && item.quest ? ' quest' : '');
@@ -758,19 +763,33 @@
         box.appendChild(b);
       });
       this.prevUids = uids;
+      this.renderGold();
+    }
+
+    /** Whatever holds your satchel and purse right now: the house, or (meeting the pedlar on the road) the road's. */
+    satchel() {
+      return this.mode === 'pedlar' && this.shop ? this.shop.owner : this.game;
     }
 
     togglePop(slot) {
       const open = !$('#item-pop').hidden && $('#item-pop').dataset.slot === String(slot);
-      if (open || this.busy || this.game.status !== 'playing') return this.closePop();
-      const item = this.game.slots[slot];
+      const selling = this.mode === 'pedlar';
+      if (open || (!selling && (this.busy || this.game.status !== 'playing')) || (selling && this.shopBusy)) return this.closePop();
+      const item = this.satchel().slots[slot];
       if (!item) return this.closePop();
       snd('play', 'click');
       const pop = $('#item-pop');
       pop.dataset.slot = slot;
       pop.className = item.quest ? 'quest' : '';
+      // with the pedlar, Sell takes the place of Use and Drop
+      const price = selling ? DF.Shop.sellPrice(item) : 0;
+      const buttons = selling
+        ? price
+          ? `<button type="button" data-act="sell">Sell for ${price} gold</button>`
+          : `<span class="no-sale">${item.quest ? 'You cannot part with the evidence.' : 'He has no use for it.'}</span>`
+        : `${item.usable ? '<button type="button" data-act="use">Use</button>' : ''}${item.quest ? '' : '<button type="button" data-act="drop" class="quiet">Drop</button>'}`;
       pop.innerHTML = `${item.quest ? '<div class="tag">Evidence</div>' : ''}<h3>${esc(item.name)}</h3><p>${esc(item.desc)}</p>
-        <div class="row">${item.usable ? '<button type="button" data-act="use">Use</button>' : ''}${item.quest ? '' : '<button type="button" data-act="drop" class="quiet">Drop</button>'}</div>`;
+        <div class="row">${buttons}</div>`;
       pop.hidden = false;
       document.querySelectorAll('.slot').forEach((s) => s.classList.toggle('open', s.dataset.slot === String(slot)));
       pop.querySelectorAll('button').forEach((btn) =>
@@ -788,6 +807,7 @@
     }
 
     itemAction(slot, act) {
+      if (act === 'sell') return this.sellItem(slot); // js/pedlar-ui.js
       const g = this.game;
       const res = act === 'use' ? g.useItem(slot) : g.dropItem(slot);
       if (res.ok && act === 'drop') snd('play', 'drop');
