@@ -18,7 +18,7 @@ All done: rooms, hidden and boarded-up rooms, doors, all six locks.
 
 | Piece | Size | Notes |
 | --- | --- | --- |
-| Gold coin icon | file 68x68 (34x34 on screen) | Above the first satchel slot, beside the number. Drawn by code now. |
+| Gold coins (done) | 100x100 (50x50 on screen) | `assets/ui/gold-coins.png`, above the first satchel slot, beside the number. |
 | The Pedlar | 1000x1770 | Same canvas as the enemy, facing left, standing where the enemy stands. Now the duellist's picture darkened to a silhouette. |
 | Ware panel | about 860x160 (430x80 on screen) | Optional: the frame each ware sits in (it may stretch sideways). |
 | Small coin by prices | file 28x28 | Optional. |

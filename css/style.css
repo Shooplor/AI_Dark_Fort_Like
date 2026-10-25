@@ -686,13 +686,13 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 /* ------------------------------------------------------------------ GOLD AND THE PEDLAR (js/shop.js, js/pedlar-ui.js) */
 
 /* your gold, above the satchel's first slot (a placeholder coin until drawn); in a house and with the pedlar */
-#stat-gold { position: absolute; left: 20px; top: 606px; z-index: 5; display: flex; align-items: center; gap: 8px; pointer-events: auto; }
+#stat-gold { position: absolute; left: 16px; top: 598px; z-index: 5; display: flex; align-items: center; gap: 6px; pointer-events: auto; }
 #stage:not(.mode-house):not(.mode-pedlar) #stat-gold { visibility: hidden; }
-#stat-gold .coin { width: 34px; height: 34px; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .8)); }
+#stat-gold .coin { width: 50px; height: 50px; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .8)); transform-origin: 50% 85%; } /* the owner's coins (assets/ui/gold-coins.png, 100x100) */
 #stat-gold .gold-n { font-family: var(--display); font-weight: 700; font-size: 27px; line-height: 1; color: #f0cd6a; text-shadow: 0 2px 4px #000; }
 #stat-gold.pulse .coin { animation: coinPulse .5s cubic-bezier(.2, .8, .3, 1); }
-@keyframes coinPulse { 40% { transform: scale(1.3) rotate(-12deg); } }
-#gold-floaters { position: absolute; left: 44px; top: -6px; width: 80px; height: 10px; pointer-events: none; }
+@keyframes coinPulse { 40% { transform: scale(1.22) rotate(-8deg); } }
+#gold-floaters { position: absolute; left: 56px; top: -4px; width: 80px; height: 10px; pointer-events: none; }
 .gold-float { position: absolute; left: 0; top: 0; font-family: var(--display); font-weight: 700; font-size: 22px; text-shadow: 0 2px 4px #000; animation: goldFloat 1.3s ease-out forwards; }
 .gold-float.up { color: #ffe08a; } .gold-float.down { color: #d9a0a8; }
 @keyframes goldFloat { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-38px); } }
