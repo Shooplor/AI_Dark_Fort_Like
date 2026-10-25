@@ -26,11 +26,11 @@ require('fs').mkdirSync(shots, { recursive: true });
       await page.waitForTimeout(3200);
       const st = await page.evaluate(() => ({ mode: DF.ui.mode, hand: document.querySelectorAll('#fight-hand .fcard').length, down: document.querySelectorAll('#fight-hand .fcard.down').length,
         enemy: !document.getElementById('enemy').hidden && document.getElementById('enemy-img').naturalWidth, right: getComputedStyle(document.getElementById('right')).visibility,
-        ready: document.getElementById('ready-now').textContent, readyVis: getComputedStyle(document.getElementById('stat-ready')).visibility, prompt: document.getElementById('fight-prompt').textContent }));
+        eyeVis: getComputedStyle(document.getElementById('stat-turns')).visibility, swords: !!document.getElementById('stat-ready'), prompt: document.getElementById('fight-prompt').textContent }));
       console.log(t, JSON.stringify(st));
       assert(st.mode === 'fight' && st.enemy > 0 && st.right === 'hidden', `${t}: fight screen with the enemy in place of the text panel`);
       assert(st.hand === (expect === 'ambush' ? 3 : 4) && st.down === 0, `${t}: ${st.hand} cards dealt face up`);
-      assert(st.readyVis === 'visible' && st.ready === String(ready), `${t}: readiness shown (${st.ready})`);
+      assert(st.eyeVis === 'visible' && !st.swords, `${t}: the eye is shown (it counts readiness too); no separate swords counter`);
       await page.screenshot({ path: shots + t + '-2deal.png' });
       // hover lifts a card
       const first = await page.$('#fight-hand .fcard:not(.closed)');

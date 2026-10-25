@@ -153,6 +153,7 @@
     const g = this.game;
     if (!g) return;
     const now = $('#ready-now');
+    if (!now) return; // readiness is shown by the eye now (it equals the rooms explored)
     if (now.textContent !== String(g.readiness)) {
       now.textContent = g.readiness;
       const nums = $('#ready-nums');

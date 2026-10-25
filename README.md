@@ -90,8 +90,8 @@ comes later. The total is kept in the browser (`js/progress.js`); **Shift+L** on
 
 ## Fencing
 
-- **Combat readiness** (crossed swords, beside the eye) rises by 1 with every new room explored (and by 2 after a
-  fight you win), up to 20. When a fight breaks out it is the chance that **you strike first**: 5% per point.
+- **Combat readiness** is shown by the eye: it equals the rooms explored (up to 20), and each point is a 5% chance to
+  strike first when a fight breaks out.
 - **When:** sometimes, on arriving in a room: rarely at first (2% in the first new rooms), more often as the house is
   explored (14% by the 20th); walking back through a room you know has about a third of that chance.
 - **AMBUSH!** (the enemy strikes first, and you start with 3 cards) or **En garde** (you do) is shown on the doors as

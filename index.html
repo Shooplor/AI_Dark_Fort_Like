@@ -36,16 +36,11 @@
         <div id="stat-turns">
           <img id="eye-icon" src="assets/ui/eye-counter.png" alt="Turns" draggable="false">
           <div class="nums" id="eye-nums"><span class="big" id="turn-now">0</span><span class="dash">/</span><span class="small" id="turn-max">20</span></div>
-          <div class="hud-tip" role="tooltip" id="eye-tip">Reach 20, and you're discovered.</div>
-        </div>
-        <div id="stat-ready">
-          <img id="ready-icon" src="assets/ui/readiness-counter.png" alt="Combat readiness" draggable="false">
-          <div class="nums" id="ready-nums"><span class="big" id="ready-now">0</span><span class="dash">/</span><span class="small" id="ready-max">20</span></div>
-          <div class="hud-tip" role="tooltip">The readier you are, the likelier you strike first.</div>
+          <div class="hud-tip" role="tooltip" id="eye-tip">Reach 20, and you're discovered. Every room also readies you to fight.</div>
         </div>
         <!-- experience: your level and how far into it (on the gate and the road; js/progress.js) -->
         <div id="stat-level">
-          <div class="xpbar" id="level-bar"><div class="xp-slot"></div><div class="xp-fill"></div><div class="xp-gem"></div><span class="xp-nums" id="level-nums">0 / 100</span><span class="xp-lv" id="level-now">1</span></div>
+          <div class="xpbar" id="level-bar"><div class="xp-slot"></div><div class="xp-fill"></div><div class="xp-ornament"></div><div class="xp-gem"></div><span class="xp-nums" id="level-nums">0 / 100</span><span class="xp-lv" id="level-now">1</span></div>
           <div class="hud-tip" role="tooltip">Every run earns experience, however it ends.</div>
         </div>
       </div>
@@ -184,7 +179,7 @@
           <div id="overlay-xp" hidden>
             <ul id="xp-lines"></ul>
             <div class="xp-sum"><span>Experience</span><b id="xp-total">+0</b></div>
-            <div class="xp-level"><div class="xpbar big" id="xp-bar"><div class="xp-slot"></div><div class="xp-fill"></div><div class="xp-gem"></div><span class="xp-nums" id="xp-level-nums"></span><span class="xp-lv" id="xp-level-now">1</span></div></div>
+            <div class="xp-level"><div class="xpbar big" id="xp-bar"><div class="xp-slot"></div><div class="xp-fill"></div><div class="xp-ornament"></div><div class="xp-gem"></div><span class="xp-nums" id="xp-level-nums"></span><span class="xp-lv" id="xp-level-now">1</span></div></div>
             <div id="xp-levelup" aria-live="polite"></div>
           </div>
           <div class="overlay-buttons">

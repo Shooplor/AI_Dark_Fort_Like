@@ -193,7 +193,6 @@
       } else if (f.status === 'won') {
         this.fight = null;
         this.fightsWon++;
-        this.readiness = Math.min(DF.COMBAT.readinessMax, this.readiness + DF.COMBAT.readinessAfterWin);
         r.reward = this.fightReward(f);
         this.log.push({ turn: this.explored, name: this.cell.name, summary: `Fought off ${f.enemy.name.replace(/^The /, 'the ')}` });
         if (this.questCount() >= this.questTotal) this.status = 'won';

@@ -65,48 +65,45 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
   background: rgba(14, 7, 11, .95); border: 1px solid var(--gold-dim); border-radius: 4px; box-shadow: 0 6px 22px rgba(0, 0, 0, .75);
   opacity: 0; transform: translateY(-4px); transition: opacity .18s ease-out, transform .18s ease-out;
 }
-/* the three counters sit in one row: health, the eye (discovery), combat readiness */
-#stat-health .hud-tip { left: 14px; }
-#stat-turns .hud-tip { left: 130px; }
+/* the two counters sit in one row under the experience bar: health, and the eye (discovery and combat readiness) */
+#stat-health .hud-tip { left: 62px; }
+#stat-turns .hud-tip { left: 208px; }
 #stat-ready .hud-tip { left: auto; right: 1168px; } /* ends before the carved frame */
 #stat-health:hover .hud-tip, #stat-turns:hover .hud-tip, #stat-ready:hover .hud-tip { opacity: 1; transform: none; transition-delay: .12s; }
-/* experience: the owner's bar (assets/ui/source/experience-bar.psd, 300x100: the slot, the gold fill, the gem; one PNG
-   each, on the same canvas) at the top left, the heart, eye and swords in a row below. The slot and the fill stretch
-   only in their plain middle (border-images cut at x 120 and x 210 of the art), so the gem, the ornament, the fill's
-   drawn end and its highlight keep their shape at any length. The gem is on top, so the fill starts hidden behind it.
-   --s is the scale; --p (0-1) how full it is. */
+/* experience: the owner's bar (assets/ui/source/experience-bar.psd, 444x100, four layers on one canvas: the slot, the
+   gold fill, the ornament, the gem) at the top left, the heart, eye and swords in a row below. Drawn at its length:
+   nothing stretches, it is only scaled (--s). The ornament and the gem lie over the fill, which starts hidden behind the
+   gem. --p (0-1) is how full it is. */
 @property --p { syntax: '<number>'; inherits: true; initial-value: 0; }
-.xpbar { --s: .75; --p: 0; position: relative; height: calc(100px * var(--s)); width: calc(440px * var(--s)); transition: --p .45s cubic-bezier(.2, .8, .3, 1); }
-.xpbar .xp-slot, .xpbar .xp-fill { position: absolute; inset: 0; box-sizing: border-box; border-style: solid;
-  border-width: 0 calc(90px * var(--s)) 0 calc(120px * var(--s)); }
-.xpbar .xp-slot { border-image: url('../assets/ui/xp-slot.png') 0 90 0 120 fill stretch; }
-.xpbar .xp-fill { border-image: url('../assets/ui/xp-fill.png') 0 90 0 120 fill stretch;
-  /* revealed from behind the gem to past its drawn end. The moving front leans like that end: 6px across the gold's 26px
-   (rows 37-63), so 23px across the whole 100px canvas; empty, it lies wholly behind the gem (whose edge is at x 64-69
-   on those rows) */
-  clip-path: polygon(0 0, calc(74px * var(--s) + var(--p) * (100% - 64px * var(--s))) 0,
-    calc(74px * var(--s) + var(--p) * (100% - 64px * var(--s)) - 23px * var(--s)) 100%, 0 100%); }
-.xpbar .xp-gem { position: absolute; left: 0; top: 0; width: calc(300px * var(--s)); height: 100%; background: url('../assets/ui/xp-gem.png') left top / 100% 100% no-repeat; }
-/* the numbers over the visible part of the slot (y 37-63 on the art) */
-.xpbar .xp-nums { position: absolute; left: calc(76px * var(--s)); right: calc(34px * var(--s)); top: calc(37px * var(--s)); height: calc(26px * var(--s));
-  display: grid; place-items: center; font-family: var(--display); font-weight: 700; font-size: calc(16px * var(--s)); line-height: 1; letter-spacing: .06em;
-  color: #f6ead0; text-shadow: 0 0 2px #000, 0 1px 2px #000; white-space: nowrap; }
+.xpbar { --s: .9; --p: 0; position: relative; width: calc(444px * var(--s)); height: calc(100px * var(--s)); transition: --p .45s cubic-bezier(.2, .8, .3, 1); }
+.xpbar > div { position: absolute; inset: 0; background: center / 100% 100% no-repeat; }
+.xpbar .xp-slot { background-image: url('../assets/ui/xp-slot.png'); }
+.xpbar .xp-ornament { background-image: url('../assets/ui/xp-ornament.png'); }
+.xpbar .xp-gem { background-image: url('../assets/ui/xp-gem.png'); }
+/* the fill is revealed from behind the gem to past its drawn end. Its moving front leans like that end (11px across its
+   rows 36-64, so 39px across the whole 100px canvas); empty, it lies wholly behind the gem */
+.xpbar .xp-fill { background-image: url('../assets/ui/xp-fill.png');
+  clip-path: polygon(0 0, calc((78px + var(--p) * 366px) * var(--s)) 0, calc((78px + var(--p) * 366px - 39px) * var(--s)) 100%, 0 100%); }
+/* the numbers over the slot's open part (x 78-380, y 34-66 on the art) */
+.xpbar .xp-nums { position: absolute; left: calc(78px * var(--s)); width: calc(302px * var(--s)); top: calc(34px * var(--s)); height: calc(32px * var(--s));
+  display: grid; place-items: center; font-family: var(--display); font-weight: 700; font-size: calc(18px * var(--s)); line-height: 1; letter-spacing: .06em;
+  color: #f6ead0; text-shadow: 0 0 2px #000, 0 1px 2px #000, 0 0 6px rgba(0, 0, 0, .7); white-space: nowrap; }
 /* the level number, centred on the gem (its centre on the art: x 43, y 51; the shift corrects where the font sits its
    numerals) */
 .xpbar .xp-lv { position: absolute; left: calc(43px * var(--s)); top: calc(51px * var(--s)); transform: translate(-50%, var(--lv-y, -50%));
-  --lv-y: -39.5%; font-family: var(--display); font-weight: 700; font-size: calc(30px * var(--s)); line-height: 1; color: #f3dfa0; text-shadow: 0 0 3px #000, 0 2px 2px #000; }
+  --lv-y: -41.7%; font-family: var(--display); font-weight: 700; font-size: calc(30px * var(--s)); line-height: 1; color: #f3dfa0; text-shadow: 0 0 3px #000, 0 2px 2px #000; }
 .xpbar.up .xp-lv { animation: levelUp .8s cubic-bezier(.2, .8, .3, 1); }
-#stat-level .xpbar { --s: .9; position: absolute; left: 8px; top: 2px; width: 400px; pointer-events: auto; } /* as wide as the row below */
+#stat-level .xpbar { position: absolute; left: 8px; top: 2px; pointer-events: auto; } /* at 90%: 400 wide, as wide as the row below */
 #stat-level .hud-tip { left: 14px; top: 86px; }
 #stat-level:hover .hud-tip { opacity: 1; transform: none; transition-delay: .12s; }
-#hp-icon { left: 18px; top: 95px; width: 36px; height: 36px; }
-#eye-icon { left: 136px; top: 96px; width: 62px; height: 33.5px; }
+#hp-icon { left: 66px; top: 95px; width: 36px; height: 36px; }
+#eye-icon { left: 214px; top: 96px; width: 62px; height: 33.5px; }
 #ready-icon { left: 294px; top: 95px; width: 36px; height: 36px; }
 .nums { position: absolute; display: flex; align-items: baseline; font-family: var(--display); line-height: 1; white-space: nowrap; }
 .nums .big { font-weight: 700; font-size: 29px; }
 .nums .dash { font-weight: 500; font-size: 29px; margin: 0 -2px; color: #4a373c; }
 .nums .small { font-weight: 700; font-size: 21px; color: #795861; }
-#hp-nums { left: 58px; top: 97px; }
+#hp-nums { left: 106px; top: 97px; }
 #ready-nums { left: 334px; top: 97px; }
 #ready-nums .big { color: #c9a048; }
 /* entering a house: the eye, then readiness, rise a little and fade in (js/road-ui.js setMode) */
@@ -114,7 +111,7 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 #stat-ready.arrive > img, #stat-ready.arrive > .nums { animation-delay: .14s; }
 @keyframes hudArrive { from { opacity: 0; translate: 0 16px; } to { opacity: 1; translate: 0 0; } }
 #hp-nums .big { color: #d55a7d; }
-#eye-nums { left: 202px; top: 97px; }
+#eye-nums { left: 280px; top: 97px; }
 #eye-nums .big { color: #6d99c2; }
 .nums.tick { animation: numTick .8s; }
 .nums.dmg { animation: numHurt .7s; }
@@ -531,7 +528,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 .xp-sum { display: flex; justify-content: space-between; padding: 4px 2px 12px; font-family: var(--display); letter-spacing: .12em; text-transform: uppercase; font-size: 15px; color: #c9a87a; }
 .xp-sum b { font-size: 22px; color: #f0d98c; letter-spacing: 0; }
 .xp-level { display: flex; justify-content: center; }
-.xpbar.big { --s: 1; width: 440px; }
+.xpbar.big { --s: 1; }
 @keyframes levelUp { 40% { transform: translate(-50%, var(--lv-y, -50%)) scale(1.6); text-shadow: 0 0 3px #000, 0 0 22px rgba(255, 220, 130, 1); } }
 #xp-levelup { height: 30px; margin-top: 10px; text-align: center; font-family: var(--display); font-weight: 700; font-size: 22px; letter-spacing: .14em; color: #f0d98c; text-shadow: 0 0 14px rgba(240, 200, 110, .7); }
 #xp-levelup.show { animation: levelWord 1.1s cubic-bezier(.2, .8, .3, 1) both; }

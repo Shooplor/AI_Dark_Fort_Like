@@ -55,14 +55,14 @@
     // entering a house from the road: the eye, readiness and the inventory slots rise into place and fade in (not after
     // a fight: they stayed)
     if (mode === 'house' && prev !== 'house' && prev !== 'fight' && prev !== 'pedlar') {
-      for (const id of ['#stat-turns', '#stat-ready', '#inventory']) {
+      for (const id of ['#stat-turns', '#inventory']) {
         const el = $(id);
         el.classList.remove('arrive');
         void el.offsetWidth;
         el.classList.add('arrive');
       }
       clearTimeout(this.arriveTimer); // done: let the counters' own pulses (a point spent) play again
-      this.arriveTimer = setTimeout(() => ['#stat-turns', '#stat-ready', '#inventory'].forEach((id) => $(id).classList.remove('arrive')), 1100);
+      this.arriveTimer = setTimeout(() => ['#stat-turns', '#inventory'].forEach((id) => $(id).classList.remove('arrive')), 1100);
     }
     $('#route-wrap').hidden = mode === 'house' || mode === 'fight' || mode === 'pedlar';
     $('#fight-wrap').hidden = mode !== 'fight';
