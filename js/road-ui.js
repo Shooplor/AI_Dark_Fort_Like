@@ -16,6 +16,7 @@
     try { if (DF.Voice && DF.Voice[method]) DF.Voice[method](...args); } catch (e) { /* voice is optional */ }
   };
   const reduced = () => globalThis.matchMedia && globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const escHtml = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
   const P = DF.UI.prototype;
 
   /* where the points sit on the map (the 500 x 836 area inside the frame) */
@@ -89,7 +90,7 @@
   /** Start a new run: a fresh road, full health, an empty satchel, the doors shut. */
   P.newRun = function (seed) {
     seed = seed === undefined ? (Math.random() * 4294967296) >>> 0 : seed >>> 0;
-    this.run = { route: new DF.Route(seed), hp: DF.CONFIG.maxHp, items: [], node: null, houses: 0 };
+    this.run = { route: new DF.Route(seed), hp: DF.CONFIG.maxHp, items: [], node: null, houses: 0, xp: DF.Progress.newRun() };
     this.game = null;
     this.busy = false;
     this.gateBusy = false;
@@ -112,6 +113,90 @@
     ng.textContent = 'New game';
     this.renderRoute();
     this.renderRoadCard();
+    this.renderLevel();
+    $('#overlay-xp').hidden = true;
+  };
+
+  /* ---------------------------------------------------------------- experience (js/progress.js) */
+
+  /** The level badge on the gate and the road: the saved total. */
+  P.renderLevel = function () {
+    const L = DF.Progress.level(DF.Progress.load());
+    $('#level-now').textContent = L.level;
+    $('#level-fill').style.width = (100 * L.into) / L.need + '%';
+    $('#level-nums').textContent = `${L.into} / ${L.need} XP`;
+  };
+
+  /** The run is over (fallen, discovered, stuck, or the road's end reached): count its experience in on the end screen,
+   *  line by line, the bar filling (a level-up flares), and keep the new total. */
+  P.awardXp = async function (status) {
+    const run = this.run;
+    const box = $('#overlay-xp');
+    if (!run || run.xpDone) return;
+    run.xpDone = true;
+    // the house the run ended in (unless it was escaped, and so already counted)
+    if (this.game && status !== 'won') run.xp.houses.push(DF.Progress.house(this.game, false));
+    const { lines, total } = DF.Progress.tally(run.xp);
+    const before = DF.Progress.load();
+    DF.Progress.save(before + total);
+    const list = $('#xp-lines');
+    list.innerHTML = '';
+    $('#xp-total').textContent = '+0';
+    $('#xp-levelup').className = '';
+    $('#xp-levelup').textContent = '';
+    const fill = $('#xp-fill'), badge = $('#overlay-xp .level-badge');
+    const show = (xp, animate) => {
+      const L = DF.Progress.level(xp);
+      if (!animate) fill.style.transition = 'none';
+      fill.style.width = (100 * L.into) / L.need + '%';
+      if (!animate) { void fill.offsetWidth; fill.style.transition = ''; }
+      $('#xp-level-now').textContent = L.level;
+      $('#xp-level-nums').textContent = `${L.into} / ${L.need}`;
+      return L;
+    };
+    show(before, false);
+    box.hidden = false;
+    const token = (this.xpToken = {}); // a new run (or another end screen) stops this one
+    let sum = 0, level = DF.Progress.level(before).level;
+    await sleep(900);
+    for (const line of lines) {
+      if (this.xpToken !== token || $('#overlay').hidden) return;
+      const li = document.createElement('li');
+      li.innerHTML = `<span>${escHtml(line.label)}</span><b>+${line.xp}</b>`;
+      list.appendChild(li);
+      snd('play', 'xpTick');
+      sum += line.xp;
+      $('#xp-total').textContent = '+' + sum;
+      const now = DF.Progress.level(before + sum);
+      if (now.level > level) {
+        // the bar runs to full, the badge flares with the new number, and fills on from empty
+        fill.style.width = '100%';
+        await sleep(450);
+        level = now.level;
+        show(before + sum, false);
+        fill.style.width = '0%';
+        void fill.offsetWidth;
+        show(before + sum, true);
+        badge.classList.remove('up');
+        void badge.offsetWidth;
+        badge.classList.add('up');
+        const word = $('#xp-levelup');
+        word.textContent = `Level ${level}!`;
+        word.classList.remove('show');
+        void word.offsetWidth;
+        word.classList.add('show');
+        snd('play', 'levelUp');
+      } else show(before + sum, true);
+      await sleep(reduced() ? 60 : 420);
+    }
+    this.renderLevel();
+  };
+
+  /** Testing: the level back to 1 (Shift+L on the gate or the road). */
+  P.resetLevel = function () {
+    DF.Progress.reset();
+    this.renderLevel();
+    this.renderRoadCard(null, 'Experience reset to level 1 (testing).');
   };
 
   /** "Embark": the great doors grind open onto the road. */
@@ -308,6 +393,8 @@
     const R = this.run.route;
     const node = R.go(id);
     if (!node) return;
+    this.run.xp.places++;
+    if (node.type === 'final') this.run.xp.reachedFinal = true;
     this.gateBusy = true;
     this.renderRoute(); // the pendant glides to the point (CSS transition) while the figure walks
     this.setWalking(true);
@@ -341,8 +428,12 @@
     run.hp = g.hp;
     run.items = g.slots.map((it) => (it && !it.quest && !it.keyType ? it : null)); // evidence and keys stay in their house
     run.houses++;
+    run.xp.houses.push(DF.Progress.house(g, true));
     if (node) run.route.done.add(node.id);
-    if (node && node.type === 'final') return this.showRunWon();
+    if (node && node.type === 'final') {
+      run.xp.cleared = true;
+      return this.showRunWon();
+    }
     this.gateBusy = true;
     await sleep(1100); // let the last find be seen
     await this.closeGate();
@@ -366,6 +457,7 @@
     snd('stopMusic', 3);
     snd('play', 'win');
     $('#overlay').hidden = false;
+    this.awardXp('won');
   };
 
   /** "New game" anywhere: a new run on the road (or, in the developer shortcut, a new house). */

@@ -141,7 +141,9 @@
           if (ev.code === 'KeyM' && !ev.repeat) return this.setMuted(snd('toggleMute'));
           if (ev.code === 'KeyV' && !ev.repeat) return this.setVoiceOn(vo('toggle'));
           if (this.paused) return; // nothing else works while the game is paused
-          // testing keys: Shift+F starts a fight in the room you are in; Shift+B makes your next card bind
+          // testing keys: Shift+F starts a fight in the room you are in; Shift+B makes your next card bind; Shift+L (gate,
+          // road) resets the experience to level 1
+          if (ev.shiftKey && ev.code === 'KeyL' && !ev.repeat && (this.mode === 'gate' || this.mode === 'route')) return this.resetLevel();
           if (ev.shiftKey && ev.code === 'KeyF' && !ev.repeat && this.mode === 'house' && !this.busy && this.game.status === 'playing') return this.devFight();
           if (ev.shiftKey && ev.code === 'KeyB' && !ev.repeat && this.mode === 'fight' && this.game.fight) {
             this.game.fight.forceBind = true;
@@ -920,6 +922,8 @@
       snd('stopMusic', status === 'won' ? 3 : 2);
       snd('play', { won: 'win', dead: 'lose', caught: 'caught' }[status] || 'stuck');
       $('#overlay').hidden = false;
+      if (this.run) this.awardXp(status); // on the road: the run is over, and earns its experience
+      else $('#overlay-xp').hidden = true;
     }
 
     /* ---------------------------------------------------------------- pause and chronicle */

@@ -14,6 +14,15 @@ counters, inventory slot, unexplored-room field, current-room highlight, player 
 
 All done: rooms, hidden and boarded-up rooms, doors, all six locks.
 
+## Experience (placeholders drawn by code)
+
+| Piece | Size | Notes |
+| --- | --- | --- |
+| Level badge | file 92x92 (46x46 on screen) | The round badge with the level number in it (the number is live text: leave the middle plain). Beside your health on the gate and the road, and on the end screen. |
+| Experience bar frame | file 340x20 (170x10 on screen; 440x12 on the end screen) | The empty bar; it may stretch, so tell me which ends must not. |
+| Experience bar fill | same height as the frame | What fills it (gold now). |
+| Level-up burst | about 200x200 | Optional: a flash behind the badge when a level is reached. |
+
 ## 2. The road (travel map)
 
 Drawn by code now as simple line icons in the centre area (about 500x836 on screen). Sizes are file sizes

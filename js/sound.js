@@ -381,6 +381,16 @@
       [50, 57, 62, 66].forEach((m) => tone(b, b.sfx, { t: t + 0.6, f: mtof(m), a: 0.3, dur: 3.4, peak: 0.09 }));
       tone(b, b.sfx, { t: t + 0.9, f: 2349, type: 'triangle', dur: 0.7, peak: 0.05 });
     },
+    /* ---- experience (the end of a run, js/road-ui.js) ---- */
+    // a line of the tally counting in: a small bright tick
+    xpTick(b, t) {
+      pluck(b, b.sfx, mtof(rand(84, 88)), t, 0.5, 0.35);
+    },
+    // a new level: a rising arpeggio that rings on
+    levelUp(b, t) {
+      [67, 71, 74, 79, 83].forEach((m, i) => pluck(b, b.sfx, mtof(m), t + i * 0.07, 0.9, 1.4));
+      tone(b, b.sfx, { t: t + 0.35, f: mtof(91), type: 'triangle', a: 0.02, dur: 1.2, peak: 0.05 });
+    },
     lose(b, t) {
       [62, 60, 57].forEach((m, i) => tone(b, b.sfx, { t: t + i * 0.55, f: mtof(m), type: 'sawtooth', a: 0.02, dur: 1.5, peak: 0.14, lp: 520 }));
       tone(b, b.sfx, { t, f: 73.42, a: 0.5, dur: 4, peak: 0.22 });

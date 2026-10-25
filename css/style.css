@@ -70,6 +70,21 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 #stat-turns .hud-tip { left: 130px; }
 #stat-ready .hud-tip { left: auto; right: 1168px; } /* ends before the carved frame */
 #stat-health:hover .hud-tip, #stat-turns:hover .hud-tip, #stat-ready:hover .hud-tip { opacity: 1; transform: none; transition-delay: .12s; }
+/* experience (placeholders until drawn): a round level badge, a thin bar and the numbers, beside your health on the gate
+   and the road */
+#stat-level { display: none; }
+#stage.mode-gate #stat-level, #stage.mode-route #stat-level { display: block; }
+#stat-level .level-badge { position: absolute; left: 136px; top: 34px; pointer-events: auto; }
+#stat-level .level-bar { position: absolute; left: 188px; top: 46px; width: 170px; }
+#stat-level .level-nums { position: absolute; left: 190px; top: 61px; }
+#stat-level .hud-tip { left: 136px; }
+#stat-level:hover .hud-tip { opacity: 1; transform: none; transition-delay: .12s; }
+.level-badge { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; box-sizing: border-box;
+  background: radial-gradient(circle at 40% 35%, #4a2d50, #1d1020 70%); border: 2px solid #c9a048; box-shadow: 0 0 0 2px #120a0e, 0 3px 8px rgba(0, 0, 0, .7); }
+.level-badge .level-n { font-family: var(--display); font-weight: 700; font-size: 21px; color: #f0d98c; line-height: 1; text-shadow: 0 1px 2px #000; }
+.level-bar { height: 10px; border-radius: 5px; background: #170c12; border: 1px solid #6a5130; box-shadow: inset 0 1px 3px #000; overflow: hidden; }
+.level-bar i { display: block; height: 100%; width: 0; background: linear-gradient(#e6c46a, #b0802e); box-shadow: 0 0 8px rgba(240, 200, 110, .6); transition: width .45s cubic-bezier(.2, .8, .3, 1); }
+.level-nums { font-family: var(--display); font-size: 13px; letter-spacing: .06em; color: #a58a5a; white-space: nowrap; }
 #hp-icon { left: 18px; top: 41px; width: 36px; height: 36px; }
 #eye-icon { left: 136px; top: 42px; width: 62px; height: 33.5px; }
 #ready-icon { left: 294px; top: 41px; width: 36px; height: 36px; }
@@ -489,6 +504,24 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 /* the game freezes behind the pause screen (the screen itself still fades in) */
 #stage.paused > *:not(#pause), #stage.paused > *:not(#pause) * { animation-play-state: paused !important; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+/* the run's experience on the end screen: lines counting in, the total, the bar filling (and a level-up) */
+#overlay-xp { margin: 4px auto 22px; width: 440px; text-align: left; }
+#overlay-xp[hidden] { display: none; }
+#xp-lines { list-style: none; margin: 0 0 10px; padding: 0; }
+#xp-lines li { display: flex; justify-content: space-between; padding: 3px 2px; font-size: 18px; color: var(--text); border-bottom: 1px solid rgba(201, 160, 72, .12);
+  animation: xpLine .35s cubic-bezier(.2, .8, .3, 1) both; }
+#xp-lines li b { font-family: var(--display); font-weight: 700; color: #e6c46a; }
+@keyframes xpLine { from { opacity: 0; transform: translateX(-14px); } }
+.xp-sum { display: flex; justify-content: space-between; padding: 4px 2px 12px; font-family: var(--display); letter-spacing: .12em; text-transform: uppercase; font-size: 15px; color: #c9a87a; }
+.xp-sum b { font-size: 22px; color: #f0d98c; letter-spacing: 0; }
+.xp-level { display: flex; align-items: center; gap: 12px; }
+.xp-level .level-bar { flex: 1; height: 12px; }
+.xp-level .level-nums { min-width: 82px; text-align: right; }
+.xp-level .level-badge.up { animation: levelUp .8s cubic-bezier(.2, .8, .3, 1); }
+@keyframes levelUp { 40% { transform: scale(1.35); box-shadow: 0 0 0 2px #120a0e, 0 0 26px 8px rgba(240, 210, 120, .8); } }
+#xp-levelup { height: 30px; margin-top: 10px; text-align: center; font-family: var(--display); font-weight: 700; font-size: 22px; letter-spacing: .14em; color: #f0d98c; text-shadow: 0 0 14px rgba(240, 200, 110, .7); }
+#xp-levelup.show { animation: levelWord 1.1s cubic-bezier(.2, .8, .3, 1) both; }
+@keyframes levelWord { from { opacity: 0; transform: scale(1.6); } to { opacity: 1; transform: none; } }
 .overlay-card { width: 620px; padding: 40px 48px 34px; text-align: center; background: linear-gradient(#1c0d14, #10080c); border: 1px solid var(--gold); box-shadow: 0 0 0 6px #0c0609, 0 0 0 7px var(--gold-dim), 0 20px 80px #000; }
 .overlay-card h2 { margin: 0 0 14px; font-family: var(--display); font-size: 34px; letter-spacing: .1em; text-transform: uppercase; color: var(--gold-light); }
 .overlay-card p { margin: 0 0 28px; font-size: 24px; line-height: 1.45; color: var(--text); }

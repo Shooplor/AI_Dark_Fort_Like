@@ -49,6 +49,24 @@ Add `?seed=1234` to the URL to replay a specific road. The seed is shown under t
   Winning the last house ends the run: "The rite is exposed". **Dying (or being discovered, or getting stuck) in any
   house ends the whole run**; Begin anew starts a fresh road at the gate.
 
+## Experience
+
+Every run earns experience (XP), however it ends, and it adds up from run to run into levels (shown with a badge and a
+bar beside your health on the gate and the road). The end screen counts the run in line by line:
+
+| | XP |
+| --- | --- |
+| Each place reached on the road | 10 |
+| Each house escaped | +15 |
+| ...and each exploration point left unspent when escaping (a quick escape) | +1 |
+| Each hidden room found | +5 |
+| Each duel won | +5 |
+| Each locked door opened, each choice faced | +2 |
+| Reaching the House of the Rite / clearing it | +20 / +50 |
+
+Level 2 needs 100 XP; each level after needs 30 more than the one before (130, 160, ...). What a level gives (new cards)
+comes later. The total is kept in the browser (`js/progress.js`); **Shift+L** on the gate or the road resets it (testing).
+
 ## Fencing
 
 - **Combat readiness** (crossed swords, beside the eye) rises by 1 with every new room explored (and by 2 after a
@@ -138,6 +156,7 @@ js/die3d.js       the fate die as a 3D pyramid, wrapped in one painted texture
 js/sound.js       sound effects and music, synthesised live (real files can replace any of it)
 js/voice.js       reads the on-screen text aloud with the browser's built-in voice (a stand-in for a voice actor)
 js/route.js       the road: the travel map's points and lines            (pure logic, no DOM)
+js/progress.js    experience: what a run is worth, levels, the saved total     (pure logic, no DOM)
 js/combat.js      fencing: readiness, the deck, exchanges, binds, enemy habits       (pure logic, no DOM)
 js/arms3d.js      the fencing arms in 3D: lofted low-poly arms and rapiers with painted textures, playing every exchange (three.js)
 js/vendor/        three.min.js 0.149 (MIT licence, three-LICENSE.txt): the 3D library, kept here so the game works offline

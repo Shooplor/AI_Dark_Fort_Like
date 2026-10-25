@@ -80,6 +80,21 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 #stat-turns .hud-tip { left: 130px; }
 #stat-ready .hud-tip { left: auto; right: 1168px; } /* ends before the carved frame */
 #stat-health:hover .hud-tip, #stat-turns:hover .hud-tip, #stat-ready:hover .hud-tip { opacity: 1; transform: none; transition-delay: .12s; }
+/* experience (placeholders until drawn): a round level badge, a thin bar and the numbers, beside your health on the gate
+   and the road */
+#stat-level { display: none; }
+#stage.mode-gate #stat-level, #stage.mode-route #stat-level { display: block; }
+#stat-level .level-badge { position: absolute; left: 136px; top: 34px; pointer-events: auto; }
+#stat-level .level-bar { position: absolute; left: 188px; top: 46px; width: 170px; }
+#stat-level .level-nums { position: absolute; left: 190px; top: 61px; }
+#stat-level .hud-tip { left: 136px; }
+#stat-level:hover .hud-tip { opacity: 1; transform: none; transition-delay: .12s; }
+.level-badge { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; box-sizing: border-box;
+  background: radial-gradient(circle at 40% 35%, #4a2d50, #1d1020 70%); border: 2px solid #c9a048; box-shadow: 0 0 0 2px #120a0e, 0 3px 8px rgba(0, 0, 0, .7); }
+.level-badge .level-n { font-family: var(--display); font-weight: 700; font-size: 21px; color: #f0d98c; line-height: 1; text-shadow: 0 1px 2px #000; }
+.level-bar { height: 10px; border-radius: 5px; background: #170c12; border: 1px solid #6a5130; box-shadow: inset 0 1px 3px #000; overflow: hidden; }
+.level-bar i { display: block; height: 100%; width: 0; background: linear-gradient(#e6c46a, #b0802e); box-shadow: 0 0 8px rgba(240, 200, 110, .6); transition: width .45s cubic-bezier(.2, .8, .3, 1); }
+.level-nums { font-family: var(--display); font-size: 13px; letter-spacing: .06em; color: #a58a5a; white-space: nowrap; }
 #hp-icon { left: 18px; top: 41px; width: 36px; height: 36px; }
 #eye-icon { left: 136px; top: 42px; width: 62px; height: 33.5px; }
 #ready-icon { left: 294px; top: 41px; width: 36px; height: 36px; }
@@ -499,6 +514,24 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 /* the game freezes behind the pause screen (the screen itself still fades in) */
 #stage.paused > *:not(#pause), #stage.paused > *:not(#pause) * { animation-play-state: paused !important; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+/* the run's experience on the end screen: lines counting in, the total, the bar filling (and a level-up) */
+#overlay-xp { margin: 4px auto 22px; width: 440px; text-align: left; }
+#overlay-xp[hidden] { display: none; }
+#xp-lines { list-style: none; margin: 0 0 10px; padding: 0; }
+#xp-lines li { display: flex; justify-content: space-between; padding: 3px 2px; font-size: 18px; color: var(--text); border-bottom: 1px solid rgba(201, 160, 72, .12);
+  animation: xpLine .35s cubic-bezier(.2, .8, .3, 1) both; }
+#xp-lines li b { font-family: var(--display); font-weight: 700; color: #e6c46a; }
+@keyframes xpLine { from { opacity: 0; transform: translateX(-14px); } }
+.xp-sum { display: flex; justify-content: space-between; padding: 4px 2px 12px; font-family: var(--display); letter-spacing: .12em; text-transform: uppercase; font-size: 15px; color: #c9a87a; }
+.xp-sum b { font-size: 22px; color: #f0d98c; letter-spacing: 0; }
+.xp-level { display: flex; align-items: center; gap: 12px; }
+.xp-level .level-bar { flex: 1; height: 12px; }
+.xp-level .level-nums { min-width: 82px; text-align: right; }
+.xp-level .level-badge.up { animation: levelUp .8s cubic-bezier(.2, .8, .3, 1); }
+@keyframes levelUp { 40% { transform: scale(1.35); box-shadow: 0 0 0 2px #120a0e, 0 0 26px 8px rgba(240, 210, 120, .8); } }
+#xp-levelup { height: 30px; margin-top: 10px; text-align: center; font-family: var(--display); font-weight: 700; font-size: 22px; letter-spacing: .14em; color: #f0d98c; text-shadow: 0 0 14px rgba(240, 200, 110, .7); }
+#xp-levelup.show { animation: levelWord 1.1s cubic-bezier(.2, .8, .3, 1) both; }
+@keyframes levelWord { from { opacity: 0; transform: scale(1.6); } to { opacity: 1; transform: none; } }
 .overlay-card { width: 620px; padding: 40px 48px 34px; text-align: center; background: linear-gradient(#1c0d14, #10080c); border: 1px solid var(--gold); box-shadow: 0 0 0 6px #0c0609, 0 0 0 7px var(--gold-dim), 0 20px 80px #000; }
 .overlay-card h2 { margin: 0 0 14px; font-family: var(--display); font-size: 34px; letter-spacing: .1em; text-transform: uppercase; color: var(--gold-light); }
 .overlay-card p { margin: 0 0 28px; font-size: 24px; line-height: 1.45; color: var(--text); }
@@ -709,6 +742,13 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
           <div class="nums" id="ready-nums"><span class="big" id="ready-now">0</span><span class="dash">/</span><span class="small" id="ready-max">20</span></div>
           <div class="hud-tip" role="tooltip">The readier you are, the likelier you strike first.</div>
         </div>
+        <!-- experience: your level and how far into it (on the gate and the road; js/progress.js) -->
+        <div id="stat-level">
+          <div class="level-badge"><span class="level-n" id="level-now">1</span></div>
+          <div class="level-bar"><i id="level-fill"></i></div>
+          <div class="level-nums" id="level-nums">0 / 100</div>
+          <div class="hud-tip" role="tooltip">Every run earns experience, however it ends.</div>
+        </div>
       </div>
 
       <div id="inventory" aria-label="Inventory"></div>
@@ -828,6 +868,13 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
         <div class="overlay-card">
           <h2 id="overlay-title"></h2>
           <p id="overlay-text"></p>
+          <!-- the run's experience, counted in line by line -->
+          <div id="overlay-xp" hidden>
+            <ul id="xp-lines"></ul>
+            <div class="xp-sum"><span>Experience</span><b id="xp-total">+0</b></div>
+            <div class="xp-level"><div class="level-badge"><span class="level-n" id="xp-level-now">1</span></div><div class="level-bar"><i id="xp-fill"></i></div><div class="level-nums" id="xp-level-nums"></div></div>
+            <div id="xp-levelup" aria-live="polite"></div>
+          </div>
           <div class="overlay-buttons">
             <button id="overlay-new" type="button">Begin anew</button>
             <button id="overlay-look" type="button" class="quiet">Look at the map</button>
@@ -1889,6 +1936,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       this.readiness = 0;
       this.fight = null; // the fight going on, if any: nothing else happens until it is over
       this.fightsWon = 0;
+      this.feats = { hidden: 0, locks: 0, choices: 0 }; // things done in this house that earn experience (js/progress.js)
       this.fightRng = DF.makeRng(this.seed ^ 0x2f6b1c3d); // fights never reshuffle the house
       this.fightsOn = opts.fights !== undefined ? opts.fights : DF.COMBAT ? DF.COMBAT.enabled : false;
 
@@ -1965,6 +2013,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
         }
         this.slots[slot] = null;
         door.state = 'open';
+        this.feats.locks++;
         unlocked = { door, key: kt, msg: fill(DF.MOVE_TEXT.unlocked, { key: kt.name }) };
       }
 
@@ -1982,6 +2031,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       const isNew = !cell.explored;
       if (isNew) {
         this.explored++; // a new room costs one exploration point
+        if (cell.hidden) this.feats.hidden++;
         this.readiness = Math.min(DF.COMBAT ? DF.COMBAT.readinessMax : 20, this.readiness + 1);
         const hpBefore = this.hp;
         const info = cell.hidden ? d.revealSecret(cell.x, cell.y) : d.reveal(cell.x, cell.y, this.heldKeyTypes());
@@ -2216,6 +2266,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       }
 
       p.resolved = true;
+      this.feats.choices++;
       cell.outcome = res;
       if (p.logEntry) p.logEntry.summary = res.short;
       if (this.hp <= 0) this.status = 'dead';
@@ -2372,6 +2423,118 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
   }
 
   DF.Route = Route;
+})();
+
+</script>
+  <script>
+/* Experience and levels: what a run on the road is worth, kept from run to run. Pure logic, no DOM.
+ *
+ * However a run ends, it earns experience (XP) for how far it got and what was done on the way: every place reached on
+ * the road, and in each house escaping it (quickly is worth more), hidden rooms found, duels won, locks opened, choices
+ * faced; reaching the last point on the road and clearing it are worth the most. XP adds up across runs into levels.
+ * (What a level gives, new cards to unlock, comes later.)
+ *
+ * The total is saved in the browser (localStorage), so it survives closing the game. */
+(function () {
+  const DF = (globalThis.DF = globalThis.DF || {});
+
+  DF.XP = {
+    place: 10, // each place reached on the road (a house, a campfire, the stranger, a game of chance, the last point)
+    reachFinal: 20, // reaching the last point on the road
+    boss: 50, // clearing it (for now: escaping the last house; later: beating its boss)
+    escaped: 15, // each house escaped (all its evidence found)
+    sparePoint: 1, // ...and each exploration point left unspent when escaping it (a quick escape)
+    hidden: 5, // each hidden room found (behind rubble)
+    duel: 5, // each duel won
+    lock: 2, // each locked door opened
+    choice: 2, // each choice faced
+    firstLevel: 100, // XP from level 1 to level 2
+    levelStep: 30, // each level after needs this much more than the one before
+  };
+
+  const KEY = 'theMaskedHouse.progress.v1';
+
+  const Progress = {
+    /** A fresh record of a run, filled in as it goes. */
+    newRun() {
+      return { places: 0, reachedFinal: false, cleared: false, houses: [] };
+    },
+
+    /** What a house (DF.Game) adds to the run when it ends: escaped or not, and what was done inside. */
+    house(game, escaped) {
+      return {
+        escaped: !!escaped,
+        spare: escaped ? Math.max(0, game.maxExplorations - game.explored) : 0,
+        hidden: game.feats ? game.feats.hidden : 0,
+        duels: game.fightsWon || 0,
+        locks: game.feats ? game.feats.locks : 0,
+        choices: game.feats ? game.feats.choices : 0,
+      };
+    },
+
+    /** The run's experience, line by line (only lines worth something), and the total. */
+    tally(run) {
+      const X = DF.XP;
+      const sum = (k) => run.houses.reduce((n, h) => n + (h[k] || 0), 0);
+      const escaped = run.houses.filter((h) => h.escaped).length;
+      const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+      const lines = [
+        { id: 'places', label: `Places reached: ${run.places}`, xp: run.places * X.place },
+        { id: 'escaped', label: `Houses escaped: ${escaped}`, xp: escaped * X.escaped },
+        { id: 'spare', label: `Quick escapes: ${plural(sum('spare'), 'room', 'rooms')} to spare`, xp: sum('spare') * X.sparePoint },
+        { id: 'hidden', label: `Hidden rooms found: ${sum('hidden')}`, xp: sum('hidden') * X.hidden },
+        { id: 'duels', label: `Duels won: ${sum('duels')}`, xp: sum('duels') * X.duel },
+        { id: 'locks', label: `Locks opened: ${sum('locks')}`, xp: sum('locks') * X.lock },
+        { id: 'choices', label: `Choices faced: ${sum('choices')}`, xp: sum('choices') * X.choice },
+        { id: 'final', label: 'Reached the House of the Rite', xp: run.reachedFinal ? X.reachFinal : 0 },
+        { id: 'cleared', label: 'The rite exposed', xp: run.cleared ? X.boss : 0 },
+      ].filter((l) => l.xp > 0);
+      return { lines, total: lines.reduce((n, l) => n + l.xp, 0) };
+    },
+
+    /** XP needed to go from `level` to the next. */
+    toNext(level) {
+      return DF.XP.firstLevel + DF.XP.levelStep * (level - 1);
+    },
+
+    /** Where a total stands: the level, XP into it, and XP the next one needs. */
+    level(total) {
+      let level = 1, rest = Math.max(0, Math.floor(total) || 0);
+      while (rest >= this.toNext(level)) rest -= this.toNext(level++);
+      return { level, into: rest, need: this.toNext(level), total: Math.max(0, Math.floor(total) || 0) };
+    },
+
+    /* the saved total (the browser's storage can be missing or refuse: then it is simply not kept) */
+    storage: null, // set for testing; otherwise the browser's localStorage
+    store() {
+      if (this.storage) return this.storage;
+      try {
+        return globalThis.localStorage || null;
+      } catch (e) {
+        return null;
+      }
+    },
+    load() {
+      try {
+        const data = JSON.parse(this.store().getItem(KEY) || '{}');
+        return Math.max(0, Math.floor(data.xp) || 0);
+      } catch (e) {
+        return 0;
+      }
+    },
+    save(xp) {
+      try {
+        this.store().setItem(KEY, JSON.stringify({ xp: Math.max(0, Math.floor(xp)) }));
+      } catch (e) {
+        /* not kept */
+      }
+    },
+    reset() {
+      this.save(0);
+    },
+  };
+
+  DF.Progress = Progress;
 })();
 
 </script>
@@ -3293,6 +3456,16 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       [50, 57, 62, 66].forEach((m) => tone(b, b.sfx, { t: t + 0.6, f: mtof(m), a: 0.3, dur: 3.4, peak: 0.09 }));
       tone(b, b.sfx, { t: t + 0.9, f: 2349, type: 'triangle', dur: 0.7, peak: 0.05 });
     },
+    /* ---- experience (the end of a run, js/road-ui.js) ---- */
+    // a line of the tally counting in: a small bright tick
+    xpTick(b, t) {
+      pluck(b, b.sfx, mtof(rand(84, 88)), t, 0.5, 0.35);
+    },
+    // a new level: a rising arpeggio that rings on
+    levelUp(b, t) {
+      [67, 71, 74, 79, 83].forEach((m, i) => pluck(b, b.sfx, mtof(m), t + i * 0.07, 0.9, 1.4));
+      tone(b, b.sfx, { t: t + 0.35, f: mtof(91), type: 'triangle', a: 0.02, dur: 1.2, peak: 0.05 });
+    },
     lose(b, t) {
       [62, 60, 57].forEach((m, i) => tone(b, b.sfx, { t: t + i * 0.55, f: mtof(m), type: 'sawtooth', a: 0.02, dur: 1.5, peak: 0.14, lp: 520 }));
       tone(b, b.sfx, { t, f: 73.42, a: 0.5, dur: 4, peak: 0.22 });
@@ -3896,7 +4069,9 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
           if (ev.code === 'KeyM' && !ev.repeat) return this.setMuted(snd('toggleMute'));
           if (ev.code === 'KeyV' && !ev.repeat) return this.setVoiceOn(vo('toggle'));
           if (this.paused) return; // nothing else works while the game is paused
-          // testing keys: Shift+F starts a fight in the room you are in; Shift+B makes your next card bind
+          // testing keys: Shift+F starts a fight in the room you are in; Shift+B makes your next card bind; Shift+L (gate,
+          // road) resets the experience to level 1
+          if (ev.shiftKey && ev.code === 'KeyL' && !ev.repeat && (this.mode === 'gate' || this.mode === 'route')) return this.resetLevel();
           if (ev.shiftKey && ev.code === 'KeyF' && !ev.repeat && this.mode === 'house' && !this.busy && this.game.status === 'playing') return this.devFight();
           if (ev.shiftKey && ev.code === 'KeyB' && !ev.repeat && this.mode === 'fight' && this.game.fight) {
             this.game.fight.forceBind = true;
@@ -4675,6 +4850,8 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       snd('stopMusic', status === 'won' ? 3 : 2);
       snd('play', { won: 'win', dead: 'lose', caught: 'caught' }[status] || 'stuck');
       $('#overlay').hidden = false;
+      if (this.run) this.awardXp(status); // on the road: the run is over, and earns its experience
+      else $('#overlay-xp').hidden = true;
     }
 
     /* ---------------------------------------------------------------- pause and chronicle */
@@ -4825,6 +5002,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
     try { if (DF.Voice && DF.Voice[method]) DF.Voice[method](...args); } catch (e) { /* voice is optional */ }
   };
   const reduced = () => globalThis.matchMedia && globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const escHtml = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
   const P = DF.UI.prototype;
 
   /* where the points sit on the map (the 500 x 836 area inside the frame) */
@@ -4898,7 +5076,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
   /** Start a new run: a fresh road, full health, an empty satchel, the doors shut. */
   P.newRun = function (seed) {
     seed = seed === undefined ? (Math.random() * 4294967296) >>> 0 : seed >>> 0;
-    this.run = { route: new DF.Route(seed), hp: DF.CONFIG.maxHp, items: [], node: null, houses: 0 };
+    this.run = { route: new DF.Route(seed), hp: DF.CONFIG.maxHp, items: [], node: null, houses: 0, xp: DF.Progress.newRun() };
     this.game = null;
     this.busy = false;
     this.gateBusy = false;
@@ -4921,6 +5099,90 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
     ng.textContent = 'New game';
     this.renderRoute();
     this.renderRoadCard();
+    this.renderLevel();
+    $('#overlay-xp').hidden = true;
+  };
+
+  /* ---------------------------------------------------------------- experience (js/progress.js) */
+
+  /** The level badge on the gate and the road: the saved total. */
+  P.renderLevel = function () {
+    const L = DF.Progress.level(DF.Progress.load());
+    $('#level-now').textContent = L.level;
+    $('#level-fill').style.width = (100 * L.into) / L.need + '%';
+    $('#level-nums').textContent = `${L.into} / ${L.need} XP`;
+  };
+
+  /** The run is over (fallen, discovered, stuck, or the road's end reached): count its experience in on the end screen,
+   *  line by line, the bar filling (a level-up flares), and keep the new total. */
+  P.awardXp = async function (status) {
+    const run = this.run;
+    const box = $('#overlay-xp');
+    if (!run || run.xpDone) return;
+    run.xpDone = true;
+    // the house the run ended in (unless it was escaped, and so already counted)
+    if (this.game && status !== 'won') run.xp.houses.push(DF.Progress.house(this.game, false));
+    const { lines, total } = DF.Progress.tally(run.xp);
+    const before = DF.Progress.load();
+    DF.Progress.save(before + total);
+    const list = $('#xp-lines');
+    list.innerHTML = '';
+    $('#xp-total').textContent = '+0';
+    $('#xp-levelup').className = '';
+    $('#xp-levelup').textContent = '';
+    const fill = $('#xp-fill'), badge = $('#overlay-xp .level-badge');
+    const show = (xp, animate) => {
+      const L = DF.Progress.level(xp);
+      if (!animate) fill.style.transition = 'none';
+      fill.style.width = (100 * L.into) / L.need + '%';
+      if (!animate) { void fill.offsetWidth; fill.style.transition = ''; }
+      $('#xp-level-now').textContent = L.level;
+      $('#xp-level-nums').textContent = `${L.into} / ${L.need}`;
+      return L;
+    };
+    show(before, false);
+    box.hidden = false;
+    const token = (this.xpToken = {}); // a new run (or another end screen) stops this one
+    let sum = 0, level = DF.Progress.level(before).level;
+    await sleep(900);
+    for (const line of lines) {
+      if (this.xpToken !== token || $('#overlay').hidden) return;
+      const li = document.createElement('li');
+      li.innerHTML = `<span>${escHtml(line.label)}</span><b>+${line.xp}</b>`;
+      list.appendChild(li);
+      snd('play', 'xpTick');
+      sum += line.xp;
+      $('#xp-total').textContent = '+' + sum;
+      const now = DF.Progress.level(before + sum);
+      if (now.level > level) {
+        // the bar runs to full, the badge flares with the new number, and fills on from empty
+        fill.style.width = '100%';
+        await sleep(450);
+        level = now.level;
+        show(before + sum, false);
+        fill.style.width = '0%';
+        void fill.offsetWidth;
+        show(before + sum, true);
+        badge.classList.remove('up');
+        void badge.offsetWidth;
+        badge.classList.add('up');
+        const word = $('#xp-levelup');
+        word.textContent = `Level ${level}!`;
+        word.classList.remove('show');
+        void word.offsetWidth;
+        word.classList.add('show');
+        snd('play', 'levelUp');
+      } else show(before + sum, true);
+      await sleep(reduced() ? 60 : 420);
+    }
+    this.renderLevel();
+  };
+
+  /** Testing: the level back to 1 (Shift+L on the gate or the road). */
+  P.resetLevel = function () {
+    DF.Progress.reset();
+    this.renderLevel();
+    this.renderRoadCard(null, 'Experience reset to level 1 (testing).');
   };
 
   /** "Embark": the great doors grind open onto the road. */
@@ -5117,6 +5379,8 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
     const R = this.run.route;
     const node = R.go(id);
     if (!node) return;
+    this.run.xp.places++;
+    if (node.type === 'final') this.run.xp.reachedFinal = true;
     this.gateBusy = true;
     this.renderRoute(); // the pendant glides to the point (CSS transition) while the figure walks
     this.setWalking(true);
@@ -5150,8 +5414,12 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
     run.hp = g.hp;
     run.items = g.slots.map((it) => (it && !it.quest && !it.keyType ? it : null)); // evidence and keys stay in their house
     run.houses++;
+    run.xp.houses.push(DF.Progress.house(g, true));
     if (node) run.route.done.add(node.id);
-    if (node && node.type === 'final') return this.showRunWon();
+    if (node && node.type === 'final') {
+      run.xp.cleared = true;
+      return this.showRunWon();
+    }
     this.gateBusy = true;
     await sleep(1100); // let the last find be seen
     await this.closeGate();
@@ -5175,6 +5443,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
     snd('stopMusic', 3);
     snd('play', 'win');
     $('#overlay').hidden = false;
+    this.awardXp('won');
   };
 
   /** "New game" anywhere: a new run on the road (or, in the developer shortcut, a new house). */

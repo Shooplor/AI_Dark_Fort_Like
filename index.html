@@ -41,6 +41,13 @@
           <div class="nums" id="ready-nums"><span class="big" id="ready-now">0</span><span class="dash">/</span><span class="small" id="ready-max">20</span></div>
           <div class="hud-tip" role="tooltip">The readier you are, the likelier you strike first.</div>
         </div>
+        <!-- experience: your level and how far into it (on the gate and the road; js/progress.js) -->
+        <div id="stat-level">
+          <div class="level-badge"><span class="level-n" id="level-now">1</span></div>
+          <div class="level-bar"><i id="level-fill"></i></div>
+          <div class="level-nums" id="level-nums">0 / 100</div>
+          <div class="hud-tip" role="tooltip">Every run earns experience, however it ends.</div>
+        </div>
       </div>
 
       <div id="inventory" aria-label="Inventory"></div>
@@ -160,6 +167,13 @@
         <div class="overlay-card">
           <h2 id="overlay-title"></h2>
           <p id="overlay-text"></p>
+          <!-- the run's experience, counted in line by line -->
+          <div id="overlay-xp" hidden>
+            <ul id="xp-lines"></ul>
+            <div class="xp-sum"><span>Experience</span><b id="xp-total">+0</b></div>
+            <div class="xp-level"><div class="level-badge"><span class="level-n" id="xp-level-now">1</span></div><div class="level-bar"><i id="xp-fill"></i></div><div class="level-nums" id="xp-level-nums"></div></div>
+            <div id="xp-levelup" aria-live="polite"></div>
+          </div>
           <div class="overlay-buttons">
             <button id="overlay-new" type="button">Begin anew</button>
             <button id="overlay-look" type="button" class="quiet">Look at the map</button>
@@ -175,6 +189,7 @@
   <script src="js/combat.js"></script>
   <script src="js/game.js"></script>
   <script src="js/route.js"></script>
+  <script src="js/progress.js"></script>
   <script src="js/art.js"></script>
   <script src="js/die3d.js"></script>
   <script src="js/sound.js"></script>

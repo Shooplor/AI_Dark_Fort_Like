@@ -35,6 +35,7 @@
       this.readiness = 0;
       this.fight = null; // the fight going on, if any: nothing else happens until it is over
       this.fightsWon = 0;
+      this.feats = { hidden: 0, locks: 0, choices: 0 }; // things done in this house that earn experience (js/progress.js)
       this.fightRng = DF.makeRng(this.seed ^ 0x2f6b1c3d); // fights never reshuffle the house
       this.fightsOn = opts.fights !== undefined ? opts.fights : DF.COMBAT ? DF.COMBAT.enabled : false;
 
@@ -111,6 +112,7 @@
         }
         this.slots[slot] = null;
         door.state = 'open';
+        this.feats.locks++;
         unlocked = { door, key: kt, msg: fill(DF.MOVE_TEXT.unlocked, { key: kt.name }) };
       }
 
@@ -128,6 +130,7 @@
       const isNew = !cell.explored;
       if (isNew) {
         this.explored++; // a new room costs one exploration point
+        if (cell.hidden) this.feats.hidden++;
         this.readiness = Math.min(DF.COMBAT ? DF.COMBAT.readinessMax : 20, this.readiness + 1);
         const hpBefore = this.hp;
         const info = cell.hidden ? d.revealSecret(cell.x, cell.y) : d.reveal(cell.x, cell.y, this.heldKeyTypes());
@@ -362,6 +365,7 @@
       }
 
       p.resolved = true;
+      this.feats.choices++;
       cell.outcome = res;
       if (p.logEntry) p.logEntry.summary = res.short;
       if (this.hp <= 0) this.status = 'dead';
