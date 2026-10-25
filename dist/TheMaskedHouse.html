@@ -429,7 +429,8 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 #chronicle:empty::before { content: 'No rooms explored yet.'; font-style: italic; color: var(--text-dim); }
 
 #right-foot { flex: none; display: flex; justify-content: space-between; align-items: center; margin: 8px 18px 0; }
-#seed { font-family: var(--display); font-size: 10px; letter-spacing: .2em; color: #5e4850; }
+#seed { display: none; } /* the run's number: not for players; shown small on the pause screen instead */
+#pause .pause-seed { margin: -10px 0 18px; font-family: var(--display); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: #6e5560; }
 #new-game, #chronicle-toggle { padding: 5px 11px; font-size: 10px; }
 #chronicle-toggle.on { border-color: var(--gold); color: var(--gold-light); }
 #new-game.confirm { border-color: var(--bad); color: var(--bad); }
@@ -936,6 +937,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
         <div class="overlay-card">
           <h2>Paused</h2>
           <p>The house holds its breath. Nothing stirs until you return.</p>
+          <p class="pause-seed" id="pause-seed"></p>
           <div class="sound-settings">
             <label>Music <input id="vol-music" type="range" min="0" max="100" step="1"></label>
             <label>Effects <input id="vol-sfx" type="range" min="0" max="100" step="1"></label>
@@ -5249,6 +5251,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
     }
 
     pause() {
+      $('#pause-seed').textContent = $('#seed').textContent; // the run's number: hidden on screen, shown here (for reporting a problem)
       this.paused = true;
       vo('stop');
       snd('play', 'pause');

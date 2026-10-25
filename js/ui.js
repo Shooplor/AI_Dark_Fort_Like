@@ -1054,6 +1054,7 @@
     }
 
     pause() {
+      $('#pause-seed').textContent = $('#seed').textContent; // the run's number: hidden on screen, shown here (for reporting a problem)
       this.paused = true;
       vo('stop');
       snd('play', 'pause');
