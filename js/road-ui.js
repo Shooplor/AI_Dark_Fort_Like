@@ -124,8 +124,8 @@
   P.renderLevel = function () {
     const L = DF.Progress.level(DF.Progress.load());
     $('#level-now').textContent = L.level;
-    $('#level-fill').style.width = (100 * L.into) / L.need + '%';
-    $('#level-nums').textContent = `${L.into} / ${L.need} XP`;
+    $('#level-bar').style.setProperty('--p', L.into / L.need);
+    $('#level-nums').textContent = `${L.into} / ${L.need}`;
   };
 
   /** The run is over (fallen, discovered, stuck, or the road's end reached): count its experience in on the end screen,
@@ -145,12 +145,13 @@
     $('#xp-total').textContent = '+0';
     $('#xp-levelup').className = '';
     $('#xp-levelup').textContent = '';
-    const fill = $('#xp-fill'), badge = $('#overlay-xp .level-badge');
+    const bar = $('#xp-bar'), badge = bar;
+    const fillTo = (p) => bar.style.setProperty('--p', p); // how full the bar is, 0-1 (it glides there: a CSS transition)
     const show = (xp, animate) => {
       const L = DF.Progress.level(xp);
-      if (!animate) fill.style.transition = 'none';
-      fill.style.width = (100 * L.into) / L.need + '%';
-      if (!animate) { void fill.offsetWidth; fill.style.transition = ''; }
+      if (!animate) bar.style.transition = 'none';
+      fillTo(L.into / L.need);
+      if (!animate) { void bar.offsetWidth; bar.style.transition = ''; }
       $('#xp-level-now').textContent = L.level;
       $('#xp-level-nums').textContent = `${L.into} / ${L.need}`;
       return L;
@@ -171,12 +172,14 @@
       const now = DF.Progress.level(before + sum);
       if (now.level > level) {
         // the bar runs to full, the badge flares with the new number, and fills on from empty
-        fill.style.width = '100%';
+        fillTo(1);
         await sleep(450);
         level = now.level;
         show(before + sum, false);
-        fill.style.width = '0%';
-        void fill.offsetWidth;
+        bar.style.transition = 'none';
+        fillTo(0);
+        void bar.offsetWidth;
+        bar.style.transition = '';
         show(before + sum, true);
         badge.classList.remove('up');
         void badge.offsetWidth;

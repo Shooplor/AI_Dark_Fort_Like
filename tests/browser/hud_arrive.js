@@ -19,7 +19,7 @@ const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode =
     const firstHouse = samples[0], last = samples[samples.length - 1];
     console.log(tag, 'first', firstHouse, 'mid', samples[Math.floor(samples.length / 8)], 'last', last);
     assert(firstHouse && firstHouse[1] < 0.3 && firstHouse[2] > last[2] + 8, `${tag}: the eye starts lower and faint`);
-    assert(last[1] === 1 && last[2] === 42, `${tag}: and ends in place, fully shown`);
+    assert(last[1] === 1 && last[2] === 96, `${tag}: and ends in place (below the experience bar), fully shown`);
     await page.waitForTimeout(800);
     assert(await page.evaluate(() => !document.getElementById('stat-turns').classList.contains('arrive')), `${tag}: the arrival class is cleared afterwards`);
     assert(errors.length === 0, `${tag}: no errors`);

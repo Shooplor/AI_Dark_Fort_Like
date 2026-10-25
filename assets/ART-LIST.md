@@ -23,14 +23,12 @@ All done: rooms, hidden and boarded-up rooms, doors, all six locks.
 | Ware panel | about 860x160 (430x80 on screen) | Optional: the frame each ware sits in (it may stretch sideways). |
 | Small coin by prices | file 28x28 | Optional. |
 
-## Experience (placeholders drawn by code)
+## Experience
 
 | Piece | Size | Notes |
 | --- | --- | --- |
-| Level badge | file 92x92 (46x46 on screen) | The round badge with the level number in it (the number is live text: leave the middle plain). Beside your health on the gate and the road, and on the end screen. |
-| Experience bar frame | file 340x20 (170x10 on screen; 440x12 on the end screen) | The empty bar; it may stretch, so tell me which ends must not. |
-| Experience bar fill | same height as the frame | What fills it (gold now). |
-| Level-up burst | about 200x200 | Optional: a flash behind the badge when a level is reached. |
+| Experience bar (done) | 300x100, three layers | `assets/ui/source/experience-bar.psd`: the slot (`xp-slot.png`), the gold fill (`xp-fill.png`) and the gem (`xp-gem.png`), on one canvas. At the top left of every screen (at 90%, stretched to 400 wide in its plain middle), the heart, eye and swords below it; on the end screen at full size. The level number is live text centred on the gem. |
+| Level-up burst | about 200x200 | Optional: a flash over the gem when a level is reached. |
 
 ## 2. The road (travel map)
 
