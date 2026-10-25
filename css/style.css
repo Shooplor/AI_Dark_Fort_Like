@@ -752,3 +752,13 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 .pedlar-hint { margin: 22px 0 0; font-style: italic; font-size: 17px; color: var(--text-dim); text-shadow: 0 1px 3px #000; }
 #pedlar-leave { margin-top: 18px; padding: 9px 30px; }
 #item-pop .no-sale { font-style: italic; font-size: 15px; color: var(--text-dim); }
+
+/* the Pedlar's room: Talk in the room's text, and a mark on the map (placeholder until drawn) */
+.pedlar-here { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 14px 0 6px; padding: 10px 12px;
+  border-left: 3px solid #5f8f55; background: rgba(74, 122, 67, .1); }
+.pedlar-here p { margin: 0; font-style: italic; color: var(--text); }
+.pedlar-here button { flex: none; padding: 7px 22px; }
+.cell .pedlar-mark { position: absolute; right: -4px; top: -4px; width: 30px; height: 30px; z-index: 4; pointer-events: auto;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .8)); animation: pedlarMarkIn .5s cubic-bezier(.2, .8, .3, 1) both; }
+.cell .pedlar-mark svg, .cell .pedlar-mark img { width: 100%; height: 100%; display: block; }
+@keyframes pedlarMarkIn { from { transform: scale(0); } }

@@ -58,7 +58,9 @@ your satchel. You find it in purses (about 1 room in 10 that would otherwise hol
 **The Pedlar** turns up now and then in a house (from the 4th room on, at most once per house), and about half the
 hooded strangers on the road are him. The doors close on him standing where an enemy would; his three wares are laid
 out in the middle with their prices (Buy). Click something in your satchel to **sell** it instead of using or dropping
-it: he pays half its worth, and will not take the evidence. **Leave** goes back to the house or the road.
+it: he pays half its worth, and will not take the evidence. **Leave** goes back to the house or the road. In a house he
+stays in his room for as long as you are there (with what is left of his stock): a mark on the map shows where, and in
+his room a **Talk** button brings him back, as often as you like.
 
 | Thing | Worth (his price) | He pays |
 | --- | --- | --- |

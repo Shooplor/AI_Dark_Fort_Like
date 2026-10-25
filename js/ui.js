@@ -845,6 +845,11 @@
             .join('')}</div>`
         : '';
 
+      // the Pedlar stays in the room he was met in, for as long as you are in this house: talk to him again here
+      const pedlar = cell.pedlar
+        ? `<div class="pedlar-here"><p>The Pedlar waits here, pouches clinking.</p><button type="button" data-talk>Talk</button></div>`
+        : '';
+
       const card = $('#room-card');
       card.classList.toggle('still', !animate);
       card.innerHTML = `
@@ -853,7 +858,10 @@
         <div class="divider"></div>
         ${event}
         ${notes.length ? `<ul class="room-notes">${notes.map((n) => `<li>${rich(n)}</li>`).join('')}</ul>` : ''}
+        ${pedlar}
         ${floor}`;
+      const talk = card.querySelector('[data-talk]');
+      if (talk) talk.addEventListener('click', () => this.talkToPedlar()); // js/pedlar-ui.js
 
       card.querySelectorAll('[data-choice]').forEach((btn) => btn.addEventListener('click', () => this.choose(+btn.dataset.choice)));
       card.querySelectorAll('[data-take]').forEach((btn) =>

@@ -39,6 +39,25 @@ const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode =
     assert(await page.evaluate(() => [...document.querySelectorAll('#pedlar-wares button')].every((x) => x.disabled)), `${tag}: with 1 gold nothing can be bought`);
     await page.click('#pedlar-leave'); await page.waitForTimeout(3500);
     assert((await page.evaluate(() => DF.ui.mode)) === 'house' && await vis('#board-wrap') && !(await vis('#pedlar-wrap')), `${tag}: Leave: back in the house`);
+    // he stays: Talk in his room, a mark on the map; talking again opens him with his stock as it was
+    const here = () => page.evaluate(() => ({ talk: !!document.querySelector('#room-card [data-talk]'), mark: !!document.querySelector('.cell .pedlar-mark') }));
+    let h = await here();
+    assert(h.talk && h.mark, `${tag}: he waits in his room: a Talk button, and a mark on the map (${JSON.stringify(h)})`);
+    await page.click('#room-card [data-talk]'); await page.waitForTimeout(3500);
+    assert((await page.evaluate(() => DF.ui.mode)) === 'pedlar' && (await page.evaluate(() => DF.ui.shop.wares[0].sold)), `${tag}: Talk opens him again, what was bought still sold`);
+    await page.click('#pedlar-leave'); await page.waitForTimeout(3500);
+    // walk out and back in: Talk again (any number of times)
+    const out = await page.evaluate(() => { const g = DF.ui.game; return [0, 1, 2, 3].find((s) => g.exitStatus(s) === 'open'); });
+    await page.evaluate((s) => DF.ui.attempt(s), out); await page.waitForTimeout(4200);
+    h = await here();
+    assert(!h.talk && h.mark, `${tag}: in another room: no Talk, but the mark stays on the map`);
+    await page.evaluate((s) => DF.ui.attempt((s + 2) % 4), out); await page.waitForTimeout(3000);
+    h = await here();
+    assert(h.talk && (await page.evaluate(() => DF.ui.mode)) === 'house', `${tag}: back in his room: Talk again (and he does not jump out by himself)`);
+    await page.click('#room-card [data-talk]'); await page.waitForTimeout(3500);
+    assert((await page.evaluate(() => DF.ui.mode)) === 'pedlar', `${tag}: and he trades again`);
+    await page.click('#pedlar-leave'); await page.waitForTimeout(3500);
+    if (tag === 'page') await page.screenshot({ path: path.join(OUT, 'pedlar_talk.png') });
     // in a house, opening an item offers Use/Drop again
     await page.evaluate(() => { const g = DF.ui.game; g.slots[3] = g.makeItem(DF.ITEM_DEFS.potion); g.hp = 5; DF.ui.renderInventory(); });
     await page.click('#inventory .slot[data-slot="3"]'); await page.waitForTimeout(300);

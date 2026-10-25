@@ -22,6 +22,10 @@
   // his picture (assets/ui/pedlar.png, 1000x1770, the enemy's canvas)
   const PEDLAR_ART = DF.Art.asset('assets/ui/pedlar.png');
   DF.PEDLAR_ART = PEDLAR_ART; // loaded in the background at the start, with the other pictures (js/ui.js)
+  // the mark on his room on the map: a placeholder (a purse with a coin) until it is drawn
+  const PEDLAR_MARK = '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#1d2a1c" stroke="#0b0806" stroke-width="2"/>' +
+    '<path d="M11 12 Q16 9 21 12 L23 23 Q16 27 9 23 Z" fill="#4a7a43" stroke="#0b0806" stroke-width="1.6" stroke-linejoin="round"/>' +
+    '<path d="M11.5 12 Q16 14.5 20.5 12" fill="none" stroke="#0b0806" stroke-width="1.4"/><circle cx="20.5" cy="21" r="3.6" fill="#e8b84a" stroke="#0b0806" stroke-width="1.3"/></svg>';
 
   /* ---------------------------------------------------------------- gold */
 
@@ -158,10 +162,9 @@
       this.gateBusy = false;
       this.renderRoute();
     } else {
-      const g = this.game;
-      g.cell.pedlar = null; // he moves on
+      // he stays in this room (with what is left of his stock) for as long as you are in this house: Talk brings him back
       this.setMode('house');
-      this.view.notes.push('The pedlar has gone, his pouches clinking away into the dark.');
+      this.markPedlarRoom(this.game.cell);
       this.renderRoom(false);
       this.renderInventory();
       await this.openGate('quick');
@@ -177,6 +180,25 @@
     const rng = DF.makeRng((run.route.seed ^ (node.id * 0x85ebca6b)) >>> 0);
     this.renderRoadCard(null, plain(DF.EVENT_TEXT.pedlar[0]));
     await this.openPedlar({ owner, wares: DF.Shop.wares(rng), from: 'road', node });
+  };
+
+  /** Talk to the Pedlar again, in the room where he waits (the Talk button in the room's text). */
+  P.talkToPedlar = function () {
+    const g = this.game;
+    if (this.mode !== 'house' || this.busy || !g || g.status !== 'playing' || g.fight || !g.cell.pedlar) return;
+    snd('play', 'click');
+    this.openPedlar({ owner: g, wares: g.cell.pedlar, from: 'house' });
+  };
+
+  /** A mark on the map over the room where the Pedlar waits, so he can be found again (placeholder art). */
+  P.markPedlarRoom = function (cell) {
+    const el = this.cellEl(cell.x, cell.y);
+    if (!el || el.querySelector('.pedlar-mark')) return;
+    const mark = document.createElement('div');
+    mark.className = 'pedlar-mark';
+    mark.title = 'The Pedlar waits here';
+    mark.innerHTML = PEDLAR_MARK;
+    el.appendChild(mark);
   };
 
   /** For testing (Shift+P in a house): the pedlar, here and now. */

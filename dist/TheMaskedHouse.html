@@ -763,6 +763,16 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 #pedlar-leave { margin-top: 18px; padding: 9px 30px; }
 #item-pop .no-sale { font-style: italic; font-size: 15px; color: var(--text-dim); }
 
+/* the Pedlar's room: Talk in the room's text, and a mark on the map (placeholder until drawn) */
+.pedlar-here { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 14px 0 6px; padding: 10px 12px;
+  border-left: 3px solid #5f8f55; background: rgba(74, 122, 67, .1); }
+.pedlar-here p { margin: 0; font-style: italic; color: var(--text); }
+.pedlar-here button { flex: none; padding: 7px 22px; }
+.cell .pedlar-mark { position: absolute; right: -4px; top: -4px; width: 30px; height: 30px; z-index: 4; pointer-events: auto;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .8)); animation: pedlarMarkIn .5s cubic-bezier(.2, .8, .3, 1) both; }
+.cell .pedlar-mark svg, .cell .pedlar-mark img { width: 100%; height: 100%; display: block; }
+@keyframes pedlarMarkIn { from { transform: scale(0); } }
+
 </style>
 <script>
 (function () {
@@ -5023,6 +5033,11 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
             .join('')}</div>`
         : '';
 
+      // the Pedlar stays in the room he was met in, for as long as you are in this house: talk to him again here
+      const pedlar = cell.pedlar
+        ? `<div class="pedlar-here"><p>The Pedlar waits here, pouches clinking.</p><button type="button" data-talk>Talk</button></div>`
+        : '';
+
       const card = $('#room-card');
       card.classList.toggle('still', !animate);
       card.innerHTML = `
@@ -5031,7 +5046,10 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
         <div class="divider"></div>
         ${event}
         ${notes.length ? `<ul class="room-notes">${notes.map((n) => `<li>${rich(n)}</li>`).join('')}</ul>` : ''}
+        ${pedlar}
         ${floor}`;
+      const talk = card.querySelector('[data-talk]');
+      if (talk) talk.addEventListener('click', () => this.talkToPedlar()); // js/pedlar-ui.js
 
       card.querySelectorAll('[data-choice]').forEach((btn) => btn.addEventListener('click', () => this.choose(+btn.dataset.choice)));
       card.querySelectorAll('[data-take]').forEach((btn) =>
@@ -6913,6 +6931,10 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
   // his picture (assets/ui/pedlar.png, 1000x1770, the enemy's canvas)
   const PEDLAR_ART = DF.Art.asset('assets/ui/pedlar.png');
   DF.PEDLAR_ART = PEDLAR_ART; // loaded in the background at the start, with the other pictures (js/ui.js)
+  // the mark on his room on the map: a placeholder (a purse with a coin) until it is drawn
+  const PEDLAR_MARK = '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#1d2a1c" stroke="#0b0806" stroke-width="2"/>' +
+    '<path d="M11 12 Q16 9 21 12 L23 23 Q16 27 9 23 Z" fill="#4a7a43" stroke="#0b0806" stroke-width="1.6" stroke-linejoin="round"/>' +
+    '<path d="M11.5 12 Q16 14.5 20.5 12" fill="none" stroke="#0b0806" stroke-width="1.4"/><circle cx="20.5" cy="21" r="3.6" fill="#e8b84a" stroke="#0b0806" stroke-width="1.3"/></svg>';
 
   /* ---------------------------------------------------------------- gold */
 
@@ -7049,10 +7071,9 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
       this.gateBusy = false;
       this.renderRoute();
     } else {
-      const g = this.game;
-      g.cell.pedlar = null; // he moves on
+      // he stays in this room (with what is left of his stock) for as long as you are in this house: Talk brings him back
       this.setMode('house');
-      this.view.notes.push('The pedlar has gone, his pouches clinking away into the dark.');
+      this.markPedlarRoom(this.game.cell);
       this.renderRoom(false);
       this.renderInventory();
       await this.openGate('quick');
@@ -7068,6 +7089,25 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
     const rng = DF.makeRng((run.route.seed ^ (node.id * 0x85ebca6b)) >>> 0);
     this.renderRoadCard(null, plain(DF.EVENT_TEXT.pedlar[0]));
     await this.openPedlar({ owner, wares: DF.Shop.wares(rng), from: 'road', node });
+  };
+
+  /** Talk to the Pedlar again, in the room where he waits (the Talk button in the room's text). */
+  P.talkToPedlar = function () {
+    const g = this.game;
+    if (this.mode !== 'house' || this.busy || !g || g.status !== 'playing' || g.fight || !g.cell.pedlar) return;
+    snd('play', 'click');
+    this.openPedlar({ owner: g, wares: g.cell.pedlar, from: 'house' });
+  };
+
+  /** A mark on the map over the room where the Pedlar waits, so he can be found again (placeholder art). */
+  P.markPedlarRoom = function (cell) {
+    const el = this.cellEl(cell.x, cell.y);
+    if (!el || el.querySelector('.pedlar-mark')) return;
+    const mark = document.createElement('div');
+    mark.className = 'pedlar-mark';
+    mark.title = 'The Pedlar waits here';
+    mark.innerHTML = PEDLAR_MARK;
+    el.appendChild(mark);
   };
 
   /** For testing (Shift+P in a house): the pedlar, here and now. */

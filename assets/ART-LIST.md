@@ -20,6 +20,7 @@ All done: rooms, hidden and boarded-up rooms, doors, all six locks.
 | --- | --- | --- |
 | Gold coins (done) | 100x100 (50x50 on screen) | `assets/ui/gold-coins.png`, above the first satchel slot, beside the number. |
 | The Pedlar (done) | 1000x1770 | `assets/ui/pedlar.png`, standing where the enemy stands. |
+| The Pedlar's room mark | file 60x60 (30x30 on screen) | On the map, at the top-right corner of the room where he waits (over the room's art). A placeholder purse now. |
 | Ware panel | about 860x160 (430x80 on screen) | Optional: the frame each ware sits in (it may stretch sideways). |
 | Small coin by prices | file 28x28 | Optional. |
 
