@@ -65,9 +65,10 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
   background: rgba(14, 7, 11, .95); border: 1px solid var(--gold-dim); border-radius: 4px; box-shadow: 0 6px 22px rgba(0, 0, 0, .75);
   opacity: 0; transform: translateY(-4px); transition: opacity .18s ease-out, transform .18s ease-out;
 }
-/* the two counters sit in one row under the experience bar: health, and the eye (discovery and combat readiness) */
-#stat-health .hud-tip { left: 62px; }
-#stat-turns .hud-tip { left: 40px; width: 360px; white-space: normal; line-height: 1.3; } /* two lines, clear of the carved frame */
+/* the two counters sit in one row under the experience bar, left-aligned with it: the heart centred under its gem,
+   then the eye (discovery and combat readiness) */
+#stat-health .hud-tip { left: 18px; }
+#stat-turns .hud-tip { left: 18px; width: 360px; white-space: normal; line-height: 1.3; } /* two lines, clear of the carved frame */
 #stat-ready .hud-tip { left: auto; right: 1168px; } /* ends before the carved frame */
 #stat-health:hover .hud-tip, #stat-turns:hover .hud-tip, #stat-ready:hover .hud-tip { opacity: 1; transform: none; transition-delay: .12s; }
 /* experience: the owner's bar (assets/ui/source/experience-bar.psd, 444x100, four layers on one canvas: the slot, the
@@ -96,14 +97,14 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 #stat-level .xpbar { position: absolute; left: 8px; top: 2px; pointer-events: auto; } /* at 90%: 400 wide, as wide as the row below */
 #stat-level .hud-tip { left: 14px; top: 86px; }
 #stat-level:hover .hud-tip { opacity: 1; transform: none; transition-delay: .12s; }
-#hp-icon { left: 66px; top: 95px; width: 36px; height: 36px; }
-#eye-icon { left: 214px; top: 96px; width: 62px; height: 33.5px; }
+#hp-icon { left: 29px; top: 95px; width: 36px; height: 36px; }
+#eye-icon { left: 166px; top: 96px; width: 62px; height: 33.5px; }
 #ready-icon { left: 294px; top: 95px; width: 36px; height: 36px; }
 .nums { position: absolute; display: flex; align-items: baseline; font-family: var(--display); line-height: 1; white-space: nowrap; }
 .nums .big { font-weight: 700; font-size: 29px; }
 .nums .dash { font-weight: 500; font-size: 29px; margin: 0 -2px; color: #4a373c; }
 .nums .small { font-weight: 700; font-size: 21px; color: #795861; }
-#hp-nums { left: 106px; top: 97px; }
+#hp-nums { left: 69px; top: 97px; }
 #ready-nums { left: 334px; top: 97px; }
 #ready-nums .big { color: #c9a048; }
 /* entering a house: the eye, then readiness, rise a little and fade in (js/road-ui.js setMode) */
@@ -111,7 +112,7 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 #stat-ready.arrive > img, #stat-ready.arrive > .nums { animation-delay: .14s; }
 @keyframes hudArrive { from { opacity: 0; translate: 0 16px; } to { opacity: 1; translate: 0 0; } }
 #hp-nums .big { color: #d55a7d; }
-#eye-nums { left: 280px; top: 97px; }
+#eye-nums { left: 232px; top: 97px; }
 #eye-nums .big { color: #6d99c2; }
 .nums.tick { animation: numTick .8s; }
 .nums.dmg { animation: numHurt .7s; }
