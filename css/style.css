@@ -197,15 +197,20 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 .slot.got { animation: slotGot .7s; }
 @keyframes slotGot { 0% { transform: scale(1); } 35% { transform: scale(1.1); } 100% { transform: scale(1); } }
 
+/* the owner's frame (assets/ui/item-tooltip.png, 410x186, shown as drawn): every item's pop-up is that size, the text
+   inside the corner ornaments, the buttons along the bottom; it sits just above the gold counter (its middle is a little
+   see-through, so nothing should lie under it) */
 #item-pop {
-  position: absolute; left: 18px; bottom: 262px; width: 410px; z-index: 6; padding: 16px 18px 14px;
-  background: rgba(14, 7, 11, .96); border: 1px solid var(--gold); border-radius: 4px; box-shadow: 0 8px 30px rgba(0, 0, 0, .8);
+  position: absolute; left: 18px; bottom: 308px; width: 410px; height: 186px; box-sizing: border-box; z-index: 6; padding: 18px 26px 30px;
+  display: flex; flex-direction: column; background: url('../assets/ui/item-tooltip.png') center / 100% 100% no-repeat;
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, .75));
 }
+#item-pop .row { margin-top: auto; margin-left: 14px; } /* clear of the bottom-left ornament */
 #item-pop[hidden] { display: none; }
-#item-pop.quest { border-color: #4fe38c; }
+#item-pop.quest { background-image: url('../assets/ui/item-tooltip-evidence.png'); } /* evidence: the same frame with its glowing edge in green (made from the owner's: only the edge recoloured) */
 #item-pop .tag { margin-bottom: 4px; font-family: var(--display); font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: #4fe38c; }
 #item-pop h3 { margin: 0 0 6px; font-family: var(--display); font-size: 17px; letter-spacing: .06em; color: var(--gold-light); }
-#item-pop p { margin: 0 0 12px; font-size: 19px; line-height: 1.35; color: var(--text); }
+#item-pop p { margin: 0 0 8px; font-size: 18px; line-height: 1.3; color: var(--text); }
 #item-pop .row { display: flex; gap: 10px; }
 
 /* ------------------------------------------------------------------ CENTRE: map in the carved frame */

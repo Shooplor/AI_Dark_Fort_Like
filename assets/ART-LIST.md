@@ -86,7 +86,7 @@ Placeholders drawn by code or quickly painted now. Sizes are file sizes (2x), tr
 
 | Piece | Now | Notes |
 | --- | --- | --- |
-| Item tooltip (click an item in the inventory) | 410 wide, about 160 tall, taller for long text; sits above the inventory | Name, a description and Use / Drop buttons are live text. Needs a frame that can grow taller. A green-edged variant for evidence is optional. |
+| Item tooltip (done) | 410x186 | `assets/ui/item-tooltip.png`, shown as drawn for every item (above the satchel and the gold). Evidence uses `item-tooltip-evidence.png`: the same frame with only its glowing edge recoloured green (by code; remake it if the frame changes). |
 | Pause card (Esc) | 620x457 on a dimmed screen | Title, text, sound and voice sliders and two buttons sit inside. |
 | End-of-run card | 620x357 | One card for "victory", "you have fallen", "discovered" and "nowhere left to go". A separate victory version is optional (it has a green edge now). |
 | Chronicle drawer | the right panel's inner area, plain dark box | Optional: its own backing. |
