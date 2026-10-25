@@ -18,6 +18,8 @@
       <!-- LEFT: the masked figure, counters, inventory -->
       <!-- in a fight: a faint glow on the side of whoever attacks (purple: you, crimson: the enemy) -->
       <div id="atk-glow" aria-hidden="true"><div class="g player"></div><div class="g enemy"></div></div>
+      <!-- in a fight: ATTACKER / DEFENDER under the two fighters (js/fight-ui.js renderAttacker) -->
+      <div id="role-tags"><div class="role-tag player" id="role-tag-player"></div><div class="role-tag enemy" id="role-tag-enemy"></div></div>
       <div id="figure"></div>
       <div id="walk-frames" class="anim-frames"></div>
       <div id="hurt-frames" class="anim-frames"></div>

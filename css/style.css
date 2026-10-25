@@ -578,13 +578,22 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 .fcard { position: absolute; width: 100px; height: 138px; transform-style: preserve-3d; }
 .fcard-inner { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .5s cubic-bezier(.3, .7, .3, 1); }
 .fcard.down .fcard-inner { transform: rotateY(180deg); }
-/* the faces are the owner's card art (assets/cards/card-front.png and card-back.png, 200x276 shown at 100x138) */
+/* the faces are the owner's card art, 200x276 shown at 100x138: a front for each line (assets/cards/card-high, -mid,
+   -low.png, painted violet: yours), and the back (card-back.png) */
 .fcard .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; filter: drop-shadow(0 5px 8px rgba(0, 0, 0, .55)); }
 .fcard .front { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px 4px 0; color: #eef0f4; }
-.fcard .front::before { content: ''; position: absolute; inset: 0; z-index: -1; background: url('../assets/cards/card-front.png') center / 100% 100% no-repeat; }
+.fcard .front::before { content: ''; position: absolute; inset: 0; z-index: -1; background: center / 100% 100% no-repeat; }
+.fcard .front.line-high::before { background-image: url('../assets/cards/card-high.png'); }
+.fcard .front.line-mid::before { background-image: url('../assets/cards/card-mid.png'); }
+.fcard .front.line-low::before { background-image: url('../assets/cards/card-low.png'); }
 .fcard .front > * { position: relative; }
-.fcard .front.enemy::before { filter: hue-rotate(148deg) saturate(1.5) brightness(.95); } /* the enemy's cards: the same art, tinted crimson */
-.fcard .front:not(.enemy)::before { filter: hue-rotate(52deg) saturate(1.45); } /* yours: violet */
+/* the enemy's cards: the same art in crimson (only the violet recoloured: gold and silver stay) and mirrored, so his blade
+   points at you (assets/cards/card-*-enemy.png, made from the owner's); his cost and name move right with the corner */
+.fcard .front.enemy.line-high::before { background-image: url('../assets/cards/card-high-enemy.png'); }
+.fcard .front.enemy.line-mid::before { background-image: url('../assets/cards/card-mid-enemy.png'); }
+.fcard .front.enemy.line-low::before { background-image: url('../assets/cards/card-low-enemy.png'); }
+.fcard .front.enemy .cost { left: auto; right: 4px; }
+.fcard .front.enemy .t { left: 4px; right: 31px; text-align: right; }
 /* the adrenaline cost, in the drawn corner (basic cards: 0) */
 .fcard .front .cost { position: absolute; left: 4px; top: 4px; width: 22px; height: 22px; display: grid; place-items: center;
   font-family: var(--display); font-weight: 700; font-size: 15px; line-height: 1; color: #2a2f38; }
@@ -642,6 +651,19 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 #atk-glow .player { left: 0; background: radial-gradient(ellipse 90% 75% at 0% 62%, rgba(160, 90, 210, .38), rgba(160, 90, 210, .12) 55%, transparent 80%); }
 #atk-glow .enemy { right: 0; background: radial-gradient(ellipse 90% 75% at 100% 62%, rgba(205, 45, 70, .36), rgba(205, 45, 70, .11) 55%, transparent 80%); }
 #stage.mode-fight.atk-player #atk-glow .player, #stage.mode-fight.atk-enemy #atk-glow .enemy { opacity: 1; }
+/* ATTACKER / DEFENDER under the fighters: the attacker's word large and in its colour, the defender's smaller and dim */
+#role-tags { display: none; }
+#stage.mode-fight #role-tags { display: block; }
+.role-tag { position: absolute; bottom: 30px; width: 400px; z-index: 3; text-align: center; pointer-events: none; text-transform: uppercase;
+  font-family: var(--display); font-weight: 700; font-size: 30px; letter-spacing: .24em; color: #8d8088; opacity: .85;
+  text-shadow: 0 0 3px #000, 0 2px 0 #000, 0 0 18px rgba(0, 0, 0, .9); transition: color .5s, font-size .4s, opacity .5s; }
+.role-tag.player { left: 25px; } .role-tag.enemy { right: 25px; }
+/* a soft dark pool behind the word, so it reads over the cloaks' stripes and folds */
+.role-tag::before { content: ''; position: absolute; left: 30px; right: 30px; top: -14px; bottom: -14px; z-index: -1; border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(8, 3, 6, .78) 0%, rgba(8, 3, 6, .5) 50%, transparent 72%); }
+#stage.atk-player .role-tag.player, #stage.atk-enemy .role-tag.enemy { font-size: 42px; opacity: 1; }
+#stage.atk-player .role-tag.player { color: #d9a6f2; text-shadow: 0 0 3px #000, 0 2px 0 #000, 0 0 22px rgba(170, 100, 220, .8); }
+#stage.atk-enemy .role-tag.enemy { color: #f2909c; text-shadow: 0 0 3px #000, 0 2px 0 #000, 0 0 22px rgba(220, 60, 80, .8); }
 
 /* the clash of a bind, and a hit */
 .clash { position: absolute; left: 236px; top: 26px; width: 100px; height: 100px; pointer-events: none;

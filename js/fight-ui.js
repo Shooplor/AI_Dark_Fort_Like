@@ -43,7 +43,8 @@
   /** The stage is scaled to fit the window: screen pixels -> stage pixels. */
   const stageScale = () => $('#stage').getBoundingClientRect().width / 1600 || 1;
 
-  /** A card element: the card art (assets/cards/), its adrenaline cost in the corner, its name, line and role.
+  /** A card element: the card art for its line (assets/cards/card-high, -mid, -low), its adrenaline cost in the corner and
+   *  its name; at the bottom, only why it cannot be played (if it cannot).
    *  `enemy`: the enemy's (tinted red); `down`: face down. */
   function cardEl(card, opts = {}) {
     const el = document.createElement('div');
@@ -53,8 +54,8 @@
     const name = card && card.name ? card.name : NAME[line];
     el.innerHTML =
       '<div class="fcard-inner">' +
-      `<div class="face front${opts.enemy ? ' enemy' : ''}"><span class="cost" title="Adrenaline to play it">${card && card.cost ? card.cost : 0}</span>` +
-      `<span class="t">${esc(name)}</span>${LINE_ICON[line]}<span class="role">${esc(opts.role || '')}</span></div>` +
+      `<div class="face front line-${line}${opts.enemy ? ' enemy' : ''}"><span class="cost" title="Adrenaline to play it">${card && card.cost ? card.cost : 0}</span>` +
+      `<span class="t">${esc(name)}</span><span class="role">${esc(opts.role || '')}</span></div>` +
       `<div class="face back${opts.enemy ? ' enemy' : ''}"></div></div>`;
     return el;
   }
@@ -185,12 +186,17 @@
     }
   };
 
-  /** Whoever attacks next stands a little larger, with a faint glow in their colour on their side. */
+  /** Whoever attacks next stands a little larger, with a faint glow in their colour on their side, and the words
+   *  ATTACKER and DEFENDER under the two fighters say which is which. */
   P.renderAttacker = function () {
     const f = this.game.fight;
     const st = $('#stage');
     st.classList.toggle('atk-player', !!f && f.attacker === 'player');
     st.classList.toggle('atk-enemy', !!f && f.attacker === 'enemy');
+    if (f) {
+      $('#role-tag-player').textContent = f.attacker === 'player' ? 'Attacker' : 'Defender';
+      $('#role-tag-enemy').textContent = f.attacker === 'enemy' ? 'Attacker' : 'Defender';
+    }
   };
 
   /** The three rows: slots for both sides, the line's name between them; the bound line is closed. */
@@ -236,7 +242,6 @@
   P.renderHand = function () {
     const f = this.game.fight;
     if (!f) return;
-    const role = (this.handRole || f.role) === 'attack' ? 'Attack' : 'Guard'; // during an exchange: the role just played
     const n = f.hand.length;
     const spacing = n > 4 ? 84 : 98;
     f.hand.forEach((card, i) => {
@@ -248,7 +253,8 @@
       el.style.setProperty('--r', k * 5 + 'deg');
       el.style.zIndex = i + 1;
       el.classList.toggle('closed', !f.playable(card));
-      el.querySelector('.role').textContent = f.playable(card) ? role : f.affordable(card) ? 'Closed' : `Needs ${card.cost}`;
+      // a card says nothing at the bottom (who attacks is written under the fighters), only why it cannot be played
+      el.querySelector('.role').textContent = f.playable(card) ? '' : f.affordable(card) ? 'Closed' : `Needs ${card.cost}`;
     });
     $('#fight-deck-n').textContent = f.deck.length;
   };
@@ -259,7 +265,7 @@
     const box = $('#fight-hand');
     const fresh = f.hand.filter((c) => !this.handEls.has(c.uid));
     for (const card of fresh) {
-      const el = cardEl(card, { down: true, role: f.role === 'attack' ? 'Attack' : 'Guard' });
+      const el = cardEl(card, { down: true });
       el.style.transform = `translate(${DECK.x}px, ${DECK.y - HAND_TOP}px) rotate(-8deg) scale(.64)`;
       el.style.transition = 'none';
       this.wireCard(el, card.uid);
@@ -382,14 +388,14 @@
     const mine = this.handEls.get(r.card.uid);
     this.handEls.delete(r.card.uid);
     mine.classList.remove('lift', 'closed');
-    mine.querySelector('.role').textContent = r.role === 'attack' ? 'Attack' : 'Guard';
+    mine.querySelector('.role').textContent = '';
     const fly = flyTo(mine, slot(r.card.line, 'player'), 380, 'rotate(-6deg) scale(1.1)');
     this.renderHand();
     await fly;
     snd('play', 'cardPlay');
 
     // 2. the enemy's card arrives face down beside the middle row, hovers a moment...
-    const theirs = cardEl({ uid: 0, line: r.enemyLine }, { enemy: true, down: true, role: r.role === 'attack' ? 'Guard' : 'Attack' });
+    const theirs = cardEl({ uid: 0, line: r.enemyLine }, { enemy: true, down: true });
     const hold = slot('mid', 'enemy');
     hold.appendChild(theirs);
     await theirs.animate([{ transform: 'translate(170px, -60px) rotate(14deg)', opacity: 0 }, { transform: 'none', opacity: 1 }], {
