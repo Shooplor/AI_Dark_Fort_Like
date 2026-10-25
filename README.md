@@ -17,7 +17,7 @@ it also works offline.
 | Move one room (no diagonals) | Arrow keys / WASD (any keyboard layout), or click an adjacent room |
 | Make a choice in a room | Click one of the buttons in the right-hand panel, or press 1 / 2 / 3 |
 | Pause / resume | Esc (also closes an open item popover or the chronicle first) |
-| Open / close the chronicle | The Chronicle button under the room text, or the C key |
+| Open / close the chronicle | Switched off for now (`CHRONICLE_OPEN` in `js/ui.js`); it still records every room |
 | Mute / unmute all sound | M (volume sliders and a Sound button are on the pause screen) |
 | Voice reading the text on / off | V (the pause screen also has a voice picker, volume, pace and pitch) |
 | Inspect, use or drop an item | Click it in the inventory strip on the left |

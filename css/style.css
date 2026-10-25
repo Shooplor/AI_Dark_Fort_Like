@@ -766,3 +766,6 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 .cell .pedlar-room { animation: pedlarRoomIn .6s ease-out both; } /* his picture fades in over the room's */
 .cell .pedlar-room img { width: 100%; height: 100%; display: block; }
 @keyframes pedlarRoomIn { from { opacity: 0; } }
+
+/* the chronicle is switched off for now (CHRONICLE_OPEN in js/ui.js): its button is hidden */
+#chronicle-toggle { display: none !important; }

@@ -69,16 +69,11 @@ const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode =
   await page.keyboard.press('ArrowUp'); await page.waitForTimeout(3300);
   assert((await page.evaluate(() => DF.ui.game.player.y)) === 8, 'and play continues normally afterwards');
 
-  /* ---------- chronicle: hidden, opens on click, closes with Esc ---------- */
-  assert(await page.$eval('#chronicle-wrap', (e) => e.hidden), 'the chronicle is hidden by default');
-  await page.click('#chronicle-toggle'); await page.waitForTimeout(400);
-  assert(!(await page.$eval('#chronicle-wrap', (e) => e.hidden)), 'clicking Chronicle opens it');
-  await page.screenshot({ path: out + 'chronicle.png' });
-  await page.keyboard.press('Escape'); await page.waitForTimeout(200);
-  assert(await page.$eval('#chronicle-wrap', (e) => e.hidden) && await page.$eval('#pause', (e) => e.hidden), 'Esc closes the chronicle (and does not pause)');
-  await page.keyboard.press('c'); await page.waitForTimeout(200);
-  assert(!(await page.$eval('#chronicle-wrap', (e) => e.hidden)), 'the C key toggles it too');
-  await page.keyboard.press('c');
+  /* ---------- chronicle: switched off for now (CHRONICLE_OPEN in js/ui.js): no button, and C does nothing ---------- */
+  assert(await page.$eval('#chronicle-wrap', (e) => e.hidden), 'the chronicle is hidden');
+  assert(await page.$eval('#chronicle-toggle', (e) => getComputedStyle(e).display === 'none'), 'its button is hidden');
+  await page.keyboard.press('KeyC'); await page.waitForTimeout(400);
+  assert(await page.$eval('#chronicle-wrap', (e) => e.hidden), 'and the C key does not open it');
   await page.screenshot({ path: out + 'normal.png' });
   console.log('errors:', errors);
   await browser.close();

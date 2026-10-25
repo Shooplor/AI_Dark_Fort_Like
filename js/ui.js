@@ -18,6 +18,9 @@
     ][side];
   // top-left corner of each of the six inventory slots (127px images), taken from the art mockup
   const SLOT_POS = [[10, 650], [142, 650], [273, 650], [28, 764], [159, 764], [290, 764]];
+  // the chronicle (the list of rooms explored) keeps being written, but players cannot open it for now: its button is
+  // hidden and the C key does nothing. Set to true to bring it back.
+  const CHRONICLE_OPEN = false;
   const MOVE_MS = 650; // keep in sync with the #marker transition in style.css
   const DIE_MS = 600; // how long the die tumbles (keep the diceRattle sound in js/sound.js the same length)
 
@@ -1072,6 +1075,7 @@
 
     /** Show or hide the chronicle (hidden by default; it opens over the room text). */
     toggleChronicle(show) {
+      if (!CHRONICLE_OPEN && show !== false) return; // switched off for now (CHRONICLE_OPEN)
       const wrap = $('#chronicle-wrap');
       const open = (show === undefined ? wrap.hidden : show) && this.mode === 'house'; // the chronicle belongs to a house
       if (open !== !wrap.hidden) snd('play', 'click');
