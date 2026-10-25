@@ -26,6 +26,7 @@ const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode =
     assert(first[1] < 0.3 && first[2] > rest[0] + 15, `${tag}: the first slot starts lower and faint`);
     assert(first[3] < 0.1 && first[4] > rest[5] + 15, `${tag}: the last slot too (it comes a moment later)`);
     const half = samples.find((s) => s[0] > 250);
+    if (!(half && half[2] - rest[0] < 6)) console.log(tag, 'SAMPLES', JSON.stringify(samples.slice(0, 14).map((s) => [Math.round(s[0]), s[1], s[2]])));
     assert(half && half[2] - rest[0] < 6, `${tag}: they reach their place quickly`);
     assert(last[1] === 1 && last[3] === 1 && last[2] === rest[0] && last[4] === rest[5], `${tag}: and end exactly in place, fully shown`);
     assert(await page.evaluate(() => !document.getElementById('inventory').classList.contains('arrive')), `${tag}: the arrival class is cleared afterwards`);
