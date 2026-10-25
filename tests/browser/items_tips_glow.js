@@ -34,7 +34,7 @@ const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode =
     const th = await tip('#stat-health'); assert(th[0] === 1 && th[1] === 'Lose all, and you lose yourself.', `${label}: heart tooltip "${th[1]}"`);
     await page.screenshot({ path: `tip_hp_${label}.png`, clip: { x: 0, y: 0, width: 500, height: 170 } });
     await page.hover('#eye-nums'); await page.waitForTimeout(450);
-    const te = await tip('#stat-turns'); assert(te[0] === 1 && te[1] === "Reach 20, and you're discovered. Every room also readies you to fight.", `${label}: eye tooltip "${te[1]}"`);
+    const te = await tip('#stat-turns'); assert(te[0] === 1 && te[1] === "20 turns till you're discovered, yet the higher the number, the stronger your will to fight.", `${label}: eye tooltip "${te[1]}"`);
     assert((await tip('#stat-health'))[0] < 1, `${label}: heart tooltip gone when not hovered`);
     await page.screenshot({ path: `tip_eye_${label}.png`, clip: { x: 0, y: 0, width: 600, height: 170 } });
     assert(await page.evaluate(() => !document.getElementById('stat-turns').hasAttribute('title')), `${label}: no doubled browser tooltip`);

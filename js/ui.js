@@ -891,7 +891,7 @@
       }
       $('#turn-max').textContent = this.game.maxExplorations;
       // the eye counts both: discovery (at the limit) and combat readiness (each room makes a first strike likelier)
-      $('#eye-tip').textContent = `Reach ${this.game.maxExplorations}, and you're discovered. Every room also readies you to fight.`;
+      $('#eye-tip').textContent = `${this.game.maxExplorations} turns till you're discovered, yet the higher the number, the stronger your will to fight.`;
       // with 20 rooms: from 18 on (two or fewer left), the edges glow blue
       const nearEnd = shown >= this.game.maxExplorations - 2 && this.game.status === 'playing';
       $('#danger-eye').classList.toggle('on', nearEnd);
