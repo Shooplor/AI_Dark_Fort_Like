@@ -4,7 +4,7 @@
  * enemy would, his wares laid out in the frame's opening. Buy with a click; click something in your satchel to sell it
  * (Sell takes the place of Use and Drop). Leave: the doors close and open on the house, or the road, again.
  *
- * Adds methods to DF.UI (js/ui.js). His picture is a placeholder (see assets/ART-LIST.md). */
+ * Adds methods to DF.UI (js/ui.js). */
 (function () {
   const DF = globalThis.DF;
   const $ = (sel) => document.querySelector(sel);
@@ -19,8 +19,8 @@
   const plain = (s) => String(s).replace(/\[\[|\]\]/g, '');
   const P = DF.UI.prototype;
 
-  // his picture: a placeholder (the duellist's, darkened to a hooded silhouette) until he is drawn
-  const PEDLAR_ART = DF.Art.asset('assets/ui/enemy-duellist.png');
+  // his picture (assets/ui/pedlar.png, 1000x1770, the enemy's canvas)
+  const PEDLAR_ART = DF.Art.asset('assets/ui/pedlar.png');
 
   /* ---------------------------------------------------------------- gold */
 
@@ -150,7 +150,7 @@
       run.route.done.add(shop.node.id);
       this.setMode('route');
       this.renderRoute();
-      this.renderRoadCard(null, 'The pedlar shoulders his pack and is gone into the dark. The road goes on.');
+      this.renderRoadCard(null, 'The pedlar tightens his straps and is gone into the dark. The road goes on.');
       await this.openGate('quick');
       this.gateBusy = false;
       this.renderRoute();
@@ -158,7 +158,7 @@
       const g = this.game;
       g.cell.pedlar = null; // he moves on
       this.setMode('house');
-      this.view.notes.push('The pedlar has gone, and taken his lantern with him.');
+      this.view.notes.push('The pedlar has gone, his pouches clinking away into the dark.');
       this.renderRoom(false);
       this.renderInventory();
       await this.openGate('quick');

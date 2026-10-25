@@ -270,7 +270,7 @@
       'Someone dropped their winnings here. You gather [[{n} gold coins]].',
     ],
     pedlar: [
-      'A lantern bobs in the dark. A hunched figure with a pack of oddments steps out to meet you: [[the Pedlar]].',
+      'Pouches clink in the dark. A hooded figure in green, strapped all over with little bags, steps out to meet you: [[the Pedlar]].',
       'Someone has set up a little stall among the dust sheets. The [[Pedlar]] smiles at you over his wares.',
     ],
   };

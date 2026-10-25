@@ -32,7 +32,7 @@
   /** The pedlar's stock: each entry is offered with its weight; he lays out `size` of them (the same one can repeat). */
   DF.PEDLAR = {
     name: 'The Pedlar',
-    tell: 'A pack of oddments on his back and a lantern on a pole. "Everything has a price. Even you."',
+    tell: 'Pouches hang from every strap, and every one of them clinks. "Everything has a price. Even you."',
     size: 3,
     stock: [
       { id: 'potion', weight: 6 },

@@ -697,8 +697,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 .gold-float.up { color: #ffe08a; } .gold-float.down { color: #d9a0a8; }
 @keyframes goldFloat { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-38px); } }
 
-/* the pedlar stands where an enemy would: a placeholder (the duellist's picture, darkened to a hooded silhouette) */
-#enemy.pedlar #enemy-img { filter: brightness(.32) sepia(.7) hue-rotate(10deg) saturate(.8) drop-shadow(0 0 30px rgba(255, 190, 90, .18)); }
+/* the pedlar (assets/ui/pedlar.png) stands where an enemy would */
 #enemy.pedlar #enemy-hp-icon, #enemy.pedlar #enemy-hp-nums { display: none; }
 #enemy.pedlar #enemy-name { color: #e8c27a; }
 
