@@ -18,6 +18,20 @@ const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode =
     (function tick() { xs.push(el.getBoundingClientRect().left); if (performance.now() - t0 < ms) requestAnimationFrame(tick); else res(xs); })();
   }), ms);
   const range = (xs) => Math.max(...xs) - Math.min(...xs);
+  // the whole shake, measured evenly however fast the machine is: wait for the shake animation to start, pause it and
+  // step through it (sampling frame by frame misses its widest swings when frames are few)
+  const sweep = () => page.evaluate(() => new Promise((res) => {
+    const el = document.getElementById('notice'); const t0 = performance.now();
+    (function wait() {
+      const a = el.getAnimations().find((x) => x.animationName === 'noShake');
+      if (!a) return performance.now() - t0 < 1500 ? requestAnimationFrame(wait) : res([el.getBoundingClientRect().left]);
+      a.pause();
+      const dur = a.effect.getComputedTiming().duration, xs = [];
+      for (let t = 0; t <= dur; t += 10) { a.currentTime = t; xs.push(el.getBoundingClientRect().left); }
+      a.finish();
+      res(xs);
+    })();
+  }));
   const classes = () => page.$eval('#notice', (e) => e.className);
 
   // 1st failure (the barred great doors): the message just appears, it does not shake
@@ -29,7 +43,7 @@ const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode =
   assert((await classes()).includes('bad') && (await page.textContent('#notice')).length > 10, 'it is a red message with text: "' + (await page.textContent('#notice')).trim() + '"');
 
   // 2nd failure: it shakes
-  const p2 = track(800);
+  const p2 = sweep();
   await page.keyboard.press('ArrowDown');
   const xs2 = await p2;
   console.log('   second failure:  class="%s", sideways movement %spx', await classes(), range(xs2).toFixed(1));
@@ -41,13 +55,13 @@ const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode =
   assert(Math.abs((await track(60)).slice(-1)[0] - base) < 0.5, 'and settles back exactly where it was');
 
   // 3rd failure: shakes again (the animation restarts)
-  const p3 = track(800);
+  const p3 = sweep();
   await page.keyboard.press('ArrowDown');
   assert(range(await p3) > 20, 'a third attempt shakes again');
 
   // a *different* refusal while the red message is showing also shakes
   await page.evaluate(() => { const g = DF.ui.game; const d = g.dungeon.doorAt(g.player.x, g.player.y, 0); d.state = 'locked'; d.keyType = 'violet'; DF.ui.refreshDoors(); });
-  const p4 = track(800);
+  const p4 = sweep();
   await page.keyboard.press('ArrowUp');
   assert(range(await p4) > 20 && (await page.textContent('#notice')).includes('violet'), 'a locked door right after a wall bump also shakes, with its own message');
 
@@ -71,7 +85,7 @@ const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode =
   await page.goto('file://' + ROOT + 'index.html?house=1&fights=0&seed=14'); await page.waitForTimeout(500);
   await page.keyboard.press('ArrowUp'); await page.waitForTimeout(3400);
   await page.keyboard.press('ArrowDown'); await page.waitForTimeout(150);
-  const p7 = track(800);
+  const p7 = sweep();
   await page.keyboard.press('ArrowDown');
   assert(range(await p7) > 20, 'trying to leave a choice room twice also shakes the message');
   console.log('errors:', errors);
