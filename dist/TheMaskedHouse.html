@@ -4247,10 +4247,10 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
         ...Object.values(Art.ROOM_IMAGES), ...Object.values(Art.DOOR_IMAGES), ...Object.values(Art.LOCK_IMAGES), Art.BARRED, asset('assets/rooms/secret.png'),
         ...(globalThis.DF_ASSETS ? [] : STYLE_PICTURES), // the single file has them inside already
         ...[...Art.ITEM_IMAGES].map((id) => asset('assets/items/' + id.replace(':', '-') + '.png')),
-        ...Object.values((DF.ENEMY_ART || {}).still || {}), ...Object.values((DF.ENEMY_ART || {}).hurt || {}).flat(), ...Object.values(DF.ROUTE_ART || {}),
+        ...Object.values((DF.ENEMY_ART || {}).still || {}), ...Object.values((DF.ENEMY_ART || {}).hurt || {}).flat(), ...Object.values(DF.ROUTE_ART || {}), DF.PEDLAR_ART,
       ];
       // once the opening has settled (the gate and road take seconds), so the loading never stutters an animation
-      const load = () => { this.preloaded = srcs.map((src) => { const im = new Image(); im.src = src; if (im.decode) im.decode().catch(() => {}); return im; }); };
+      const load = () => { this.preloaded = srcs.filter(Boolean).map((src) => { const im = new Image(); im.src = src; if (im.decode) im.decode().catch(() => {}); return im; }); };
       if (globalThis.requestIdleCallback) requestIdleCallback(load, { timeout: 1500 });
       else setTimeout(load, 800);
     }
@@ -6876,6 +6876,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 
   // his picture (assets/ui/pedlar.png, 1000x1770, the enemy's canvas)
   const PEDLAR_ART = DF.Art.asset('assets/ui/pedlar.png');
+  DF.PEDLAR_ART = PEDLAR_ART; // loaded in the background at the start, with the other pictures (js/ui.js)
 
   /* ---------------------------------------------------------------- gold */
 
@@ -6921,7 +6922,8 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
     this.setMode('pedlar');
     const enemy = $('#enemy');
     enemy.className = 'pedlar';
-    $('#enemy-img').src = PEDLAR_ART;
+    const img = $('#enemy-img');
+    img.src = PEDLAR_ART;
     $('#enemy-hurt-frames').innerHTML = '';
     $('#enemy-name').textContent = DF.PEDLAR.name;
     $('#enemy-tell').textContent = DF.PEDLAR.tell;
@@ -6930,7 +6932,8 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
     this.prevUids = new Set(shop.owner.slots.filter(Boolean).map((it) => it.uid)); // no "new item" sparkle for what you had
     this.renderInventory();
     this.renderWares();
-    await sleep(500);
+    // the doors open only once his picture is fully ready (never half-drawn), however slow the first visit
+    await Promise.all([sleep(500), Promise.race([img.decode ? img.decode().catch(() => {}) : Promise.resolve(), sleep(4000)])]);
     await this.openGate('quick');
     snd('play', 'pedlar');
     vo('say', [DF.PEDLAR.tell.replace(/^.*?"/, '"')], { interrupt: true });

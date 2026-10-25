@@ -63,5 +63,21 @@ const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode =
     assert(errors.length === 0, `${tag}: no errors ${errors}`);
     await page.close();
   }
+  // a first visit on a slow connection (pictures late, served from the web server run.sh starts): when
+  // the doors open on the pedlar, his picture is already whole
+  {
+    const page = await b.newPage({ viewport: { width: 1600, height: 900 } });
+    // his picture (the biggest) arrives 3.5 seconds late; the others a second late
+    await page.route('**/*.png', async (r) => { await new Promise((ok) => setTimeout(ok, r.request().url().includes('pedlar') ? 3500 : 1000)); r.continue(); });
+    await page.goto('http://127.0.0.1:8765/index.html?house=1&fights=0&seed=5'); await page.waitForTimeout(1200);
+    await page.evaluate(() => { window.__seen = null; const f = () => { const gate = document.getElementById('gate');
+      if (DF.ui.mode === 'pedlar' && !gate.classList.contains('shut') && window.__seen === null) { const i = document.getElementById('enemy-img'); window.__seen = i.complete && i.naturalWidth > 0; }
+      requestAnimationFrame(f); }; f(); });
+    await page.keyboard.press('Shift+KeyP');
+    await page.waitForTimeout(8000);
+    const seen = await page.evaluate(() => window.__seen);
+    assert(seen === true, `first visit, slow connection: his picture is whole when the doors open (${seen})`);
+    await page.close();
+  }
   await b.close();
 })();

@@ -21,6 +21,7 @@
 
   // his picture (assets/ui/pedlar.png, 1000x1770, the enemy's canvas)
   const PEDLAR_ART = DF.Art.asset('assets/ui/pedlar.png');
+  DF.PEDLAR_ART = PEDLAR_ART; // loaded in the background at the start, with the other pictures (js/ui.js)
 
   /* ---------------------------------------------------------------- gold */
 
@@ -66,7 +67,8 @@
     this.setMode('pedlar');
     const enemy = $('#enemy');
     enemy.className = 'pedlar';
-    $('#enemy-img').src = PEDLAR_ART;
+    const img = $('#enemy-img');
+    img.src = PEDLAR_ART;
     $('#enemy-hurt-frames').innerHTML = '';
     $('#enemy-name').textContent = DF.PEDLAR.name;
     $('#enemy-tell').textContent = DF.PEDLAR.tell;
@@ -75,7 +77,8 @@
     this.prevUids = new Set(shop.owner.slots.filter(Boolean).map((it) => it.uid)); // no "new item" sparkle for what you had
     this.renderInventory();
     this.renderWares();
-    await sleep(500);
+    // the doors open only once his picture is fully ready (never half-drawn), however slow the first visit
+    await Promise.all([sleep(500), Promise.race([img.decode ? img.decode().catch(() => {}) : Promise.resolve(), sleep(4000)])]);
     await this.openGate('quick');
     snd('play', 'pedlar');
     vo('say', [DF.PEDLAR.tell.replace(/^.*?"/, '"')], { interrupt: true });
