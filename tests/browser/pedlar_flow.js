@@ -40,9 +40,9 @@ const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode =
     await page.click('#pedlar-leave'); await page.waitForTimeout(3500);
     assert((await page.evaluate(() => DF.ui.mode)) === 'house' && await vis('#board-wrap') && !(await vis('#pedlar-wrap')), `${tag}: Leave: back in the house`);
     // he stays: Talk in his room, a mark on the map; talking again opens him with his stock as it was
-    const here = () => page.evaluate(() => ({ talk: !!document.querySelector('#room-card [data-talk]'), mark: !!document.querySelector('.cell .pedlar-mark') }));
+    const here = () => page.evaluate(() => ({ talk: !!document.querySelector('#room-card [data-talk]'), mark: !!document.querySelector('.cell .pedlar-room img') }));
     let h = await here();
-    assert(h.talk && h.mark, `${tag}: he waits in his room: a Talk button, and a mark on the map (${JSON.stringify(h)})`);
+    assert(h.talk && h.mark, `${tag}: he waits in his room: a Talk button, and his picture on his room on the map (${JSON.stringify(h)})`);
     await page.click('#room-card [data-talk]'); await page.waitForTimeout(3500);
     assert((await page.evaluate(() => DF.ui.mode)) === 'pedlar' && (await page.evaluate(() => DF.ui.shop.wares[0].sold)), `${tag}: Talk opens him again, what was bought still sold`);
     await page.click('#pedlar-leave'); await page.waitForTimeout(3500);

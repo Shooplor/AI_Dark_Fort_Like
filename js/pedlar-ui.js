@@ -22,10 +22,9 @@
   // his picture (assets/ui/pedlar.png, 1000x1770, the enemy's canvas)
   const PEDLAR_ART = DF.Art.asset('assets/ui/pedlar.png');
   DF.PEDLAR_ART = PEDLAR_ART; // loaded in the background at the start, with the other pictures (js/ui.js)
-  // the mark on his room on the map: a placeholder (a purse with a coin) until it is drawn
-  const PEDLAR_MARK = '<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#1d2a1c" stroke="#0b0806" stroke-width="2"/>' +
-    '<path d="M11 12 Q16 9 21 12 L23 23 Q16 27 9 23 Z" fill="#4a7a43" stroke="#0b0806" stroke-width="1.6" stroke-linejoin="round"/>' +
-    '<path d="M11.5 12 Q16 14.5 20.5 12" fill="none" stroke="#0b0806" stroke-width="1.4"/><circle cx="20.5" cy="21" r="3.6" fill="#e8b84a" stroke="#0b0806" stroke-width="1.3"/></svg>';
+  // his room on the map, once he has been met there: the owner's own room picture (like the boarded-up room's)
+  const PEDLAR_ROOM = DF.Art.asset('assets/rooms/pedlar.png');
+  DF.PEDLAR_ROOM = PEDLAR_ROOM; // preloaded with the rest (js/ui.js)
 
   /* ---------------------------------------------------------------- gold */
 
@@ -190,15 +189,11 @@
     this.openPedlar({ owner: g, wares: g.cell.pedlar, from: 'house' });
   };
 
-  /** A mark on the map over the room where the Pedlar waits, so he can be found again (placeholder art). */
+  /** His room on the map takes his picture (assets/rooms/pedlar.png), so he can be found again. */
   P.markPedlarRoom = function (cell) {
     const el = this.cellEl(cell.x, cell.y);
-    if (!el || el.querySelector('.pedlar-mark')) return;
-    const mark = document.createElement('div');
-    mark.className = 'pedlar-mark';
-    mark.title = 'The Pedlar waits here';
-    mark.innerHTML = PEDLAR_MARK;
-    el.appendChild(mark);
+    if (!el || el.querySelector('.pedlar-room')) return;
+    el.innerHTML = `<div class="art-tile room-art pedlar-room" title="The Pedlar waits here"><img src="${PEDLAR_ROOM}" alt="" draggable="false"></div>`;
   };
 
   /** For testing (Shift+P in a house): the pedlar, here and now. */

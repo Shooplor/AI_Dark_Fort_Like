@@ -94,7 +94,7 @@
         ...Object.values(Art.ROOM_IMAGES), ...Object.values(Art.DOOR_IMAGES), ...Object.values(Art.LOCK_IMAGES), Art.BARRED, asset('assets/rooms/secret.png'),
         ...(globalThis.DF_ASSETS ? [] : STYLE_PICTURES), // the single file has them inside already
         ...[...Art.ITEM_IMAGES].map((id) => asset('assets/items/' + id.replace(':', '-') + '.png')),
-        ...Object.values((DF.ENEMY_ART || {}).still || {}), ...Object.values((DF.ENEMY_ART || {}).hurt || {}).flat(), ...Object.values(DF.ROUTE_ART || {}), DF.PEDLAR_ART,
+        ...Object.values((DF.ENEMY_ART || {}).still || {}), ...Object.values((DF.ENEMY_ART || {}).hurt || {}).flat(), ...Object.values(DF.ROUTE_ART || {}), DF.PEDLAR_ART, DF.PEDLAR_ROOM,
       ];
       // once the opening has settled (the gate and road take seconds), so the loading never stutters an animation
       const load = () => { this.preloaded = srcs.filter(Boolean).map((src) => { const im = new Image(); im.src = src; if (im.decode) im.decode().catch(() => {}); return im; }); };
