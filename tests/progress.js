@@ -36,11 +36,11 @@ ok(P.tally(run).total === want + X.reachFinal + X.boss, 'the road\'s end and cle
 
 // a house's record, from a real house
 const g = new DF.Game(5, { fights: false });
-g.explored = 12;
+g.explored = 6;
 g.feats = { hidden: 1, locks: 2, choices: 3 };
 g.fightsWon = 1;
 const h = P.house(g, true);
-ok(h.escaped && h.spare === g.maxExplorations - 12 && h.hidden === 1 && h.locks === 2 && h.choices === 3 && h.duels === 1, 'a house records what was done in it');
+ok(h.escaped && h.spare === g.maxExplorations - 6 && h.hidden === 1 && h.locks === 2 && h.choices === 3 && h.duels === 1, 'a house records what was done in it');
 ok(P.house(g, false).spare === 0, 'no quick-escape bonus without escaping');
 
 // a house counts as it is played: choices faced, hidden rooms found

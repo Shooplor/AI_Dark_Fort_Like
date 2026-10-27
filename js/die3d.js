@@ -202,7 +202,7 @@
     state.spin = null;
     const to = REST[value] || REST[4];
     if (!animate || reduced()) { state.land = null; state.q = to; draw(); return; }
-    state.land = { from: state.q, to, start: performance.now(), ms: 600 };
+    state.land = { from: state.q, to, start: performance.now(), ms: 450 };
     kick();
   };
   Die3D.setNumbers = function (show) {

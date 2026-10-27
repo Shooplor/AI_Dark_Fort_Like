@@ -305,7 +305,7 @@
     },
     diceRattle(b, t) {
       let tt = 0;
-      const len = 0.58; // as long as the die tumbles on screen (DIE_MS in js/ui.js)
+      const len = 0.44; // as long as the die tumbles on screen (DIE_MS in js/ui.js)
       while (tt < len) {
         noise(b, b.sfx, { t: t + tt, f: rand(1800, 4000), q: 3, dur: 0.028, peak: rand(0.1, 0.24) });
         tone(b, b.sfx, { t: t + tt, f: rand(480, 900), type: 'triangle', dur: 0.035, peak: 0.05 });

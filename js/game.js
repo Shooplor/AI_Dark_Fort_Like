@@ -134,7 +134,7 @@
       if (isNew) {
         this.explored++; // a new room costs one exploration point
         if (cell.hidden) this.feats.hidden++;
-        this.readiness = Math.min(DF.COMBAT ? DF.COMBAT.readinessMax : 20, this.readiness + 1);
+        this.readiness = Math.min(DF.COMBAT ? DF.COMBAT.readinessMax : 10, this.readiness + 1);
         const hpBefore = this.hp;
         const info = cell.hidden ? d.revealSecret(cell.x, cell.y) : d.reveal(cell.x, cell.y, this.heldKeyTypes());
         const outcome = this.resolveEvent(cell, info);

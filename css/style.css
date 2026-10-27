@@ -302,7 +302,7 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 /* the golden pendant: 100x100, centred on the room it marks */
 #marker {
   position: absolute; left: -10px; top: -7px; width: 100px; height: 100px; z-index: 5; pointer-events: none;
-  transition: transform 650ms cubic-bezier(.45, .05, .45, 1); /* an even start and finish: no long creep at the end */
+  transition: transform 450ms cubic-bezier(.45, .05, .45, 1); /* an even start and finish: no long creep at the end */
 }
 #marker .token { width: 100%; height: 100%; animation: tokenBob 2.4s ease-in-out infinite; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, .8)); }
 #marker .token img { width: 100%; height: 100%; }
@@ -339,7 +339,7 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 .die3d.rolling .d3-num { opacity: 0; } /* no number while it tumbles */
 .die3d.landed .d3-num { transition: opacity .18s .05s; }
 .die3d.rolling .d3-scale { animation: d3pulse .22s linear infinite; }
-.die3d.landed .d3-scale { animation: d3land .6s cubic-bezier(.2, .7, .3, 1); }
+.die3d.landed .d3-scale { animation: d3land .45s cubic-bezier(.2, .7, .3, 1); }
 @keyframes d3pulse { 0%, 100% { transform: scale(.8); } 25%, 75% { transform: scale(.88); } 50% { transform: scale(.75); } } /* only a little smaller while it tumbles */
 @keyframes d3land { 0% { transform: scale(.8); } 70% { transform: scale(1.05); } 100% { transform: none; } }
 #die-text { font-size: 19px; line-height: 1.15; color: var(--text); }
@@ -460,7 +460,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 #gate.open .dust-layer.top { transform: translateY(-472px); } /* the dust on each door's edge travels with that door */
 #gate.open .dust-layer.bottom { transform: translateY(472px); }
 #gate.fast .gate-door, #gate.fast .dust-layer { transition-duration: .55s; transition-timing-function: cubic-bezier(.5, 0, .9, .6); } /* slamming shut */
-#gate.quick .gate-door, #gate.quick .dust-layer { transition-duration: 1.5s; }
+#gate.quick .gate-door, #gate.quick .dust-layer { transition-duration: 1.1s; }
 #embark { position: absolute; left: 50%; top: 453px; transform: translate(-50%, -50%); z-index: 2; padding: 14px 40px; font-size: 22px; letter-spacing: .22em;
   box-shadow: 0 0 0 4px rgba(10, 5, 8, .85), 0 0 28px rgba(212, 166, 58, .45); transition: opacity .3s; }
 #gate:not(.ask) #embark { opacity: 0; pointer-events: none; }
@@ -511,7 +511,7 @@ button.choice:hover .k { border-color: var(--gold-light); color: var(--gold-ligh
 @keyframes routeArtPulse { 50% { filter: drop-shadow(0 0 10px rgba(255, 214, 110, .85)) brightness(1.12); } }
 @keyframes routePulse { 50% { box-shadow: 0 0 16px rgba(244, 221, 140, .55), 0 3px 8px rgba(0, 0, 0, .8); } }
 .route-start { position: absolute; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: #5a4850; border: 2px solid #2a1d23; }
-#route-marker { position: absolute; width: 64px; height: 64px; margin: -40px 0 0 -32px; z-index: 3; pointer-events: none; transition: left 1.1s ease-in-out, top 1.1s ease-in-out; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, .8)); }
+#route-marker { position: absolute; width: 64px; height: 64px; margin: -40px 0 0 -32px; z-index: 3; pointer-events: none; transition: left .75s ease-in-out, top .75s ease-in-out; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, .8)); }
 #route-marker img { width: 100%; height: 100%; animation: tokenBob 2.4s ease-in-out infinite; }
 
 /* ------------------------------------------------------------------ end-of-run overlay */

@@ -227,7 +227,7 @@
     gate.classList.add('open');
     this.quake(kind === 'quick' ? 'rumbleShort' : 'rumble');
     this.gateDust(kind === 'quick' ? 0.45 : 1); // bursts from the seam the moment the doors move
-    await sleep(kind === 'quick' ? 1500 : 2650);
+    await sleep(kind === 'quick' ? 1100 : 2650);
     gate.classList.remove('shut', 'quick');
   };
 
@@ -249,7 +249,7 @@
    *  property, so it adds to the stage's own scaling transform. */
   P.quake = function (kind) {
     if (reduced()) return;
-    const spec = { rumble: [2600, 3.2, 1.2], rumbleShort: [1500, 2, 0.8], slam: [450, 6, 0] }[kind];
+    const spec = { rumble: [2600, 3.2, 1.2], rumbleShort: [1100, 2, 0.8], slam: [450, 6, 0] }[kind];
     const [ms, jolt, tremor] = spec;
     const frames = [], n = Math.round(ms / 45);
     for (let i = 0; i <= n; i++) {
@@ -402,10 +402,10 @@
     this.gateBusy = true;
     this.renderRoute(); // the pendant glides to the point (CSS transition) while the figure walks
     this.setWalking(true);
-    for (let i = 0; i < 4; i++) setTimeout(() => snd('play', 'step'), i * 280);
-    await sleep(1100);
+    for (let i = 0; i < 3; i++) setTimeout(() => snd('play', 'step'), i * 260);
+    await sleep(750);
     this.setWalking(false);
-    await sleep(250);
+    await sleep(150);
     if (node.type === 'mansion' || node.type === 'final') {
       await this.enterHouse(node);
     } else if (node.type === 'stranger' && DF.Shop && this.strangerIsPedlar(node)) {
@@ -442,7 +442,7 @@
       return this.showRunWon();
     }
     this.gateBusy = true;
-    await sleep(1100); // let the last find be seen
+    await sleep(800); // let the last find be seen
     await this.closeGate();
     snd('setTension', 0);
     vo('stop');

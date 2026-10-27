@@ -92,7 +92,7 @@ comes later. The total is kept in the browser (`js/progress.js`); **Shift+L** on
 
 ## Fencing
 
-- **Combat readiness** is shown by the eye: it equals the rooms explored (up to 20), and each point is a 5% chance to
+- **Combat readiness** is shown by the eye: it equals the rooms explored (up to 10), and each point is a 10% chance to
   strike first when a fight breaks out.
 - **When:** sometimes, on arriving in a room: rarely at first (2% in the first new rooms), more often as the house is
   explored (14% by the 20th); walking back through a room you know has about a third of that chance.
@@ -119,7 +119,7 @@ comes later. The total is kept in the browser (`js/progress.js`); **Shift+L** on
   the disk shows them in plain colours (browsers do not hand local pictures to 3D); the single file and the
   published page show the paintings.
 - Testing keys (they also work on the published link): **Shift+F** starts a fight in the room you are in;
-  **Shift+B** makes your next card bind. Testing shortcuts: `index.html?house=1&duel=0` starts a fight at once (`duel=20` for full readiness);
+  **Shift+B** makes your next card bind. Testing shortcuts: `index.html?house=1&duel=0` starts a fight at once (`duel=10` for full readiness);
   `&fights=0` switches fights off. `node tests/combat.js` checks the rules; `node tests/balance.js` reports how often
   fights happen and what they cost (`--nofights` to compare).
 
@@ -127,8 +127,8 @@ comes later. The total is kept in the browser (`js/progress.js`); **Shift+L** on
 
 - **The map** is 56 unexplored rooms in an oval (6 columns by 10 rows, with the four corners cut off by the
   frame). You start in the entrance foyer, the second room of the bottom row (it does not cost a point).
-- **Discovery:** the eye counter (top left) starts at 0/20 and goes up by one each time you explore a **new** room.
-  Reach 20/20 and you are discovered, and the run ends. Walking back through rooms you have already explored is
+- **Discovery:** the eye counter (top left) starts at 0/10 and goes up by one each time you explore a **new** room.
+  Reach 10/10 and you are discovered, and the run ends. Walking back through rooms you have already explored is
   free.
 - **Moving** is one room at a time, and only through a door that exists on that wall.
 - **Entering a new room casts the fate die (d4)**, a 3D pyramid that tumbles over that room on the map: the roll is the number of doors the room has, counting
@@ -147,7 +147,7 @@ comes later. The total is kept in the browser (`js/progress.js`); **Shift+L** on
 - **Choices:** the room describes something (a cupboard and a chest, a mirror, a bell-rope...) and offers two or
   three buttons. Each button rolls a good, neutral or bad outcome (an item, nothing, or damage), so nothing is
   a sure thing. Choosing is free (it costs no turn), but you cannot leave the room until you have chosen.
-- **Warnings:** from 18/20 the screen edges glow a faint, pulsing blue and the eye trembles slightly; at 3 health or less, red, and the heart trembles. Hovering the heart or the eye shows a one-line hint.
+- **Warnings:** from 8/10 the screen edges glow a faint, pulsing blue and the eye trembles slightly; at 3 health or less, red, and the heart trembles. Hovering the heart or the eye shows a one-line hint.
 - **Health** starts at 10. A hit of 3 or more also sounds heavier (`hurtBig`). Losing health plays the five-frame hit animation (11 frames a second), shows a red "-2" floating up from the figure's head and makes the heart icon shrink and bounce back; healing plays a four-frame healing animation, shows a green "+3" and makes the heart swell. Reaching 0 ends the run. **Inventory** has 6 slots; a full satchel leaves
   finds on the floor.
 - The generator works to keep a way forward open: it adds doors when you would be boxed in, rubble can
@@ -157,9 +157,9 @@ comes later. The total is kept in the browser (`js/progress.js`); **Shift+L** on
 - **Winning:** three pieces of evidence (a flute, a scroll and a camera, for now) are hidden in rooms, marked in the
   inventory by a green outline. Holding all three ends the game with a victory popup. Evidence cannot be dropped;
   if the satchel is full when a piece turns up, something less important is left behind to make room.
-  `CONFIG.quest` in `js/data.js` decides how they are spread. Now `extraRooms: 4`: the pieces hide among your first
-  24 new rooms, so some may lie in rooms 21-24, out of reach, and winning is not certain (the test bot wins about
-  half the time; see `tests/balance.js`). With `extraRooms: 0` every piece is certain to turn up within your 20 rooms.
+  `CONFIG.quest` in `js/data.js` decides how they are spread. Now `from: 2, extraRooms: 2`: the pieces hide among your
+  2nd to 12th new rooms, so some may lie in rooms 11-12, out of reach, and winning is not certain (the test bot wins about
+  half the time; see `tests/balance.js`). With `extraRooms: 0` every piece is certain to turn up within your 10 rooms.
 
 ## Project layout
 
@@ -203,7 +203,7 @@ The **background music** is a real recording, `assets/audio/music.ogg` (your "Ri
 It starts after the first key press or click, dips while the voice speaks or the game is paused, fades out when a run
 ends and comes back in a new game. The **sound effects** are still **synthesised in the browser** (steps, the die, locks,
 pickups, damage, healing and the endings). Volumes are on the pause screen (Esc), M mutes, and the settings are
-remembered. The synthesised heartbeat that crept in near 20/20 only exists with the synthesised music.
+remembered. The synthesised heartbeat that crept in near 10/10 only exists with the synthesised music.
 
 To change the music, replace `assets/audio/music.ogg` (same name). To go back to the synthesised music, delete the `music`
 line in `FILES` at the top of `js/sound.js`. Real recordings can replace any effect too: list them in `FILES` (see

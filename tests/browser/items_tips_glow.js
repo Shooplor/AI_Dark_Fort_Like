@@ -34,7 +34,7 @@ const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode =
     const th = await tip('#stat-health'); assert(th[0] === 1 && th[1] === 'Lose all, and you lose yourself.', `${label}: heart tooltip "${th[1]}"`);
     await page.screenshot({ path: `tip_hp_${label}.png`, clip: { x: 0, y: 0, width: 500, height: 170 } });
     await page.hover('#eye-nums'); await page.waitForTimeout(450);
-    const te = await tip('#stat-turns'); assert(te[0] === 1 && te[1] === "20 turns till you're discovered, yet the higher the number, the stronger your will to fight.", `${label}: eye tooltip "${te[1]}"`);
+    const te = await tip('#stat-turns'); assert(te[0] === 1 && te[1] === "10 turns till you're discovered, yet the higher the number, the stronger your will to fight.", `${label}: eye tooltip "${te[1]}"`);
     assert((await tip('#stat-health'))[0] < 1, `${label}: heart tooltip gone when not hovered`);
     await page.screenshot({ path: `tip_eye_${label}.png`, clip: { x: 0, y: 0, width: 600, height: 170 } });
     assert(await page.evaluate(() => !document.getElementById('stat-turns').hasAttribute('title')), `${label}: no doubled browser tooltip`);
@@ -42,8 +42,8 @@ const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode =
     // glows
     const on = () => page.evaluate(() => [document.getElementById('danger-eye').classList.contains('on'), document.getElementById('danger-hp').classList.contains('on')]);
     const setState = (explored, hp) => page.evaluate(([e, h]) => { const g = DF.ui.game; g.explored = e; g.hp = h; DF.ui.renderTurn(); DF.ui.renderHp(0); }, [explored, hp]);
-    await setState(17, 4); assert(JSON.stringify(await on()) === '[false,false]', `${label}: no glow at 17/20 and 4 health`);
-    await setState(18, 4); assert(JSON.stringify(await on()) === '[true,false]', `${label}: blue glow from 18/20`);
+    await setState(7, 4); assert(JSON.stringify(await on()) === '[false,false]', `${label}: no glow at 7/10 and 4 health`);
+    await setState(8, 4); assert(JSON.stringify(await on()) === '[true,false]', `${label}: blue glow from 8/10`);
     await setState(19, 3); assert(JSON.stringify(await on()) === '[true,true]', `${label}: red glow at 3 health (both together)`);
     await page.waitForTimeout(1500);
     await page.screenshot({ path: `glow_both_${label}.png` });

@@ -21,13 +21,13 @@
       '.####.',
     ],
     start: { x: 2, y: 9 }, // the entrance foyer: bottom row, second room from the left
-    maxExplorations: 20, // new rooms the player may explore before being discovered (walking back is free)
+    maxExplorations: 10, // new rooms the player may explore before being discovered (walking back is free)
     // The evidence (quest items) is hidden at random among the rooms you explore, in the order you explore them:
     // from your `from`-th new room up to your (maxExplorations + extraRooms)-th.
-    //   extraRooms 0: every piece is hidden somewhere within your 20 rooms, so exploring all 20 always shows you everything.
-    //   extraRooms 4: the hiding places run to room 24, so some pieces land in rooms 21-24, which you can never reach.
+    //   extraRooms 0: every piece is hidden somewhere within your 10 rooms, so exploring all 10 always shows you everything.
+    //   extraRooms 2: the hiding places run to room 12, so some pieces land in rooms 11-12, which you can never reach.
     // More extra rooms = harder to win. (tests/balance.js --extra=N shows the win rate.) See Game.maybePlaceQuestItem.
-    quest: { from: 4, extraRooms: 4 },
+    quest: { from: 2, extraRooms: 2 }, // with 10 rooms: about the same chance to win as 20 rooms with { from: 4, extraRooms: 4 }
     maxHp: 10,
     slots: 6,
     potionHeal: 4,

@@ -25,8 +25,8 @@
     // the chance of a fight in a newly explored room grows from `first` (the first room) to `last` (the 20th);
     // walking back through a known room has `backtrack` times that chance
     chance: { first: 0.02, last: 0.14, backtrack: 0.35 },
-    readinessMax: 20,
-    firstStrikePerPoint: 0.05, // chance to attack first, per point of readiness (capped at 95%)
+    readinessMax: 10, // as many as the rooms a house lets you explore (CONFIG.maxExplorations)
+    firstStrikePerPoint: 0.1, // chance to attack first, per point of readiness (capped at 95%)
     startDeck: ['high', 'high', 'high', 'mid', 'mid', 'mid', 'low', 'low', 'low'], // card ids (DF.CARDS)
     adrenalineMax: 5, // each side's pool
     adrenalinePerBind: 1, // a bind gives this much to both sides

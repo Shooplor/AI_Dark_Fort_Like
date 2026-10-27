@@ -64,7 +64,7 @@ function exploreNew(g) {
 test('the game starts at 0 of 20 explored', () => {
   const g = new DF.Game(5);
   assert.strictEqual(g.explored, 0);
-  assert.strictEqual(g.maxExplorations, 20);
+  assert.strictEqual(g.maxExplorations, 10);
   assert.strictEqual(g.status, 'playing');
 });
 
@@ -177,12 +177,12 @@ test('a healing outcome at full health explains itself instead of showing a raw 
   }
 });
 
-test('with extraRooms 0, every piece of evidence shows up within the 20 rooms you may explore', () => {
+test('with extraRooms 0, every piece of evidence shows up within the 10 rooms you may explore', () => {
   const keep = DF.CONFIG.quest.extraRooms;
   DF.CONFIG.quest.extraRooms = 0; // the guarantee only holds when nothing is hidden beyond your limit
   let won = 0, early = 0;
   for (let seed = 1; seed <= 80; seed++) {
-    const g = new DF.Game(seed); // the real rules: 20 rooms, evidence on
+    const g = new DF.Game(seed); // the real rules: 10 rooms, evidence on
     let guard = 0;
     while (g.status === 'playing' && guard++ < 40) {
       const r = exploreNew(g);

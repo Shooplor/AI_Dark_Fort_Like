@@ -16,7 +16,7 @@ const ok = (cond, msg) => {
 let ambushes = 0, binds = 0, hits = 0;
 for (let seed = 1; seed <= 3000; seed++) {
   const rng = DF.makeRng(seed);
-  const readiness = seed % 21;
+  const readiness = seed % 11;
   const f = new DF.Fight(rng, { hp: 10, readiness });
   if (f.ambush) {
     ambushes++;
@@ -65,7 +65,7 @@ console.log(`  3000 fights: ${ambushes} ambushes, ${binds} binds, ${hits} hits`)
 // 2. adrenaline: a card that costs more than the pool cannot be played; playing it spends the points
 {
   DF.CARDS.test_lunge = { id: 'test_lunge', line: 'high', name: 'Lunge', cost: 2 };
-  const f = new DF.Fight(DF.makeRng(7), { hp: 10, readiness: 20 });
+  const f = new DF.Fight(DF.makeRng(7), { hp: 10, readiness: 10 });
   const special = f.card('test_lunge');
   f.hand.push(special);
   ok(!f.playable(special) && !f.play(special.uid).ok, 'a card costing 2 cannot be played with no adrenaline');
@@ -87,8 +87,8 @@ const firstStrike = (readiness) => {
   return n / 2000;
 };
 ok(firstStrike(0) === 0, 'with no readiness the enemy always strikes first');
-ok(Math.abs(firstStrike(10) - 0.5) < 0.05, 'at readiness 10, about half the fights are fair');
-ok(firstStrike(20) > 0.9, 'at readiness 20 you almost always strike first');
+ok(Math.abs(firstStrike(5) - 0.5) < 0.05, 'at readiness 5, about half the fights are fair');
+ok(firstStrike(10) > 0.9, 'at readiness 10 you almost always strike first');
 
 // 4. in the house: readiness rises with new rooms; a fight blocks moving; a won fight leaves a reward
 {

@@ -1,4 +1,4 @@
-/* How often does a sensible player collect all the evidence under the REAL rules (20 new rooms)?
+/* How often does a sensible player collect all the evidence under the REAL rules (10 new rooms)?
  *
  *   node tests/balance.js [games=2000] [--extra=N] [--nofights]
  *     --extra=N    extra rooms the evidence may hide beyond your limit (see CONFIG.quest in js/data.js)

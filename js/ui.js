@@ -21,8 +21,8 @@
   // the chronicle (the list of rooms explored) keeps being written, but players cannot open it for now: its button is
   // hidden and the C key does nothing. Set to true to bring it back.
   const CHRONICLE_OPEN = false;
-  const MOVE_MS = 650; // keep in sync with the #marker transition in style.css
-  const DIE_MS = 600; // how long the die tumbles (keep the diceRattle sound in js/sound.js the same length)
+  const MOVE_MS = 450; // keep in sync with the #marker transition in style.css
+  const DIE_MS = 450; // how long the die tumbles (keep the diceRattle sound in js/sound.js the same length)
 
   const $ = (sel) => document.querySelector(sel);
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -285,7 +285,7 @@
         vo('say', [res.unlocked.msg]);
         this.renderInventory();
         this.refreshDoors(res.unlocked.door.id);
-        await sleep(550);
+        await sleep(400);
       }
       if (res.forced) {
         snd('play', 'rubble');
@@ -313,15 +313,15 @@
         this.refreshDoors();
         this.renderTurn(); // still costs one exploration point
         this.popFound(r.cell, r.outcome);
-        await sleep(420);
+        await sleep(300);
       } else if (r.newRoom) {
         await this.rollDie(r.roll, r.cell);
         this.revealCell(r.cell, true);
         this.hideMapDie(); // the die fades as the room appears beneath it
         this.refreshDoors();
         this.renderTurn(); // the new room costs one exploration point
-        setTimeout(() => this.popFound(r.cell, r.outcome), 250); // then whatever was found pops up over the room
-        await sleep(420);
+        setTimeout(() => this.popFound(r.cell, r.outcome), 200); // then whatever was found pops up over the room
+        await sleep(300);
       } else {
         $('#die-text').textContent = 'A room you know. The die stays still.';
       }
@@ -345,7 +345,7 @@
         return;
       }
       if (r.fight) {
-        await sleep(r.newRoom ? 700 : 250); // a moment to see the room, then steel is drawn (js/fight-ui.js)
+        await sleep(r.newRoom ? 550 : 250); // a moment to see the room, then steel is drawn (js/fight-ui.js)
         await this.startFight(r.fight);
         return;
       }
@@ -420,7 +420,7 @@
       D3.show(value, true);
       die.className = 'die3d landed';
       $('#die-text').textContent = DIE_TEXT[value];
-      await sleep(950);
+      await sleep(750); // long enough to read the number before it fades
     }
 
     /** Fade the map die away (at once, for a new game). */
@@ -903,7 +903,7 @@
       $('#turn-max').textContent = this.game.maxExplorations;
       // the eye counts both: discovery (at the limit) and combat readiness (each room makes a first strike likelier)
       $('#eye-tip').textContent = `${this.game.maxExplorations} turns till you're discovered, yet the higher the number, the stronger your will to fight.`;
-      // with 20 rooms: from 18 on (two or fewer left), the edges glow blue
+      // with 10 rooms: from 8 on (two or fewer left), the edges glow blue
       const nearEnd = shown >= this.game.maxExplorations - 2 && this.game.status === 'playing';
       $('#danger-eye').classList.toggle('on', nearEnd);
       $('#stat-turns').classList.toggle('uneasy', nearEnd);
