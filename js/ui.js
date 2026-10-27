@@ -350,7 +350,7 @@
         return;
       }
       if (r.status !== 'playing') {
-        await this.afterVoice(1400, 9000); // let the last room's text be read before the end screen
+        await this.afterVoice(1400, r.status === 'won' ? 2500 : 4500); // a moment for the last room's text (never long: the end must come)
         this.showEnd(r.status);
       }
     }
@@ -385,7 +385,7 @@
       this.popFound(game.cell, res.outcome);
       this.renderChronicle();
       this.refreshHints();
-      if (res.status !== 'playing') this.afterVoice(1600, 9000).then(() => this.showEnd(res.status));
+      if (res.status !== 'playing') this.afterVoice(1600, res.status === 'won' ? 2500 : 4500).then(() => this.showEnd(res.status));
     }
 
     /** Something found in this room pops up over it, small to large, then drifts up and fades (it goes into the
@@ -983,7 +983,8 @@
       vo('say', lines); // queued behind anything still being read (an unlock message, say)
     }
 
-    /** Wait at least `minMs`, then (up to `maxMs` in all) until the voice has finished talking. */
+    /** Wait at least `minMs`, then (up to `maxMs` in all) until the voice has finished talking. Kept short: some phones
+     *  never say the voice has finished, and a long wait there looks like the game has stopped. */
     async afterVoice(minMs, maxMs) {
       const t0 = Date.now();
       await sleep(minMs);
