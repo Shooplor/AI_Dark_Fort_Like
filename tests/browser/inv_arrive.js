@@ -21,17 +21,18 @@ const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode =
       if (t0 && performance.now() - t0 > 1000) res({ out, timing: out.timing }); else requestAnimationFrame(f); }; f(); }));
     const samples = got.out, timing = got.timing;
     const first = samples[0], last = samples[samples.length - 1];
-    await page.waitForTimeout(400);
+    await page.waitForTimeout(1500); // the slots wait for the doors, then take about a second
     const rest = await page.evaluate(() => [...document.querySelectorAll('#inventory .slot')].map((s) => Math.round(s.getBoundingClientRect().top)));
     const shown = await page.evaluate(() => [...document.querySelectorAll('#inventory .slot')].map((s) => +getComputedStyle(s).opacity));
     console.log(tag, 'first', first, 'last', last, 'rest', rest[0], rest[5]);
     assert(first[1] < 0.3 && first[2] > rest[0] + 15, `${tag}: the first slot starts lower and faint`);
     assert(first[3] < 0.1 && first[4] > rest[5] + 15, `${tag}: the last slot too (it comes a moment later)`);
     // "quickly": read from the animation itself (a slow test machine draws too few frames while the doors open to time it)
-    assert(timing && timing.every(([dur, delay]) => dur + delay <= 900), `${tag}: they reach their place quickly (${JSON.stringify(timing)})`);
+    assert(timing && timing.every(([dur, delay]) => dur + delay <= 1200), `${tag}: they reach their place quickly (${JSON.stringify(timing)})`);
     await page.waitForTimeout(300);
     const later = await page.evaluate(() => [...document.querySelectorAll('#inventory .slot')].map((s) => Math.round(s.getBoundingClientRect().top)));
     assert(shown.every((o) => o === 1) && later.join() === rest.join(), `${tag}: and end in place, fully shown`);
+    await page.waitForFunction(() => !document.getElementById('inventory').classList.contains('arrive'), null, { timeout: 3000 }).catch(() => {});
     assert(await page.evaluate(() => !document.getElementById('inventory').classList.contains('arrive')), `${tag}: the arrival class is cleared afterwards`);
     assert(errors.length === 0, `${tag}: no errors`);
     if (tag === 'page') {

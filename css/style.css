@@ -108,7 +108,21 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 #ready-nums { left: 334px; top: 97px; }
 #ready-nums .big { color: #c9a048; }
 /* entering a house: the eye, then readiness, rise a little and fade in (js/road-ui.js setMode) */
-#stat-turns.arrive > img, #stat-turns.arrive > .nums, #stat-ready.arrive > img, #stat-ready.arrive > .nums { animation: hudArrive .75s cubic-bezier(.2, .8, .3, 1) both; }
+#stat-turns.arrive > img, #stat-turns.arrive > .nums, #stat-ready.arrive > img, #stat-ready.arrive > .nums { animation: hudArrive .9s cubic-bezier(.2, .8, .3, 1) both; }
+/* the gold counter comes last, after the satchel */
+#stat-gold.arrive { animation: hudArrive .8s .45s cubic-bezier(.2, .8, .3, 1) both; }
+/* held at the start until the house has been drawn (js/road-ui.js setMode) */
+#stat-turns.hold > img, #stat-turns.hold > .nums, #inventory.hold .slot, #stat-gold.hold { animation-play-state: paused; }
+/* leaving a house: they sink a little and fade away while the doors close (js/road-ui.js hudLeave) */
+#stat-turns.leaving > img, #stat-turns.leaving > .nums, #stat-gold.leaving { animation: hudLeave .5s ease-in both; }
+#inventory.leaving .slot { animation: slotLeave .5s ease-in both; }
+#inventory.leaving .slot:nth-child(5) { animation-delay: .04s; }
+#inventory.leaving .slot:nth-child(4) { animation-delay: .08s; }
+#inventory.leaving .slot:nth-child(3) { animation-delay: .12s; }
+#inventory.leaving .slot:nth-child(2) { animation-delay: .16s; }
+#inventory.leaving .slot:nth-child(1) { animation-delay: .2s; }
+@keyframes hudLeave { from { opacity: 1; translate: 0 0; } to { opacity: 0; translate: 0 12px; } }
+@keyframes slotLeave { from { opacity: 1; translate: 0 0; } to { opacity: 0; translate: 0 26px; } }
 #stat-ready.arrive > img, #stat-ready.arrive > .nums { animation-delay: .14s; }
 @keyframes hudArrive { from { opacity: 0; translate: 0 16px; } to { opacity: 1; translate: 0 0; } }
 #hp-nums .big { color: #d55a7d; }
@@ -166,12 +180,12 @@ em.hl { font-style: normal; font-weight: 600; color: var(--gold-light); }
 /* six slots, deliberately a little crooked (positions are set in js/ui.js) */
 #inventory { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
 /* entering a house: the slots start a little lower and rise quickly into place, fading in, one after another */
-#inventory.arrive .slot { animation: slotArrive .55s cubic-bezier(.15, .85, .25, 1) both; }
-#inventory.arrive .slot:nth-child(2) { animation-delay: .05s; }
-#inventory.arrive .slot:nth-child(3) { animation-delay: .1s; }
-#inventory.arrive .slot:nth-child(4) { animation-delay: .15s; }
-#inventory.arrive .slot:nth-child(5) { animation-delay: .2s; }
-#inventory.arrive .slot:nth-child(6) { animation-delay: .25s; }
+#inventory.arrive .slot { animation: slotArrive .8s cubic-bezier(.15, .85, .25, 1) both; }
+#inventory.arrive .slot:nth-child(2) { animation-delay: .07s; }
+#inventory.arrive .slot:nth-child(3) { animation-delay: .14s; }
+#inventory.arrive .slot:nth-child(4) { animation-delay: .21s; }
+#inventory.arrive .slot:nth-child(5) { animation-delay: .28s; }
+#inventory.arrive .slot:nth-child(6) { animation-delay: .35s; }
 @keyframes slotArrive { from { opacity: 0; translate: 0 34px; } to { opacity: 1; translate: 0 0; } }
 .slot { position: absolute; width: 127px; height: 127px; padding: 0; border: 0; border-radius: 0; box-shadow: none; background: none; cursor: default; pointer-events: auto; }
 .slot::before { content: ''; position: absolute; inset: 0; background: url('../assets/ui/inventory-slot.png') center / 100% 100% no-repeat; }

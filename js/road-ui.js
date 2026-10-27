@@ -52,17 +52,21 @@
     st.classList.remove('mode-gate', 'mode-route', 'mode-house', 'mode-fight', 'mode-pedlar');
     st.classList.add('mode-' + mode);
     this.mode = mode;
-    // entering a house from the road: the eye, readiness and the inventory slots rise into place and fade in (not after
-    // a fight: they stayed)
-    if (mode === 'house' && prev !== 'house' && prev !== 'fight' && prev !== 'pedlar') {
-      for (const id of ['#stat-turns', '#inventory']) {
+    for (const id of ['#stat-turns', '#inventory', '#stat-gold']) $(id).classList.remove('leaving');
+    // coming from the gate or the road into a house (or to the pedlar): the satchel and the gold, and in a house the
+    // eye, rise into place and fade in (not after a fight: they stayed)
+    if ((mode === 'house' || mode === 'pedlar') && (prev === 'gate' || prev === 'route' || prev === undefined)) {
+      const ids = mode === 'house' ? ['#stat-turns', '#inventory', '#stat-gold'] : ['#inventory', '#stat-gold'];
+      for (const id of ids) {
         const el = $(id);
         el.classList.remove('arrive');
         void el.offsetWidth;
-        el.classList.add('arrive');
+        el.classList.add('arrive', 'hold'); // held invisible at the start, until the doors are mostly open
       }
-      clearTimeout(this.arriveTimer); // done: let the counters' own pulses (a point spent) play again
-      this.arriveTimer = setTimeout(() => ['#stat-turns', '#inventory'].forEach((id) => $(id).classList.remove('arrive')), 1100);
+      clearTimeout(this.arriveTimer);
+      clearTimeout(this.arriveFallback);
+      this.arriveIds = ids;
+      this.arriveFallback = setTimeout(() => this.releaseArrive(), 2500); // in case no doors open (a testing shortcut)
     }
     $('#route-wrap').hidden = mode === 'house' || mode === 'fight' || mode === 'pedlar';
     $('#fight-wrap').hidden = mode !== 'fight';
@@ -75,6 +79,30 @@
       this.handEls = new Map();
       this.fightBusy = false;
     }
+  };
+
+  /** The held arrival (see setMode) plays: once the doors are mostly open, so that it does not compete with them for a
+   *  slow phone's attention (played together, the phone skipped it, and the satchel just popped up). */
+  P.releaseArrive = function () {
+    const ids = this.arriveIds;
+    if (!ids) return;
+    this.arriveIds = null;
+    clearTimeout(this.arriveFallback);
+    ids.forEach((id) => $(id).classList.remove('hold'));
+    // done: let the counters' own pulses (a point spent) play again
+    this.arriveTimer = setTimeout(() => ids.forEach((id) => $(id).classList.remove('arrive')), 1500);
+  };
+
+  /** Leaving a house: the satchel, the gold and the eye sink a little and fade away (while the doors close). */
+  P.hudLeave = function () {
+    this.arriveIds = null;
+    clearTimeout(this.arriveFallback);
+    for (const id of ['#stat-turns', '#inventory', '#stat-gold']) {
+      const el = $(id);
+      el.classList.remove('arrive', 'hold');
+      el.classList.add('leaving');
+    }
+    return sleep(reduced() ? 60 : 700);
   };
 
   /** Health in the corner while on the road (inside a house the game itself shows it). */
@@ -227,7 +255,12 @@
     gate.classList.add('open');
     this.quake(kind === 'quick' ? 'rumbleShort' : 'rumble');
     this.gateDust(kind === 'quick' ? 0.45 : 1); // bursts from the seam the moment the doors move
-    await sleep(kind === 'quick' ? 1100 : 2650);
+    if (kind === 'quick') {
+      await sleep(700);
+      this.releaseArrive(); // the satchel rises in as the doors finish opening
+      await sleep(400);
+    } else await sleep(2650);
+    this.releaseArrive();
     gate.classList.remove('shut', 'quick');
   };
 
@@ -443,7 +476,7 @@
     }
     this.gateBusy = true;
     await sleep(800); // let the last find be seen
-    await this.closeGate();
+    await Promise.all([this.closeGate(), this.hudLeave()]);
     snd('setTension', 0);
     vo('stop');
     this.setMode('route');
