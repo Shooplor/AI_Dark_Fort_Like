@@ -7,7 +7,7 @@ const { chromium } = require('/opt/node-tools/node_modules/playwright');
 const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode = 1; } else console.log('ok:', m); };
 const url = process.argv[2] || 'file://' + ROOT + 'index.html';
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox', '--enable-unsafe-swiftshader', '--use-angle=swiftshader'] });
+  const browser = await chromium.launch({ args: ['--no-sandbox', '--enable-unsafe-swiftshader', '--use-angle=swiftshader'] });
   const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 } });
   const page = await ctx.newPage();
   const errors = [];

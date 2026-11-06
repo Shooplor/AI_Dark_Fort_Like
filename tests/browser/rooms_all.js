@@ -8,7 +8,7 @@ const { chromium } = require('/opt/node-tools/node_modules/playwright');
 const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode = 1; } else console.log('ok:', m); };
 const BASE = { dead_end: [1, 0, 0, 0], straight: [1, 0, 1, 0], bend: [1, 1, 0, 0], tee: [1, 1, 0, 1], cross: [1, 1, 1, 1] };
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox', '--enable-unsafe-swiftshader', '--use-angle=swiftshader'] });
+  const browser = await chromium.launch({ args: ['--no-sandbox', '--enable-unsafe-swiftshader', '--use-angle=swiftshader'] });
   for (const [label, url] of [['normal', 'file://' + ROOT + 'index.html?house=1&fights=0'], ['single', 'file://' + OUT + '/lonely/TheMaskedHouse.html?house=1&fights=0']]) {
     const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
     const errors = []; page.on('pageerror', (e) => errors.push(e.message));

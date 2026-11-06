@@ -11,7 +11,7 @@ const out = OUT + '/road_shots/';
 require('fs').mkdirSync(out, { recursive: true });
 const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode = 1; } else console.log('ok:', m); };
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox', '--enable-unsafe-swiftshader', '--use-angle=swiftshader'] });
+  const browser = await chromium.launch({ args: ['--no-sandbox', '--enable-unsafe-swiftshader', '--use-angle=swiftshader'] });
   async function flow(url, tag) {
     console.log('--- ' + tag);
     const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });

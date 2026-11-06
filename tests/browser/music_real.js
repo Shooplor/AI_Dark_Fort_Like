@@ -6,7 +6,7 @@ require('fs').mkdirSync(OUT, { recursive: true });
 const { chromium } = require('/opt/node-tools/node_modules/playwright');
 const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode = 1; } else console.log('ok:', m); };
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox', '--autoplay-policy=no-user-gesture-required'] });
+  const browser = await chromium.launch({ args: ['--no-sandbox', '--autoplay-policy=no-user-gesture-required'] });
   for (const [label, url] of [['normal page', 'file://' + ROOT + 'index.html?house=1&fights=0'], ['single file', 'file://' + ROOT + 'dist/TheMaskedHouse.html?house=1&fights=0']]) {
     const page = await browser.newPage();
     const errors = []; page.on('pageerror', (e) => errors.push(e.message)); page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });

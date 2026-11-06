@@ -20,7 +20,7 @@ const FAKE = (opts) => `
   Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true });`;
 const spoken = (page) => page.evaluate(() => window.__spoken.map((s) => s.text));
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox', '--enable-unsafe-swiftshader', '--use-angle=swiftshader'] });
+  const browser = await chromium.launch({ args: ['--no-sandbox', '--enable-unsafe-swiftshader', '--use-angle=swiftshader'] });
   const url = process.argv[2] || 'file://' + ROOT + 'index.html?house=1&fights=0';
   const errors = [];
   async function open(seed, opts) {

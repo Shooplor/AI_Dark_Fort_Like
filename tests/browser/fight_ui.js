@@ -11,7 +11,7 @@ const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode =
 const shots = OUT + '/fight_shots/';
 require('fs').mkdirSync(shots, { recursive: true });
 (async () => {
-  const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox', '--enable-unsafe-swiftshader', '--use-angle=swiftshader'] });
+  const b = await chromium.launch({ args: ['--no-sandbox', '--enable-unsafe-swiftshader', '--use-angle=swiftshader'] });
   for (const [url, tag] of [['file://' + ROOT + 'index.html', 'page'], ['file://' + OUT + '/lonely/TheMaskedHouse.html', 'single']]) {
     for (const [ready, expect] of [[0, 'ambush'], [20, 'guard']]) {
       const page = await b.newPage({ viewport: { width: 1600, height: 900 } });

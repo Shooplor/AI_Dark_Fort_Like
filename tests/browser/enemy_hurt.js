@@ -8,7 +8,7 @@ const { chromium } = require('/opt/node-tools/node_modules/playwright');
 // The enemy's hit: its five hurt frames play in order at the player's speed (11 a second), then its still picture is back.
 const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode = 1; } else console.log('ok:', m); };
 (async () => {
-  const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox', '--enable-unsafe-swiftshader', '--use-angle=swiftshader'] });
+  const b = await chromium.launch({ args: ['--no-sandbox', '--enable-unsafe-swiftshader', '--use-angle=swiftshader'] });
   for (const [u, tag] of [['file://' + ROOT + 'index.html', 'page'], ['file://' + OUT + '/lonely/TheMaskedHouse.html', 'single']]) {
     const page = await b.newPage({ viewport: { width: 1600, height: 900 } });
     const errors = []; page.on('pageerror', (e) => errors.push(e.message));

@@ -68,8 +68,8 @@ tests/browser/run.sh fight_ui arms_check             # just some
   the background after pushing (or before bigger milestones) and fix anything it finds in the next push.
 - Some checks measure timings and positions; on a busy machine they can miss by a hair. Run the suite on its own
   (not alongside other heavy work), re-run a failing check alone, and find the real cause before changing any wait.
-- The browser checks use the pre-installed Playwright (`/opt/node-tools/node_modules/playwright`) and Chromium
-  (`/opt/pw-browsers/chromium-1194/chrome-linux/chrome`). WebGL needs `--enable-unsafe-swiftshader
+- The browser checks use the pre-installed Playwright (`/opt/node-tools/node_modules/playwright`), which finds its own
+  Chromium (do not write the browser's path into a check: it changes when the machine is updated). WebGL needs `--enable-unsafe-swiftshader
   --use-angle=swiftshader`; textures from files also need `--allow-file-access-from-files`.
 - Pillow (for the template tools and image work) is not installed by default: `pip install --target <dir> pillow`,
   then `PYTHONPATH=<dir>`.

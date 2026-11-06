@@ -6,7 +6,7 @@ require('fs').mkdirSync(OUT, { recursive: true });
 require('fs').mkdirSync(path.join(OUT, 'lonely'), { recursive: true });
 const { chromium } = require('/opt/node-tools/node_modules/playwright');
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox', '--enable-unsafe-swiftshader', '--use-angle=swiftshader'] });
+  const browser = await chromium.launch({ args: ['--no-sandbox', '--enable-unsafe-swiftshader', '--use-angle=swiftshader'] });
   for (const [label, url] of [['normal', 'file://' + ROOT + 'index.html?house=1&fights=0&seed=5'], ['single', 'file://' + OUT + '/lonely/TheMaskedHouse.html?house=1&fights=0&seed=5']]) {
     const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
     const failed = []; page.on('requestfailed', (r) => { if (!r.url().startsWith('blob:')) failed.push(r.url().slice(0, 80)); });

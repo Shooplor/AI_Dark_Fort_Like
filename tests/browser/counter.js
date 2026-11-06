@@ -8,7 +8,7 @@ const out = OUT + '/';
 const assert = (c, m) => { if (!c) { console.log('FAIL:', m); process.exitCode = 1; } else console.log('ok:', m); };
 const counter = (page) => page.textContent('#eye-nums').then((t) => t.replace(/\s+/g, ''));
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox', '--enable-unsafe-swiftshader', '--use-angle=swiftshader'] });
+  const browser = await chromium.launch({ args: ['--no-sandbox', '--enable-unsafe-swiftshader', '--use-angle=swiftshader'] });
   const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
   const errors = [];
   page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
